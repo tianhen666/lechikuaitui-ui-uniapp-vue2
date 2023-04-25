@@ -1,6 +1,7 @@
 //请求工具参考https://ext.dcloud.net.cn/plugin?id=392
-const { http } = uni.$u
-
+const {
+  http
+} = uni.$u
 //使用手机 + 密码登录
 export const passwordLogin = data => http.post('/member/auth/login', data)
 //发送手机验证码
@@ -10,6 +11,16 @@ export const smsLogin = data => http.post('/member/auth/sms-login', data)
 //微信小程序的一键登录
 export const weixinMiniAppLogin = data => http.post('/member/auth/weixin-mini-app-login', data)
 //刷新令牌
-export const  refreshToken = data => http.post('/member/auth/refresh-token', {data})
+export const refreshToken = data => http.post('/member/auth/refresh-token', {
+  data
+})
 //退出登录
 export const logout = data => http.post('/member/auth/logout', data)
+
+// 获取微信跳转链接
+export const socialAuthRedirect = data => http.get('/member/auth/social-auth-redirect', {
+  params: data
+})
+
+// 通过微信公众号登录code
+export const wxCodeToken = data => http.post('/yxx/wx/code', data)

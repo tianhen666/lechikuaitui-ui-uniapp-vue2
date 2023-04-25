@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import user from './mudules/user'
 import cart from './mudules/cart'
+import poster from './mudules/poster'
 import getters from './getters'
 
 Vue.use(Vuex) // vue的插件机制
@@ -10,7 +11,8 @@ Vue.use(Vuex) // vue的插件机制
 const store = new Vuex.Store({
   modules: {
     user,
-    cart
+    cart,
+    poster
   },
   getters
 })

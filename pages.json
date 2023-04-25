@@ -1,151 +1,100 @@
 {
   "pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
     {
-      "path": "pages/index/index",
+      "path": "pages/material/material",
       "style": {
-        "navigationBarTitleText": "首页"
+        "navigationBarTitleText": "口腔推"
       }
     },
     {
-      "path": "pages/category/category",
+      "path": "pages/recommend/recommend",
       "style": {
-        "navigationBarTitleText": "分类"
+        "navigationBarTitleText": "每日分享"
       }
     },
     {
-      "path": "pages/category/product-list",
+      "path": "pages/dataAnalysis/dataAnalysis",
       "style": {
-        "navigationBarTitleText": "",
-        "navigationStyle": "custom",
-        "navigationBarTextStyle": "white"
+        "navigationBarTitleText": "线索发现"
       }
     },
     {
-      "path": "pages/cart/cart",
+      "path": "pages/center/center",
       "style": {
-        "navigationBarTitleText": "购物车"
-      }
-    },
-    {
-      "path": "pages/user/user",
-      "style": {
-        "navigationBarTitleText": "我的"
-      }
-    },
-    {
-      "path": "pages/login/social",
-      "style": {
-        "navigationBarTitleText": "授权登录"
-      }
-    },
-    {
-      "path": "pages/login/mobile",
-      "style": {
-        "navigationBarTitleText": "手机登录"
-      }
-    },
-    {
-      "path": "pages/forgot/forgot",
-      "style": {
-        "navigationBarTitleText": "忘记密码"
-      }
-    },
-    {
-      "path": "pages/profile/profile",
-      "style": {
-        "navigationBarTitleText": "个人资料"
-      }
-    },
-    {
-      "path": "pages/setting/setting",
-      "style": {
-        "navigationBarTitleText": "账户设置"
-      }
-    },
-    {
-      "path": "pages/product/product",
-      "style": {
-        "navigationBarTitleText": "商品详情"
-      }
-    },
-    {
-      "path": "pages/checkout/checkout",
-      "style": {
-        "navigationBarTitleText": "填写订单"
-      }
-    },
-    {
-      "path": "pages/order/list",
-      "style": {
-        "navigationBarTitleText": "我的订单"
-      }
-    },
-    {
-      "path": "pages/order/detail",
-      "style": {
-        "navigationBarTitleText": "订单详情"
-      }
-    },
-    {
-      "path": "pages/order/confirm",
-      "style": {
-        "navigationBarTitleText": "确认订单"
-      }
-    },
-    {
-      "path": "pages/address/list",
-      "style": {
-        "navigationBarTitleText": "收货地址"
-      }
-    },
-    {
-      "path": "pages/search/search",
-      "style": {
-        "navigationBarTitleText": "搜索"
-      }
-    },
-    {
-      "path": "pages/address/create",
-      "style": {
-        "navigationBarTitleText": "新增地址"
-      }
-    },
-    {
-      "path": "pages/address/update",
-      "style": {
-        "navigationBarTitleText": "修改地址"
+        "navigationBarTitleText": "个人中心"
       }
     }, {
-      "path": "pages/404/404",
+      "path": "pages/articleDetails/articleDetails",
       "style": {
-        "navigationBarTitleText": "404"
+        "navigationBarTitleText": "文章详情"
+      }
+    }, {
+      "path": "pages/dataDetails/dataDetails",
+      "style": {
+        "navigationBarTitleText": "数据详情"
+      }
+
+    }, {
+      "path": "pages/clueDetails/clueDetails",
+      "style": {
+        "navigationBarTitleText": "客户详情"
+      }
+
+    }, {
+      "path": "pages/generatePoster/generatePoster",
+      "style": {
+        "navigationBarTitleText": "生成海报"
+      }
+
+    }, {
+      "path": "pages/videoDetails/videoDetails",
+      "style": {
+        "navigationBarTitleText": "视频详情",
+        "disableScroll": true
       }
     }
-  ],
+      ,{
+            "path" : "pages/testNvue/testNvue",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/activityDetails/activityDetails",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "活动详情"
+            }
+            
+        }
+    ],
   "tabBar": {
     "selectedColor": "#333333",
     "color": "#bfbfbf",
     "list": [{
-        "pagePath": "pages/index/index",
-        "text": "首页",
+        "pagePath": "pages/material/material",
+        "text": "口腔推",
         "iconPath": "/static/images/tabbar/index.png",
         "selectedIconPath": "/static/images/tabbar/index-active.png"
       },
       {
-        "pagePath": "pages/category/category",
-        "text": "分类",
+        "pagePath": "pages/recommend/recommend",
+        "text": "每日分享",
         "iconPath": "/static/images/tabbar/category.png",
         "selectedIconPath": "/static/images/tabbar/category-active.png"
       },
       {
-        "pagePath": "pages/cart/cart",
-        "text": "购物车",
+        "pagePath": "pages/dataAnalysis/dataAnalysis",
+        "text": "线索发现",
         "iconPath": "/static/images/tabbar/cart.png",
         "selectedIconPath": "/static/images/tabbar/cart-active.png"
       },
       {
-        "pagePath": "pages/user/user",
-        "text": "我的",
+        "pagePath": "pages/center/center",
+        "text": "个人中心",
         "iconPath": "/static/images/tabbar/user.png",
         "selectedIconPath": "/static/images/tabbar/user-active.png"
       }
@@ -156,6 +105,7 @@
     "navigationBarTitleText": "乐齿快推",
     "navigationBarBackgroundColor": "#ffffff",
     "backgroundColor": "#ffffff",
-    "navigationStyle": "custom"
+    "navigationStyle": "custom",
+    "backgroundColorTop": "#FFFFFF"
   }
 }

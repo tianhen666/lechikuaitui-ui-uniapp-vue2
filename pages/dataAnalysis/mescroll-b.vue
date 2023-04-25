@@ -1,0 +1,183 @@
+<template>
+  <view class="warpper">
+    <view class="boxTop">
+      <view class="search"><u-search placeholder="日照香炉生紫烟"></u-search></view>
+      <view class="total"><text>共计20条线索</text></view>
+    </view>
+
+    <mescroll-uni
+      @init="mescrollInit"
+      :height="height"
+      :disable-scroll="disableScroll"
+      :down="downOption"
+      :up="upOption"
+      @up="upCallback"
+      @emptyclick="emptyClick"
+    >
+      <view class="detailsBox">
+        <view
+          class="detailsItem"
+          v-for="index in 10"
+          :key="index"
+          @tap.stop="gotoPage('/pages/clueDetails/clueDetails')"
+        >
+          <view class="time">最近访问：2023-04-13 17:21:47</view>
+          <u-gap height="1rpx" marginTop="8rpx" marginBottom="8rpx" bgColor="#bbb"></u-gap>
+
+          <view class="info">
+            <view class="left"><u-avatar :src="src"></u-avatar></view>
+
+            <view class="right">
+              <view class="text1">张三@客户昵称</view>
+              <view class="text2">联系电话:17730225541</view>
+              <view class="text2">客户位置：xxxxxxxx</view>
+              <view class="text2">距离：2.5km</view>
+            </view>
+          </view>
+
+          <u-gap height="1rpx" marginTop="8rpx" marginBottom="8rpx" bgColor="#bbb"></u-gap>
+
+          <view class="bottom">
+            <view class="text text1">转发：30次</view>
+            <view class="text text2">文章阅读：30次</view>
+            <view class="text text3">观看视频：30次</view>
+          </view>
+        </view>
+      </view>
+    </mescroll-uni>
+  </view>
+</template>
+
+<script>
+import MescrollMixin from '@/uni_modules/mescroll-uni/components/mescroll-uni/mescroll-mixins.js';
+import MescrollMoreItemMixin from '@/uni_modules/mescroll-uni/components/mescroll-uni/mixins/mescroll-more-item.js';
+import { apiGoods } from '@/api/mock.js';
+
+export default {
+  mixins: [MescrollMixin, MescrollMoreItemMixin], // 注意此处还需使用MescrollMoreItemMixin (必须写在MescrollMixin后面)
+  data() {
+    return {
+      downOption: {
+        use: false // 禁用
+      },
+      upOption: {
+        auto: false, // 不自动加载
+        noMoreSize: 4, //如果列表已无数据,可设置列表的总数量要大于半页才显示无更多数据;避免列表数据过少(比如只有一条数据),显示无更多数据会不好看; 默认5
+        empty: {
+          tip: '~ 空空如也 ~', // 提示
+          btnText: '去看看'
+        }
+      },
+      goods: [], //列表数据
+      btnIndex: 0
+    };
+  },
+  props: {
+    index: {
+      type: Number,
+      default() {
+        return 0;
+      }
+    },
+    tabs: {
+      type: Array,
+      default() {
+        return [];
+      }
+    },
+    height: [Number, String], // mescroll的高度
+    disableScroll: Boolean // 是否禁止滚动, 默认false
+  },
+  methods: {
+    /*上拉加载的回调: 其中page.num:当前页 从1开始, page.size:每页数据条数,默认10 */
+    upCallback(page) {
+      //联网加载数据
+      let keyword = this.tabs[this.i].name;
+      apiGoods(page.num, page.size, keyword)
+        .then(res => {
+          //联网成功的回调,隐藏下拉刷新和上拉加载的状态;
+          this.mescroll.endSuccess(res.list.length);
+          //设置列表数据
+          if (page.num == 1) this.goods = []; //如果是第一页需手动制空列表
+          this.goods = this.goods.concat(res.list); //追加新数据
+        })
+        .catch(() => {
+          //联网失败, 结束加载
+          this.mescroll.endErr();
+        });
+    },
+    //点击空布局按钮的回调
+    emptyClick() {
+      uni.showToast({
+        title: '点击了按钮,具体逻辑自行实现'
+      });
+    },
+
+    // 切换分类索引
+    switchClassification(index) {
+      this.btnIndex = index;
+    },
+
+    // 切换分类
+    gotoPage(url) {
+      uni.navigateTo({
+        url: url
+      });
+    }
+  }
+};
+</script>
+<style scoped lang="scss">
+.boxTop {
+  margin: 20rpx 30rpx 0rpx;
+  .search {
+    margin-bottom: 20rpx;
+  }
+  .total {
+    font-size: 26rpx;
+    color: #666;
+  }
+}
+.detailsBox {
+  padding: 0 30rpx;
+  .detailsItem {
+    background-color: #efefef;
+    padding: 26rpx 16rpx;
+    margin: 30rpx 0;
+    border-radius: 10rpx;
+    > .time {
+      font-size: 24rpx;
+      color: #aaa;
+    }
+    .info {
+      display: flex;
+      margin-top: 20rpx;
+      .left {
+        flex: none;
+      }
+      .right {
+        line-height: 40rpx;
+        flex: auto;
+        margin-left: 30rpx;
+        .text1 {
+          font-size: 28rpx;
+          font-weight: bold;
+          margin-bottom: 14rpx;
+        }
+        .text2 {
+          font-size: 26rpx;
+        }
+      }
+    }
+    .bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 20rpx;
+      .text {
+        font-size: 25rpx;
+      }
+    }
+  }
+}
+</style>

@@ -1,0 +1,11 @@
+{
+  "name": "lechikuaitui-ui-uniapp-vue2",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://gitee.com/tianhen666/lechikuaitui-ui-uniapp-vue2.git",
+  "author": "tianhen <614891294@qq.com>",
+  "license": "MIT",
+  "dependencies": {
+    "dayjs": "^1.11.7"
+  }
+}

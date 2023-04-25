@@ -1,13 +1,23 @@
-import { getUserInfo } from '@/api/user'
-import { passwordLogin, smsLogin, weixinMiniAppLogin, logout } from '@/api/auth'
+import {
+  getUserInfo
+} from '@/api/user'
+import {
+  passwordLogin,
+  smsLogin,
+  weixinMiniAppLogin,
+  logout,
+  socialAuthRedirect,
+  wxCodeToken
+} from '@/api/auth'
 
 const AccessTokenKey = 'ACCESS_TOKEN'
 const RefreshTokenKey = 'REFRESH_TOKEN'
-
+const ExpiresTimeKey = 'EXPIRES_TIME'
 const user = {
   state: {
     accessToken: uni.getStorageSync(AccessTokenKey), // 访问令牌
     refreshToken: uni.getStorageSync(RefreshTokenKey), // 刷新令牌
+    expiresTime: uni.getStorageSync(ExpiresTimeKey) || 0, // 过期时间
     userInfo: {}
   },
   mutations: {
@@ -24,11 +34,18 @@ const user = {
     // 更新令牌
     SET_TOKEN(state, data) {
       // 设置令牌
-      const { accessToken, refreshToken } = data
+      const {
+        accessToken,
+        refreshToken,
+        expiresTime
+      } = data
+
       state.accessToken = accessToken
       state.refreshToken = refreshToken
+      state.expiresTime = expiresTime
       uni.setStorageSync(AccessTokenKey, accessToken)
       uni.setStorageSync(RefreshTokenKey, refreshToken)
+      uni.setStorageSync(ExpiresTimeKey, expiresTime)
 
       // 加载用户信息
       this.dispatch('ObtainUserInfo')
@@ -48,7 +65,13 @@ const user = {
   },
   actions: {
     //账号登录
-    Login({ state, commit }, { type, data }) {
+    Login({
+      state,
+      commit
+    }, {
+      type,
+      data
+    }) {
       if (type === 0) {
         return passwordLogin(data)
           .then(res => {
@@ -79,7 +102,10 @@ const user = {
       }
     },
     // 退出登录
-    Logout({ state, commit }) {
+    Logout({
+      state,
+      commit
+    }) {
       return logout()
         .then(res => {
           return Promise.resolve(res)
@@ -92,10 +118,31 @@ const user = {
         })
     },
     // 获得用户基本信息
-    async ObtainUserInfo({ state, commit }) {
+    async ObtainUserInfo({
+      state,
+      commit
+    }) {
       const res = await getUserInfo()
       commit('SET_USER_INFO', res.data)
+    },
+    // 获取微信跳转链接
+    async getWXSocialAuthRedirect({
+      state,
+      commit
+    }, data) {
+      const res = await socialAuthRedirect(data)
+      return Promise.resolve(res.data)
+    },
+    // 通过微信授权code登录系统
+    async loginWxCodeToken({
+      state,
+      commit
+    }, data) {
+      const res = await wxCodeToken(data)
+      commit('SET_TOKEN', res.data)
+      return Promise.resolve(res.data)
     }
+
   }
 }
 export default user

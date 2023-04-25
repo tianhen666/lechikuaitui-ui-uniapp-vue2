@@ -16,13 +16,13 @@
 @import '@/uni_modules/uview-ui/theme.scss';
 
 /* 全局自定义scss变量 */
+$main-color: #02a7f0;
 
 /* 页面背景颜色 */
 $custom-bg-color: #ffffff;
 
 /* 边框样式 */
 $custom-border-style: 1rpx solid #f3f3f3;
-
 
 @mixin flex-left($direction: row) {
   display: flex;
@@ -57,4 +57,12 @@ $custom-border-style: 1rpx solid #f3f3f3;
   flex-direction: $direction;
   align-items: center;
   justify-content: space-around;
+}
+
+@mixin overHeiddenText($line: 2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: $line;
+  -webkit-box-orient: vertical;
 }

@@ -1,25 +1,45 @@
 <script>
+import { isWechat, GetQueryString } from '@/utils/index.js';
+import dayjs from 'dayjs';
 export default {
-  onLaunch: function () {
-    console.log('App Launch')
+  onLaunch: function() {
     // #ifdef H5
     //在页面加载时读取sessionStorage里的状态信息
-    if (sessionStorage.getItem('store')) {
-      this.$store.replaceState(Object.assign({}, this.$store.state, JSON.parse(sessionStorage.getItem('store'))))
+    if (sessionStorage.getItem('storeKey')) {
+      this.$store.replaceState(
+        Object.assign({}, this.$store.state, JSON.parse(sessionStorage.getItem('storeKey')))
+      );
     }
+
     //在页面刷新时将vuex里的信息保存到sessionStorage里
     window.addEventListener('beforeunload', () => {
-      sessionStorage.setItem('store', JSON.stringify(this.$store.state))
-    })
+      this.$store.commit('CANCEL_PREVIEW');
+      sessionStorage.setItem('storeKey', JSON.stringify(this.$store.state));
+    });
+
+    // 1.微信浏览器环境执行
+    if (isWechat()) {
+      // 2.1判断是否有token,token是否过期
+      if (!this.$store.getters.hasLogin || !this.$store.getters.hasLoginExpired) {
+        // 3.1 获取url中参数, 并且判断url种是否有code
+        const code = GetQueryString('code');
+        const state = GetQueryString('state');
+        if (code && state) {
+          this.$store.dispatch('loginWxCodeToken', { type: 31, code, state });
+        } else {
+          // 3.2 URL中没有code, 获取微信公众号授权登录链接
+          const href = window.location.href;
+          this.$store
+            .dispatch('getWXSocialAuthRedirect', { type: 31, redirectUri: href })
+            .then(res => {
+              window.location.href = res;
+            });
+        }
+      }
+    }
     // #endif
-  },
-  onShow: function () {
-    console.log('App Show')
-  },
-  onHide: function () {
-    console.log('App Hide')
   }
-}
+};
 </script>
 
 <style lang="scss">

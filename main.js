@@ -16,8 +16,8 @@ App.mpType = 'app'
 Vue.use(uView)
 
 const app = new Vue({
-	store,
-	...App
+  store,
+  ...App
 })
 
 // 引入请求封装
