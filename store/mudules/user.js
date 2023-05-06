@@ -1,6 +1,6 @@
 import {
-  getUserInfo
-} from '@/api/user'
+  getTenantUser
+} from '@/api/materialLibrary.js';
 import {
   passwordLogin,
   smsLogin,
@@ -65,13 +65,7 @@ const user = {
   },
   actions: {
     //账号登录
-    Login({
-      state,
-      commit
-    }, {
-      type,
-      data
-    }) {
+    Login({ state, commit }, { type, data }) {
       if (type === 0) {
         return passwordLogin(data)
           .then(res => {
@@ -101,11 +95,9 @@ const user = {
           })
       }
     },
+
     // 退出登录
-    Logout({
-      state,
-      commit
-    }) {
+    Logout({ state, commit }) {
       return logout()
         .then(res => {
           return Promise.resolve(res)
@@ -117,27 +109,21 @@ const user = {
           commit('CLEAR_LOGIN_INFO')
         })
     },
+
     // 获得用户基本信息
-    async ObtainUserInfo({
-      state,
-      commit
-    }) {
-      const res = await getUserInfo()
+    async ObtainUserInfo({ state, commit }) {
+      const res = await getTenantUser()
       commit('SET_USER_INFO', res.data)
     },
+
     // 获取微信跳转链接
-    async getWXSocialAuthRedirect({
-      state,
-      commit
-    }, data) {
+    async getWXSocialAuthRedirect({ state, commit }, data) {
       const res = await socialAuthRedirect(data)
       return Promise.resolve(res.data)
     },
+
     // 通过微信授权code登录系统
-    async loginWxCodeToken({
-      state,
-      commit
-    }, data) {
+    async loginWxCodeToken({ state, commit }, data) {
       const res = await wxCodeToken(data)
       commit('SET_TOKEN', res.data)
       return Promise.resolve(res.data)

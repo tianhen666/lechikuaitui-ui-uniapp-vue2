@@ -1,53 +1,72 @@
 <template>
   <view>
-    <mescroll-body :sticky="true" @init="mescrollInit" @down="downCallback" :up="upOption">
+    <u-toast ref="uToast"></u-toast>
+    <mescroll-body
+      :sticky="true"
+      @init="mescrollInit"
+      @down="downCallback"
+      :up="upOption"
+      :bottombar="false"
+    >
       <!-- 顶部内容 -->
-      <view :style="{ height: topHeight + 'px', overflow: 'hidden' }">
-        <image style="width: 100%;height: 340rpx;" src="https://www.mescroll.com/img/swiper1.jpg" />
-      </view>
-
+      <!-- <view :style="{
+          height: topHeight + 'px',
+          overflow: 'hidden'
+        }">
+        <u-swiper :list="list1" radius="0" indicator circular :height="topHeight" :interval="10000"
+          @click="bannerTap"></u-swiper>
+      </view> -->
       <!-- 数据列表 -->
       <view class="sticky-tabs"><me-tabs v-model="tabIndex" :tabs="tabs"></me-tabs></view>
       <!-- 数据列表 -->
       <swiper :style="{ height: swiperHeight }" :current="tabIndex" @change="swiperChange">
-        <swiper-item v-for="(tab, i) in tabs" :key="i">
-          <!-- 海报 -->
+        <!-- 海报 -->
+        <swiper-item>
           <mescroll-poster
-            :ref="'mescrollItem' + i"
+            :i="0"
+            ref="mescrollItem0"
             :index="tabIndex"
             :tabs="tabs"
             :height="swiperHeight"
             :disable-scroll="disableScroll"
-            v-if="i === 0"
           ></mescroll-poster>
-          <!-- 视频 -->
-          <mescroll-video
-            :ref="'mescrollItem' + i"
-            :index="tabIndex"
-            :tabs="tabs"
-            :height="swiperHeight"
-            :disable-scroll="disableScroll"
-            v-if="i === 1"
-          ></mescroll-video>
-          <!-- 文章 -->
-          <mescroll-article
-            :ref="'mescrollItem' + i"
-            :index="tabIndex"
-            :tabs="tabs"
-            :height="swiperHeight"
-            :disable-scroll="disableScroll"
-            v-if="i === 2"
-          ></mescroll-article>
-          <!-- 活动 -->
-          <mescroll-activity
-            :ref="'mescrollItem' + i"
-            :index="tabIndex"
-            :tabs="tabs"
-            :height="swiperHeight"
-            :disable-scroll="disableScroll"
-            v-if="i === 3"
-          ></mescroll-activity>
         </swiper-item>
+
+        <!-- 视频 -->
+        <swiper-item>
+          <mescroll-video
+            :i="1"
+            ref="mescrollItem1"
+            :index="tabIndex"
+            :tabs="tabs"
+            :height="swiperHeight"
+            :disable-scroll="disableScroll"
+          ></mescroll-video>
+        </swiper-item>
+
+        <!-- 文章 -->
+        <swiper-item>
+          <mescroll-article
+            ref="mescrollItem2"
+            :i="2"
+            :index="tabIndex"
+            :tabs="tabs"
+            :height="swiperHeight"
+            :disable-scroll="disableScroll"
+          ></mescroll-article>
+        </swiper-item>
+
+        <!-- 活动 -->
+        <!-- <swiper-item>
+          <mescroll-activity
+            ref="mescrollItem3"
+            :i="3"
+            :index="tabIndex"
+            :tabs="tabs"
+            :height="swiperHeight"
+            :disable-scroll="disableScroll"
+          ></mescroll-activity>
+        </swiper-item> -->
       </swiper>
     </mescroll-body>
 
@@ -72,16 +91,28 @@ export default {
   },
   data() {
     return {
+      /*轮播图广告*/
+      list1: [
+        'https://cdn.uviewui.com/uview/swiper/swiper1.png',
+        'https://cdn.uviewui.com/uview/swiper/swiper2.png',
+        'https://cdn.uviewui.com/uview/swiper/swiper3.png'
+      ],
       upOption: {
         use: false // 主体框架只启用下拉刷新
       },
       topHeight: uni.upx2px(340), // 顶部内容的高度 (单位px)
       swiperHeight: '', // 需要固定swiper的高度 (单位px)
       tabs: [
-        { name: '海报素材' },
-        { name: '视频素材' },
-        { name: '优选文章' },
-        { name: '营销活动' }
+        {
+          name: '海报素材'
+        },
+        {
+          name: '视频素材'
+        },
+        {
+          name: '优选文章'
+        }
+        // { name: '营销活动' }
       ],
       tabIndex: 0, // 当前菜单下标
       disableScroll: true // swiper列表是否禁止滚动
@@ -103,11 +134,14 @@ export default {
   },
   onLoad() {
     // 需要固定swiper的高度 (需减去悬浮tabs的高度64rpx)
-    this.swiperHeight = uni.getSystemInfoSync().windowHeight - uni.upx2px(64) + 'px';
+    this.swiperHeight = uni.getSystemInfoSync().windowHeight - uni.upx2px(64) + 1 + 'px';
   },
   mounted() {
     // #ifdef H5
-    uni.pageScrollTo({ scrollTop: 0, duration: 0 }); // 刷新浏览器,重置滚动条
+    uni.pageScrollTo({
+      scrollTop: 0,
+      duration: 0
+    }); // 刷新浏览器,重置滚动条
     // #endif
   },
   methods: {
@@ -121,16 +155,20 @@ export default {
     },
     getMescroll(i) {
       // 获取指定下标的mescroll对象
-      let mescrollItems = this.$refs.mescrollItem;
-      if (mescrollItems) {
-        let item = mescrollItems[i];
-        if (item) return item.mescroll;
-      }
+      let mescrollItem = this.$refs['mescrollItem' + i];
+      if (mescrollItem) return mescrollItem.mescroll;
       return null;
     },
     onPageScroll(e) {
-      // 页面的滚动事件
-      this.disableScroll = Math.ceil(e.scrollTop) < this.topHeight;
+      // 当滚动条小于顶部高度时内部禁止滚动
+      // this.disableScroll = Math.ceil(e.scrollTop) < this.topHeight;
+      this.disableScroll = false;
+    },
+    bannerTap(index) {
+      // banner图点击
+      this.$refs.uToast.show({
+        message: '图片' + index
+      });
     }
   }
 };
@@ -143,6 +181,7 @@ export default {
   top: var(--window-top);
   background-color: #fff;
 }
+
 page {
   background-color: #fff;
 }

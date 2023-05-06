@@ -7,7 +7,9 @@
     </view>
 
     <view class="diyPoster">
-      <view class="img_box"><image class="img" :src="previewUrl" mode="widthFix"></image></view>
+      <view class="img_box">
+        <image class="img" :src="posterObj.content" mode="widthFix"></image>
+      </view>
     </view>
 
     <view class="diyBtn">
@@ -23,100 +25,122 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
-export default {
-  data() {
-    return {
-      option: [
-        {
-          name: '二维码'
-        },
-        {
-          name: '联系方式'
-        },
-        {
-          name: '企业logo'
-        },
-        {
-          name: '个人信息'
-        },
-        {
-          name: '广告信息'
-        }
-      ]
-    };
-  },
-  mounted() {},
-  computed: {
-    ...mapState({
-      preview: state => state.poster.preview,
-      previewUrl: state => state.poster.previewUrl
-    })
-  }
-};
+  import {
+    mapState
+  } from 'vuex';
+  import {
+    getSourceMaterialId
+  } from '@/api/materialLibrary.js';
+  export default {
+    data() {
+      return {
+        posterObj: {},
+        option: [{
+            name: '二维码'
+          },
+          {
+            name: '联系方式'
+          },
+          {
+            name: '企业logo'
+          },
+          {
+            name: '个人信息'
+          },
+          {
+            name: '广告信息'
+          }
+        ]
+      };
+    },
+    mounted() {},
+    computed: {
+      ...mapState({
+        preview: state => state.poster.preview,
+      })
+    },
+    onLoad({
+      id
+    }) {
+      getSourceMaterialId({
+        id
+      }).then(res => {
+        this.posterObj = res.data;
+      });
+    },
+  };
 </script>
 
 <style lang="scss">
-.container {
-  .optionBox {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 30rpx 20rpx;
-    background-color: #fff;
-    .optionItem {
-      font-size: 25rpx;
-      background-color: #eee;
-      color: #666;
-      border-radius: 10rpx;
-      padding: 5rpx 16rpx;
-    }
-    .curr {
-      background-color: $main-color;
-      color: #fff;
-    }
-  }
-
-  .diyPoster {
-    padding: 20rpx;
-    background-color: #fff;
-    width: 500rpx;
-    margin: auto;
-    margin-top: 40rpx;
-    border-radius: 10rpx;
-    .img_box {
-      width: 100%;
-      .img {
-        width: 100%;
-      }
-    }
-  }
-  .diyBtn {
-    height: 160rpx;
-    > .warpper {
-      position: fixed;
-      height: 120rpx;
-      bottom: 0;
+  .container {
+    .optionBox {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 30rpx 20rpx;
       background-color: #fff;
-      width: 100%;
-      .btn_box {
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 60rpx;
-        > .btn {
-          display: inline-block;
-          font-size: 25rpx;
-          line-height: 2.3;
-          margin: 0;
+
+      .optionItem {
+        font-size: 25rpx;
+        background-color: #eee;
+        color: #666;
+        border-radius: 10rpx;
+        padding: 5rpx 16rpx;
+      }
+
+      .curr {
+        background-color: $main-color;
+        color: #fff;
+      }
+    }
+
+    .diyPoster {
+      padding: 20rpx;
+      background-color: #fff;
+      width: 500rpx;
+      margin: auto;
+      margin-top: 40rpx;
+      border-radius: 10rpx;
+
+      .img_box {
+        width: 100%;
+
+        .img {
+          width: 100%;
         }
-        > .s1 {
-          background-color: $main-color;
-          color: #fff;
+      }
+    }
+
+    .diyBtn {
+      height: 160rpx;
+
+      >.warpper {
+        position: fixed;
+        height: 120rpx;
+        bottom: 0;
+        background-color: #fff;
+        width: 100%;
+
+        .btn_box {
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 60rpx;
+
+          >.btn {
+            display: inline-block;
+            font-size: 25rpx;
+            line-height: 2.3;
+            margin: 0;
+          }
+
+          >.s1 {
+            background-color: $main-color;
+            color: #fff;
+          }
         }
       }
     }
   }
-}
 </style>

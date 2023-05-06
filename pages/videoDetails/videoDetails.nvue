@@ -168,7 +168,7 @@
                   boxStyle.height +
                   'px; background-color: #000000; z-index: -1;'
               "
-              :poster="list.src + '?x-oss-process=video/snapshot,t_100,f_jpg'"
+              :poster="list.src + '?vframe/jpg/offset/1/w/600'"
             ></video>
             <!--
 						1.这里是封面（方案二）：这里的封面可以自定义。
@@ -176,7 +176,7 @@
 						-->
             <image
               v-if="!list.playIng"
-              :src="list.src + '?x-oss-process=video/snapshot,t_100,f_jpg'"
+              :src="list.src + '?vframe/jpg/offset/1/w/600'"
               :style="
                 'width: ' +
                   boxStyle.width +
@@ -209,6 +209,8 @@
               <text class="words">{{ list.msg }}</text>
               <!-- k={{k}} -->
             </view>
+
+            <!-- 门诊信息 -->
             <m-business-card-b></m-business-card-b>
           </view>
         </view>
@@ -219,7 +221,9 @@
 </template>
 
 <script>
-import userList from './data.js'; //这个是假数据
+import { getSourceMaterialId, getSourceMaterial } from '@/api/materialLibrary.js';
+import wx from '@/wxJsSDK/index.js';
+import { mapState } from 'vuex';
 let audo = uni.createInnerAudioContext();
 audo.loop = true;
 export default {
@@ -242,6 +246,10 @@ export default {
         width: 0
       },
 
+      classID: '', //分类ID
+      total: 2, //视频总量
+      mVideoID: '', // 当前初始化时视频ID
+
       videoID: '',
       isShow: false,
 
@@ -262,6 +270,12 @@ export default {
     };
   },
   components: {},
+  computed: {
+    ...mapState({
+      tenantInfo: state => state.tenant.info,
+      userInfo: state => state.user.userInfo
+    })
+  },
   watch: {
     async k(k, old_k) {
       // console.log(k, old_k)
@@ -334,10 +348,14 @@ export default {
       }
       // #endif
       var p = k + 1;
-      console.log('预加载第' + (p + 1) + '个视频：' + this.dataList[p]._id + '' + p);
+      console.log('预加载第' + (p + 1) + '个视频：' + this.dataList[p]?._id + '' + p);
     }
   },
-  onLoad() {
+  onLoad({ id, classId }) {
+    // 设置视频ID
+    this.mVideoID = id;
+    this.classID = classId;
+
     /* 判断手机型号 ---start--- */
     this.platform = uni.getSystemInfoSync().platform;
     this.model = uni.getSystemInfoSync().model;
@@ -448,7 +466,7 @@ export default {
     },
     ended() {
       // 1.播放当前视频结束时触发，自动切换下一个视频
-      // this.current = this.k+1
+      this.current = this.k + 1;
     },
     //点击播放&&暂停
     tapVideoHover(state, event) {
@@ -489,15 +507,54 @@ export default {
       }
     },
     //每一组结束时新的请求
-    GET() {},
-    get() {
+    async GET() {
+      if (this.dataList.length >= this.total) {
+        return;
+      }
+      const res = await getSourceMaterial({
+        pageNo: 1,
+        pageSize: 10,
+        classId: this.classID,
+        type: 2 // 视频分类
+      });
+      // 1.这里引入后端请求数据
+      const msg = [...res.data.list];
+      // 2.这里把视频添加到视频列表
+      for (let i = 0; i < msg.length; i++) {
+        // 去除当前初始化视频
+        if (this.mVideoID != msg[i].id) {
+          this.dataList.push({
+            playIng: false,
+            isplay: true,
+            _id: msg[i].id,
+            title: msg[i].name,
+            state: 'pause',
+            src: msg[i].content
+          });
+        }
+      }
+      this.total = res.data.total;
+    },
+    async get() {
+      const res = await getSourceMaterialId({
+        id: this.mVideoID
+      });
+
       this.isShow = false;
       // 1.这里引入后端请求数据
-      var msg = userList;
+      var msg = [res.data];
 
       // 2.这里把视频添加到视频列表
       for (let i = 0; i < msg.length; i++) {
-        this.dataList.push(msg[i]);
+        this.dataList.push({
+          playIng: false,
+          isplay: true,
+          _id: msg[i].id,
+          title: msg[i].name,
+          msg: msg[i].description,
+          state: 'pause',
+          src: msg[i].content
+        });
       }
       // 3.播放当前视频
       setTimeout(() => {
@@ -510,20 +567,44 @@ export default {
         this.dataList[this.k].isplay = false;
         this.dataList[this.k].state = 'play';
         // #endif
-        this.dataList[this.k].playIng = true;
         setTimeout(() => {
           // #ifdef H5
+          this.dataList[this.k].playIng = false;
           uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).seek(0);
           uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).pause();
           this.dataList[this.k].state = 'pause';
           audo.src = this.dataList[this.k].src;
           // #endif
           // #ifdef MP
+          this.dataList[this.k].playIng = true;
           uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).play();
           // #endif
+
+          // 加载列表
+          this.GET();
         }, 500);
       }, 200);
       this.videoID = this.dataList[this.k]._id;
+
+      // 微信jsdk初始化
+      wx.initJssdk(() => {
+        // 朋友分享
+        wx.updateAppMessageShareData({
+          title: `《${this.tenantInfo.name}-${this.userInfo.nickname ||
+            this.userInfo.snickName}》推荐-${this.dataList[this.k].title}`,
+          desc: this.dataList[this.k].msg,
+          link: `${window.location.href}&ccc=123`,
+          imgUrl: this.dataList[this.k].src + '?vframe/jpg/offset/1/w/600'
+        });
+
+        // 朋友圈分享
+        wx.updateTimelineShareData({
+          title: `《${this.tenantInfo.name}-${this.userInfo.nickname ||
+            this.userInfo.snickName}》推荐-${this.dataList[this.k].title}`,
+          link: `${window.location.href}&ccc=123`,
+          imgUrl: this.dataList[this.k].src + '?vframe/jpg/offset/1/w/600'
+        });
+      });
     },
     share() {
       uni.showToast({
@@ -568,11 +649,13 @@ export default {
 .container {
   background-color: #000000;
 }
+
 .item {
   /* width : 750rpx; */
   background-color: #000000;
   position: relative;
 }
+
 .videoHover {
   position: absolute;
   top: 0;
@@ -587,17 +670,20 @@ export default {
   border-color: #dd524d;
   border-width: 1px; */
 }
+
 .playState {
   width: 160rpx;
   height: 160rpx;
   opacity: 0.2;
 }
+
 .userInfo {
   position: absolute;
   bottom: 110px;
   right: 10px;
   flex-direction: column;
 }
+
 .userAvatar {
   border-radius: 500%;
   margin-bottom: 15px;
@@ -605,10 +691,12 @@ export default {
   border-width: 2px;
   border-color: #ffffff;
 }
+
 .userAvatar {
   width: 100rpx;
   height: 100rpx;
 }
+
 .likeIco,
 .shareIco,
 .commentIco {
@@ -616,6 +704,7 @@ export default {
   height: 60rpx;
   margin-top: 15px;
 }
+
 .likeNum,
 .commentNum,
 .shareTex {
@@ -624,14 +713,17 @@ export default {
   text-align: center;
   margin: 5px;
 }
+
 .likeNumActive {
   color: red;
 }
+
 .content {
   padding: 15rpx 15rpx 30rpx;
   justify-content: flex-start;
   color: #ffffff;
 }
+
 .userName {
   font-size: 30rpx;
   color: #ffffff;
@@ -641,6 +733,7 @@ export default {
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
 }
+
 .words {
   margin-top: 10rpx;
   font-size: 30rpx;
@@ -651,6 +744,7 @@ export default {
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
 }
+
 .root {
   background-color: #000000;
 }

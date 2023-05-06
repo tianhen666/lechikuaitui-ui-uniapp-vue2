@@ -6,6 +6,8 @@
   "author": "tianhen <614891294@qq.com>",
   "license": "MIT",
   "dependencies": {
-    "dayjs": "^1.11.7"
+    "dayjs": "^1.11.7",
+    "vconsole": "^3.15.0",
+    "weixin-js-sdk": "^1.6.0"
   }
 }

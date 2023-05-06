@@ -15,17 +15,7 @@ export default {
   props: {
     bData: {
       type: Array,
-      default: () => [
-        {
-          name: '最多使用'
-        },
-        {
-          name: '12312'
-        },
-        {
-          name: '更多'
-        }
-      ]
+      default: () => []
     },
     mIndex: {
       type: Number,
@@ -37,7 +27,6 @@ export default {
   },
   methods: {
     btnTap(index) {
-      console.log(index);
       this.$emit('switchClassification', index);
     }
   }

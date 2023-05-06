@@ -1,6 +1,11 @@
 <template>
   <view class="box">
-    <view class="warpper" v-for="(itemData, index) in dataList" :key="index" @tap.stop="itemClicK">
+    <view
+      class="warpper"
+      v-for="(itemData, index) in dataList"
+      :key="index"
+      @tap.stop="itemClicK(index)"
+    >
       <view class="img_box">
         <image mode="aspectFill" class="img" :src="itemData.coverImage"></image>
       </view>
@@ -24,26 +29,7 @@ export default {
     },
     dataList: {
       type: Array,
-      default: () => [
-        {
-          name: '为什么牙齿总是白天不痛，晚上痛？真想竟然是',
-          coverImage:
-            'http://rti7xphf4.hb-bkt.clouddn.com/postImg/WechatIMG5924.jpeg?imageView2/3/w/240/h/315/q/75',
-          description: '描述文字1'
-        },
-        {
-          name: '名称名称名称名称名称名称名称名称',
-          coverImage:
-            'http://rti7xphf4.hb-bkt.clouddn.com/postImg/WechatIMG5924.jpeg?imageView2/3/w/240/h/315/q/75',
-          description: '描述文字1'
-        },
-        {
-          name: '名称名称名称名称名称名称名称名称',
-          coverImage:
-            'http://rti7xphf4.hb-bkt.clouddn.com/postImg/WechatIMG5924.jpeg?imageView2/3/w/240/h/315/q/75',
-          description: '描述文字1'
-        }
-      ]
+      default: () => []
     }
   },
   data() {
@@ -51,7 +37,7 @@ export default {
   },
   methods: {
     itemClicK(index) {
-      this.$emit('tapItem', this.dataList[index]);
+      this.$emit('tapItem', index);
     }
   }
 };

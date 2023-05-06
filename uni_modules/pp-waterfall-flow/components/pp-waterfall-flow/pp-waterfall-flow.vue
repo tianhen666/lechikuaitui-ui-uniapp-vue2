@@ -7,7 +7,7 @@
     <view
       class="item"
       v-for="(item, index) in list"
-      :key="index"
+      :key="item.guid"
       :style="{
         '--mbt': mbtpx,
         '--br': brpx,
@@ -15,10 +15,13 @@
       }"
       @click="clickItem(index)"
     >
+      <!-- 图片 -->
       <view class="coverBox" v-if="listType === 'img' && item.listTyptShow">
         <text class="text">点击</text>
         <text class="text">预览</text>
       </view>
+
+      <!-- 视频播放图标 -->
       <view class="play-icon" v-if="listType === 'video' && item.listTyptShow"></view>
       <waterfall-flow-image
         :image="item[imageKey]"
@@ -27,6 +30,7 @@
         :index="index"
         :border-radius="imageBR"
         @finish="loadImage($event, item)"
+        @load="mLoad(item)"
         @click="clickImage"
       ></waterfall-flow-image>
       <view
@@ -44,7 +48,10 @@ const windowWidth = uni.getSystemInfoSync().windowWidth;
 export default {
   emits: ['clickImage', 'clickItem'],
   props: {
-    value: Array,
+    list: {
+      type: Array,
+      default: () => []
+    },
     listType: {
       type: [String],
       default: 'img'
@@ -114,23 +121,8 @@ export default {
   },
   data() {
     return {
-      list: [],
       fallWidth: windowWidth
     };
-  },
-  watch: {
-    value: {
-      deep: true,
-      immediate: true,
-      handler(newVal, oldVal) {
-        if (newVal.length == 0) this.list = [];
-        const newArr = newVal.slice(this.list.length, newVal.length);
-        newArr.forEach(item => {
-          if (typeof item.showChar == 'undefined') item.showChar = true;
-        });
-        this.list.push.apply(this.list, newArr);
-      }
-    }
   },
   mounted() {
     // #ifdef H5
@@ -145,6 +137,9 @@ export default {
     // #endif
   },
   methods: {
+    getGuid() {
+      return guid();
+    },
     waterfallWidth() {
       let that = this;
       const query = uni.createSelectorQuery().in(this);
@@ -169,8 +164,6 @@ export default {
       item.rows = gridRow;
       item.imageHeight = `${imageHeight}px`;
 
-      // 当前图片加载完成状态---------自定义
-      item.listTyptShow = true;
       // #ifdef VUE2
       this.$set(this.list, index, item);
       // #endif
@@ -180,6 +173,9 @@ export default {
     },
     clickItem(index) {
       this.$emit('clickItem', index);
+    },
+    mLoad(item) {
+      item.listTyptShow = true;
     }
   }
 };

@@ -19,13 +19,17 @@ export default {
 
     // 1.微信浏览器环境执行
     if (isWechat()) {
-      // 2.1判断是否有token,token是否过期
+      // 2.1 未登录
       if (!this.$store.getters.hasLogin || !this.$store.getters.hasLoginExpired) {
-        // 3.1 获取url中参数, 并且判断url种是否有code
         const code = GetQueryString('code');
         const state = GetQueryString('state');
+        // 3.1 获取url中参数, 并且判断url种是否有code
         if (code && state) {
-          this.$store.dispatch('loginWxCodeToken', { type: 31, code, state });
+          // 通过微信code登录
+          this.$store.dispatch('loginWxCodeToken', { type: 31, code, state }).then(res => {
+            // 已登录获取门诊信息
+            this.$store.dispatch('getTenantInfo');
+          });
         } else {
           // 3.2 URL中没有code, 获取微信公众号授权登录链接
           const href = window.location.href;
@@ -35,6 +39,12 @@ export default {
               window.location.href = res;
             });
         }
+      } else {
+        // 2.2 已登录
+        // 已登录获取门诊信息
+        this.$store.dispatch('getTenantInfo');
+        // 已登录获取用户信息
+        this.$store.dispatch('ObtainUserInfo');
       }
     }
     // #endif

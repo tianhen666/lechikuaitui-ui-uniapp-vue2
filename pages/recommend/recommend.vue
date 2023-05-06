@@ -1,18 +1,57 @@
 <template>
-  <view class="box">
-    <m-article-style></m-article-style>
-    <m-picture-style></m-picture-style>
-    <m-video-style></m-video-style>
-  </view>
+  <mescroll-body :up="{
+    textNoMore:'没有更多了'
+  }" :bottombar="false" @init="mescrollInit" @down="downCallback" @up="upCallback">
+    <view class="box">
+      <template v-for="(item,index) in dataList">
+        <m-article-style :item-data="item" v-if="item.type===1"></m-article-style>
+        <m-picture-style :item-data="item" v-if="item.type===3"></m-picture-style>
+        <m-video-style :item-data="item" v-if="item.type===2"></m-video-style>
+      </template>
+    </view>
+    <!-- 海报预览 -->
+    <m-poster-preview></m-poster-preview>
+  </mescroll-body>
 </template>
 
 <script>
-export default {
-  data() {
-    return {};
-  },
-  methods: {}
-};
+  import MescrollMixin from "@/uni_modules/mescroll-uni/components/mescroll-uni/mescroll-mixins.js";
+  import {
+    getshareEveryDay
+  } from '@/api/materialLibrary.js'
+  export default {
+    mixins: [MescrollMixin],
+    data() {
+      return {
+        dataList: []
+      };
+    },
+    methods: {
+      async mGetshareEveryDay() {
+
+      },
+      upCallback(page) {
+        //联网加载数据
+        getshareEveryDay({
+          pageNo: page.num,
+          pageSize: page.size,
+          type: 1
+        }).then(res => {
+          setTimeout(() => {
+            this.mescroll.endBySize(res.data.list.length, res.data.total);
+
+            //设置列表数据
+            if (page.num == 1) this.dataList.length = 0; //如果是第一页需手动制空列表
+            this.dataList = this.dataList.concat(res.data.list); //追加新数据
+          }, 800)
+        }).catch(() => {
+          //联网失败, 结束加载
+          this.mescroll.endErr();
+        })
+      }
+
+    }
+  };
 </script>
 
-<style></style>
+<style lang="scss" scoped></style>

@@ -73,9 +73,15 @@
         "devServer" : {
             "https" : false
         },
-        "title" : "",
+        "title" : "口腔推",
         "router" : {
             "mode" : "history"
+        },
+        "template" : "./index.html",
+        "optimization" : {
+            "treeShaking" : {
+                "enable" : true
+            }
         }
     }
 }

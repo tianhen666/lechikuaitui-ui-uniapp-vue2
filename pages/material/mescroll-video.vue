@@ -1,10 +1,18 @@
 <template>
   <view class="warpper">
     <view class="boxTop">
-      <view class="search"><u-search placeholder="日照香炉生紫烟"></u-search></view>
+      <view class="search">
+        <u-search
+          placeholder="输入关键字搜索视频"
+          v-model="searchName"
+          @search="mySearch"
+          @custom="mySearch"
+        ></u-search>
+      </view>
       <m-button-box
         :m-index="btnIndex"
-        @switch-classification="switchClassification"
+        :bData="classificationList"
+        @switchClassification="switchClassification"
       ></m-button-box>
     </view>
 
@@ -18,7 +26,17 @@
       @emptyclick="emptyClick"
     >
       <view class="listBox">
-        <m-waterfall-flow-list @tapItem="tapItem" list-type="video"></m-waterfall-flow-list>
+        <pp-waterfall-flow
+          :list="dataList"
+          :columns="3"
+          image-key="coverImage"
+          :char-size="68"
+          :itemBR="6"
+          list-type="video"
+          imageBR="0 0 6rpx 6rpx"
+          @clickItem="itemClicK"
+          @clickImage="itemClicK"
+        ></pp-waterfall-flow>
       </view>
     </mescroll-uni>
   </view>
@@ -26,11 +44,10 @@
 
 <script>
 import MescrollMixin from '@/uni_modules/mescroll-uni/components/mescroll-uni/mescroll-mixins.js';
-import MescrollMoreItemMixin from '@/uni_modules/mescroll-uni/components/mescroll-uni/mixins/mescroll-more-item.js';
-import { apiGoods } from '@/api/mock.js';
+import { getSourceMaterial, getClassIfyList } from '@/api/materialLibrary.js';
 
 export default {
-  mixins: [MescrollMixin, MescrollMoreItemMixin], // 注意此处还需使用MescrollMoreItemMixin (必须写在MescrollMixin后面)
+  mixins: [MescrollMixin], // 注意此处还需使用MescrollMoreItemMixin (必须写在MescrollMixin后面)
   data() {
     return {
       downOption: {
@@ -38,17 +55,26 @@ export default {
       },
       upOption: {
         auto: false, // 不自动加载
-        noMoreSize: 4, //如果列表已无数据,可设置列表的总数量要大于半页才显示无更多数据;避免列表数据过少(比如只有一条数据),显示无更多数据会不好看; 默认5
+        noMoreSize: 10, //如果列表已无数据,可设置列表的总数量要大于半页才显示无更多数据;避免列表数据过少(比如只有一条数据),显示无更多数据会不好看; 默认5
         empty: {
           tip: '~ 空空如也 ~', // 提示
           btnText: '去看看'
         }
       },
-      goods: [], //列表数据
-      btnIndex: 0
+      classificationList: [], //分类列表
+      btnIndex: 0, // 分类索引
+
+      searchName: '', //搜索名称
+      dataList: [] //列表数据
     };
   },
   props: {
+    i: {
+      type: Number,
+      default() {
+        return 0;
+      }
+    },
     index: {
       type: Number,
       default() {
@@ -64,18 +90,35 @@ export default {
     height: [Number, String], // mescroll的高度
     disableScroll: Boolean // 是否禁止滚动, 默认false
   },
+  mounted() {
+    // 获取分类
+    this.mGetClassIfyList();
+  },
   methods: {
     /*上拉加载的回调: 其中page.num:当前页 从1开始, page.size:每页数据条数,默认10 */
     upCallback(page) {
       //联网加载数据
-      let keyword = this.tabs[this.i].name;
-      apiGoods(page.num, page.size, keyword)
+      // let keyword = this.tabs[this.i].name;
+      getSourceMaterial({
+        pageNo: page.num,
+        pageSize: page.size,
+        name: this.searchName,
+        classId: this.classificationList[this.btnIndex].id,
+        type: 2 // 视频分类
+      })
         .then(res => {
-          //联网成功的回调,隐藏下拉刷新和上拉加载的状态;
-          this.mescroll.endSuccess(res.list.length);
           //设置列表数据
-          if (page.num == 1) this.goods = []; //如果是第一页需手动制空列表
-          this.goods = this.goods.concat(res.list); //追加新数据
+          if (page.num == 1) this.dataList.length = 0;
+
+          // 设置一些属性
+          res.data.list.forEach(item => {
+            item.coverImage = item.content + '?vframe/jpg/offset/1/w/300';
+            item.guid = Date.now() + item.id;
+            if (typeof item.showChar == 'undefined') item.showChar = true;
+          });
+          this.dataList.push(...res.data.list);
+          // 当前页加载完成
+          this.mescroll.endBySize(res.data.list.length, res.data.total);
         })
         .catch(() => {
           //联网失败, 结束加载
@@ -88,21 +131,38 @@ export default {
         title: '点击了按钮,具体逻辑自行实现'
       });
     },
-
+    // 获取分类数据
+    async mGetClassIfyList() {
+      this.classificationList = [{ id: -1, name: '推荐' }];
+      const res = await getClassIfyList({
+        sourceMaterialType: 2 // 视频分类
+      });
+      this.classificationList.splice(1, 0, ...res.data);
+      this.mescroll.resetUpScroll(false);
+    },
     // 切换分类索引
     switchClassification(index) {
+      if (this.btnIndex === index) return;
       this.btnIndex = index;
+      this.mescroll.resetUpScroll(false);
     },
-
     //点击单个项目
-    tapItem(item) {
-      this.gotoPage('/pages/videoDetails/videoDetails');
+    itemClicK(index) {
+      this.gotoPage(
+        `/pages/videoDetails/videoDetails?id=${this.dataList[index].id}&classId=${
+          this.classificationList[this.btnIndex].id
+        }`
+      );
     },
     //页面跳转
     gotoPage(url) {
       uni.navigateTo({
         url: url
       });
+    },
+    // 搜索
+    mySearch(value) {
+      this.mescroll.resetUpScroll(false);
     }
   }
 };
@@ -110,10 +170,12 @@ export default {
 <style scoped lang="scss">
 .boxTop {
   padding: 20rpx 20rpx 20rpx;
+
   .search {
     margin-bottom: 30rpx;
   }
 }
+
 .listBox {
   padding: 0 20rpx;
 }

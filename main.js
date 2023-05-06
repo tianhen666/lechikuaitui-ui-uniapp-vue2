@@ -11,6 +11,12 @@ Vue.config.productionTip = false
 Vue.prototype.$store = store
 
 
+// #ifdef H5
+// 提交前需要注释  本地调试使用
+const vconsole = require('vconsole')
+if (window.location.href.indexOf("ytest") != -1) new vconsole() // 使用vconsole
+// #endif
+
 
 App.mpType = 'app'
 Vue.use(uView)

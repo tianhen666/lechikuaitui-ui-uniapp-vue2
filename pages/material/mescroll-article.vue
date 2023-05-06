@@ -1,10 +1,18 @@
 <template>
   <view class="warpper">
     <view class="boxTop">
-      <view class="search"><u-search placeholder="日照香炉生紫烟"></u-search></view>
+      <view class="search">
+        <u-search
+          placeholder="输入关键字搜索文章"
+          v-model="searchName"
+          @search="mySearch"
+          @custom="mySearch"
+        ></u-search>
+      </view>
       <m-button-box
         :m-index="btnIndex"
-        @switch-classification="switchClassification"
+        :bData="classificationList"
+        @switchClassification="switchClassification"
       ></m-button-box>
     </view>
 
@@ -15,10 +23,15 @@
       :down="downOption"
       :up="upOption"
       @up="upCallback"
+      :bottombar="false"
       @emptyclick="emptyClick"
     >
       <view class="listBox">
-        <m-article-list @tapItem="tapItem" list-type="article"></m-article-list>
+        <m-article-list
+          :dataList="dataList"
+          @tapItem="itemClicK"
+          list-type="article"
+        ></m-article-list>
       </view>
     </mescroll-uni>
   </view>
@@ -26,11 +39,10 @@
 
 <script>
 import MescrollMixin from '@/uni_modules/mescroll-uni/components/mescroll-uni/mescroll-mixins.js';
-import MescrollMoreItemMixin from '@/uni_modules/mescroll-uni/components/mescroll-uni/mixins/mescroll-more-item.js';
-import { apiGoods } from '@/api/mock.js';
+import { getSourceMaterial, getClassIfyList } from '@/api/materialLibrary.js';
 
 export default {
-  mixins: [MescrollMixin, MescrollMoreItemMixin], // 注意此处还需使用MescrollMoreItemMixin (必须写在MescrollMixin后面)
+  mixins: [MescrollMixin], // 注意此处还需使用MescrollMoreItemMixin (必须写在MescrollMixin后面)
   data() {
     return {
       downOption: {
@@ -44,8 +56,11 @@ export default {
           btnText: '去看看'
         }
       },
-      goods: [], //列表数据
-      btnIndex: 0
+      classificationList: [], //分类列表
+      btnIndex: 0, // 分类索引
+
+      searchName: '', //搜索名称
+      dataList: [] //列表数据
     };
   },
   props: {
@@ -64,18 +79,35 @@ export default {
     height: [Number, String], // mescroll的高度
     disableScroll: Boolean // 是否禁止滚动, 默认false
   },
+  mounted() {
+    // 获取分类
+    this.mGetClassIfyList();
+  },
   methods: {
     /*上拉加载的回调: 其中page.num:当前页 从1开始, page.size:每页数据条数,默认10 */
     upCallback(page) {
       //联网加载数据
-      let keyword = this.tabs[this.i].name;
-      apiGoods(page.num, page.size, keyword)
+      // let keyword = this.tabs[this.i].name;
+      getSourceMaterial({
+        pageNo: page.num,
+        pageSize: page.size,
+        name: this.searchName,
+        classId: this.classificationList[this.btnIndex].id,
+        type: 1 // 文章分类
+      })
         .then(res => {
-          //联网成功的回调,隐藏下拉刷新和上拉加载的状态;
-          this.mescroll.endSuccess(res.list.length);
           //设置列表数据
-          if (page.num == 1) this.goods = []; //如果是第一页需手动制空列表
-          this.goods = this.goods.concat(res.list); //追加新数据
+          if (page.num == 1) this.dataList.length = 0;
+
+          // 设置一些属性
+          res.data.list.forEach(item => {
+            item.coverImage = item.coverImage + '?imageView2/0/w/1000/h/360/q/75';
+            item.guid = Date.now() + item.id;
+            if (typeof item.showChar == 'undefined') item.showChar = true;
+          });
+          this.dataList.push(...res.data.list);
+          // 当前页加载完成
+          this.mescroll.endBySize(res.data.list.length, res.data.total);
         })
         .catch(() => {
           //联网失败, 结束加载
@@ -88,20 +120,35 @@ export default {
         title: '点击了按钮,具体逻辑自行实现'
       });
     },
+    // 获取分类数据
+    async mGetClassIfyList() {
+      this.classificationList = [{ id: -1, name: '推荐' }];
+      const res = await getClassIfyList({
+        sourceMaterialType: 1 // 视频分类
+      });
+      this.classificationList.splice(1, 0, ...res.data);
+      this.mescroll.resetUpScroll(false);
+    },
 
     // 切换分类索引
     switchClassification(index) {
+      if (this.btnIndex === index) return;
       this.btnIndex = index;
+      this.mescroll.resetUpScroll(false);
     },
     //点击单个项目
-    tapItem(item) {
-      this.gotoPage('/pages/articleDetails/articleDetails');
+    itemClicK(index) {
+      this.gotoPage(`/pages/articleDetails/articleDetails?id=${this.dataList[index].id}`);
     },
     // 页面跳转
     gotoPage(url) {
       uni.navigateTo({
         url: url
       });
+    },
+    // 搜索
+    mySearch(value) {
+      this.mescroll.resetUpScroll(false);
     }
   }
 };
@@ -109,10 +156,12 @@ export default {
 <style scoped lang="scss">
 .boxTop {
   padding: 20rpx 20rpx 20rpx;
+
   .search {
     margin-bottom: 30rpx;
   }
 }
+
 .listBox {
   padding: 0 20rpx;
 }
