@@ -27,8 +27,8 @@ export default {
       userInfo: state => state.user.userInfo
     })
   },
-  onLoad({ id }) {
-    getSourceMaterialId({ id }).then(res => {
+  onLoad({ id, invitationID }) {
+    getSourceMaterialId({ id, clueId: invitationID }).then(res => {
       this.articleObj = res.data;
 
       // 微信jsdk初始化
@@ -38,7 +38,7 @@ export default {
           title: `《${this.tenantInfo.name}-${this.userInfo.nickname ||
             this.userInfo.snickName}》推荐-${this.articleObj.name}`,
           desc: this.articleObj.description,
-          link: `${window.location.href}&ccc=123`,
+          link: `${window.location.href}&invitationID=${this.userInfo.id}`,
           imgUrl: this.articleObj.coverImage
         });
 
@@ -46,7 +46,7 @@ export default {
         wx.updateTimelineShareData({
           title: `《${this.tenantInfo.name}-${this.userInfo.nickname ||
             this.userInfo.snickName}》推荐-${this.articleObj.name}`,
-          link: `${window.location.href}&ccc=123`,
+          link: `${window.location.href}&invitationID=${this.userInfo.id}`,
           imgUrl: this.articleObj.coverImage
         });
       });
