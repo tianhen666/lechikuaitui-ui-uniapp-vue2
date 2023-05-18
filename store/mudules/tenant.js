@@ -1,34 +1,33 @@
  import {
-   getTenant
+   getTenant,
+   getShareTenant
  } from '@/api/materialLibrary.js';
 
  const tenant = {
    state: {
      info: {},
+     invitationInfo: {}
    },
    mutations: {
+     //设置邀请人的门诊信息
+     SET_INVITATION_TENANT_INFO(state, data) {
+       state.invitationInfo = data
+     },
      //设置门诊信息
-     SET_INFO(state, data) {
+     SET_TENANT_INFO(state, data) {
        state.info = data
      },
    },
    actions: {
-
+     // 获取邀请人的门诊信息
+     async getShareTenantInfo({ state, commit }, data) {
+       const res = await getShareTenant(data)
+       commit('SET_INVITATION_TENANT_INFO', res.data)
+     },
      // 获取门诊信息
      async getTenantInfo({ state, commit }) {
-       try {
-         const res = await getTenant()
-         commit('SET_INFO', res.data)
-       } catch (error) {
-         // #ifdef H5
-         console.log(error)
-         //清楚缓存
-         uni.clearStorage()
-         //重新加载
-         window.location.reload()
-         // #endif
-       }
-
+       const res = await getTenant()
+       commit('SET_TENANT_INFO', res.data)
      }
    }
  }

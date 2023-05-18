@@ -71,7 +71,8 @@
     "vueVersion" : "2",
     "h5" : {
         "devServer" : {
-            "https" : false
+            "https" : false,
+            "port" : 8080
         },
         "title" : "口腔推",
         "router" : {

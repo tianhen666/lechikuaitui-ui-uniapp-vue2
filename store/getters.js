@@ -6,6 +6,7 @@ const getters = {
   hasLogin: state => !!state.user.accessToken,
   hasLoginExpired: state => {
     return (state.user.expiresTime - dayjs().unix() * 1000 > 0)
-  }
+  },
+  isMember: state => !!state.user.userInfo.rid, // 是否加入过某一个店铺
 }
 export default getters

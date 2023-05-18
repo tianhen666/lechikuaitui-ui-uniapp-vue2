@@ -1,5 +1,5 @@
 <template>
-  <view>
+  <view class="imgPreview">
     <uni-popup ref="popup" type="center">
       <view class="perviewImg" @tap.stop="maskClick">
         <view class="warpperBox">
@@ -60,54 +60,63 @@ export default {
 };
 </script>
 
-<style lang="scss">
-.perviewImg {
-  text-align: center;
-  width: 100vw;
-  height: 100vh;
-  position: relative;
+<style lang="scss" scoped>
+.imgPreview {
+  /deep/.uni-popup {
+    z-index: 999;
+  }
+  .perviewImg {
+    text-align: center;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
 
-  .warpperBox {
-    position: absolute;
-    inset: 0;
-    margin: auto;
-    width: 500rpx;
-    height: 800rpx;
-    padding: 15rpx;
-    background-color: #fff;
-    border-radius: 10rpx;
-
-    .close {
+    .warpperBox {
       position: absolute;
-      top: -45rpx;
-      right: -45rpx;
+      inset: 0;
+      margin: auto;
+      width: 500rpx;
+      height: 800rpx;
+      padding: 15rpx;
+      background-color: #fff;
+      border-radius: 10rpx;
+
+      .close {
+        position: absolute;
+        top: -45rpx;
+        right: -45rpx;
+
+        .img {
+          width: 45rpx;
+          height: 45rpx;
+          display: block;
+        }
+      }
 
       .img {
-        width: 45rpx;
-        height: 45rpx;
+        border-radius: 10rpx;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
         display: block;
       }
     }
 
-    .img {
-      border-radius: 10rpx;
-      overflow: hidden;
+    .btn {
+      position: absolute;
+      bottom: 0;
       width: 100%;
-      height: 100%;
-      display: block;
+      margin-top: 100rpx;
+      background-color: $main-color;
+      color: #fff;
+      font-size: 30rpx;
+      height: 50px;
+      line-height: 50px;
+      border-radius: 0;
+      &:after {
+        border: none;
+      }
     }
-  }
-
-  .btn {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    margin-top: 100rpx;
-    background-color: $main-color;
-    color: #fff;
-    font-size: 30rpx;
-    height: 50px;
-    line-height: 50px;
   }
 }
 </style>

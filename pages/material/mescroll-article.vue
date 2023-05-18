@@ -1,21 +1,5 @@
 <template>
   <view class="warpper">
-    <view class="boxTop">
-      <view class="search">
-        <u-search
-          placeholder="输入关键字搜索文章"
-          v-model="searchName"
-          @search="mySearch"
-          @custom="mySearch"
-        ></u-search>
-      </view>
-      <m-button-box
-        :m-index="btnIndex"
-        :bData="classificationList"
-        @switchClassification="switchClassification"
-      ></m-button-box>
-    </view>
-
     <mescroll-uni
       @init="mescrollInit"
       :height="height"
@@ -26,6 +10,25 @@
       :bottombar="false"
       @emptyclick="emptyClick"
     >
+      <view class="boxTop">
+        <view class="search">
+          <u-search
+            placeholder="输入关键字搜索文章"
+            bgColor="#fff"
+            :showAction="false"
+            height="72rpx"
+            v-model="searchName"
+            @search="mySearch"
+            @custom="mySearch"
+          ></u-search>
+        </view>
+        <m-button-box
+          :m-index="btnIndex"
+          :bData="classificationList"
+          @switchClassification="switchClassification"
+        ></m-button-box>
+      </view>
+
       <view class="listBox">
         <m-article-list
           :dataList="dataList"
@@ -50,11 +53,11 @@ export default {
       },
       upOption: {
         auto: false, // 不自动加载
-        noMoreSize: 4, //如果列表已无数据,可设置列表的总数量要大于半页才显示无更多数据;避免列表数据过少(比如只有一条数据),显示无更多数据会不好看; 默认5
+        noMoreSize: 4,
         empty: {
-          tip: '~ 空空如也 ~', // 提示
-          btnText: '去看看'
-        }
+          tip: '~ 空空如也 ~' // 提示
+        },
+        textNoMore: '没有更多了'
       },
       classificationList: [], //分类列表
       btnIndex: 0, // 分类索引
@@ -79,7 +82,9 @@ export default {
     height: [Number, String], // mescroll的高度
     disableScroll: Boolean // 是否禁止滚动, 默认false
   },
-  mounted() {
+  async mounted() {
+    // 等待onLaunch 加载完成
+    await this.$onLaunched;
     // 获取分类
     this.mGetClassIfyList();
   },
@@ -122,7 +127,7 @@ export default {
     },
     // 获取分类数据
     async mGetClassIfyList() {
-      this.classificationList = [{ id: -1, name: '推荐' }];
+      this.classificationList = [{ id: -1, name: '最多分享' }];
       const res = await getClassIfyList({
         sourceMaterialType: 1 // 视频分类
       });

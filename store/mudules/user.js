@@ -1,5 +1,6 @@
 import {
-  getTenantUser
+  getTenantUser,
+  getShareUser
 } from '@/api/materialLibrary.js';
 import {
   passwordLogin,
@@ -18,9 +19,15 @@ const user = {
     accessToken: uni.getStorageSync(AccessTokenKey), // 访问令牌
     refreshToken: uni.getStorageSync(RefreshTokenKey), // 刷新令牌
     expiresTime: uni.getStorageSync(ExpiresTimeKey) || 0, // 过期时间
-    userInfo: {}
+    userInfo: {}, // 个人的用户信息
+    invitationInfo: {}, // 邀请人的用户信息
   },
   mutations: {
+    // 设置邀请人的用户信息
+    SET_INVITATION_INFO(state, data) {
+      state.invitationInfo = data
+    },
+
     // 更新 state 的通用方法
     SET_STATE_ATTR(state, param) {
       if (param instanceof Array) {
@@ -47,8 +54,8 @@ const user = {
       uni.setStorageSync(RefreshTokenKey, refreshToken)
       uni.setStorageSync(ExpiresTimeKey, expiresTime)
 
-      // 加载用户信息
-      this.dispatch('ObtainUserInfo')
+      // 加载用户信息 其他地方已处理这里不需要
+      // this.dispatch('ObtainUserInfo')
     },
     // 更新用户信息
     SET_USER_INFO(state, data) {
@@ -61,6 +68,7 @@ const user = {
       state.accessToken = ''
       state.refreshToken = ''
       state.userInfo = {}
+      state.invitationInfo = {}
     }
   },
   actions: {
@@ -108,6 +116,12 @@ const user = {
         .finally(() => {
           commit('CLEAR_LOGIN_INFO')
         })
+    },
+
+    // 获取邀请人的信息
+    async invitationInfoFun({ state, commit }, data) {
+      const res = await getShareUser(data)
+      commit('SET_INVITATION_INFO', res.data)
     },
 
     // 获得用户基本信息

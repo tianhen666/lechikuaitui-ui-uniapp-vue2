@@ -1,22 +1,9 @@
 <script>
-import { isWechat, GetQueryString } from '@/utils/index.js';
+import { isWechat, GetQueryString, removeUrlParameters } from '@/utils/index.js';
 import dayjs from 'dayjs';
 export default {
-  onLaunch: function() {
+  onLaunch: function(options) {
     // #ifdef H5
-    //在页面加载时读取sessionStorage里的状态信息
-    if (sessionStorage.getItem('storeKey')) {
-      this.$store.replaceState(
-        Object.assign({}, this.$store.state, JSON.parse(sessionStorage.getItem('storeKey')))
-      );
-    }
-
-    //在页面刷新时将vuex里的信息保存到sessionStorage里
-    window.addEventListener('beforeunload', () => {
-      this.$store.commit('CANCEL_PREVIEW');
-      sessionStorage.setItem('storeKey', JSON.stringify(this.$store.state));
-    });
-
     // 1.微信浏览器环境执行
     if (isWechat()) {
       // 2.1 未登录
@@ -27,14 +14,44 @@ export default {
         if (code && state) {
           // 通过微信code登录
           this.$store.dispatch('loginWxCodeToken', { type: 31, code, state }).then(res => {
-            // 已登录获取门诊信息
-            this.$store.dispatch('getTenantInfo');
+            // 处理租户问题
+            if (res.tentId && (!res.accessToken || !res.expiresTime || !res.refreshToken)) {
+              // 设置租户
+              uni.setStorageSync('TENANTID', res.tentId);
+
+              // 设置ajax的请求头
+              uni.$u.http.setConfig(defaultConfig => {
+                defaultConfig.header['tenant-id'] = res.tentId;
+                return defaultConfig;
+              });
+
+              // 重新获取code,获取token
+              const href = window.location.href;
+
+              //删除url中code和state
+              const newHref = removeUrlParameters(href, ['code', 'state']);
+
+              this.$store
+                .dispatch('getWXSocialAuthRedirect', { type: 31, redirectUri: newHref })
+                .then(res => {
+                  window.location.href = res;
+                });
+            } else {
+              // 已登录获取门诊信息
+              this.$store.dispatch('getTenantInfo');
+              // 已登录获取用户信息
+              this.$store.dispatch('ObtainUserInfo');
+              // 放行
+              this.$resolve();
+            }
           });
         } else {
           // 3.2 URL中没有code, 获取微信公众号授权登录链接
           const href = window.location.href;
+          //删除url中code和state
+          const newHref = removeUrlParameters(href, ['code', 'state']);
           this.$store
-            .dispatch('getWXSocialAuthRedirect', { type: 31, redirectUri: href })
+            .dispatch('getWXSocialAuthRedirect', { type: 31, redirectUri: newHref })
             .then(res => {
               window.location.href = res;
             });
@@ -45,6 +62,9 @@ export default {
         this.$store.dispatch('getTenantInfo');
         // 已登录获取用户信息
         this.$store.dispatch('ObtainUserInfo');
+
+        // 放行
+        this.$resolve();
       }
     }
     // #endif

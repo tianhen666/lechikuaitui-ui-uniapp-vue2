@@ -1,7 +1,14 @@
 <template>
   <view class="warpper">
     <view class="boxTop">
-      <view class="search"><u-search placeholder="日照香炉生紫烟"></u-search></view>
+      <view class="search">
+        <u-search
+          bgColor="#fff"
+          :showAction="false"
+          height="72rpx"
+          placeholder="日照香炉生紫烟"
+        ></u-search>
+      </view>
       <m-button-box
         :m-index="btnIndex"
         @switch-classification="switchClassification"
@@ -26,11 +33,10 @@
 
 <script>
 import MescrollMixin from '@/uni_modules/mescroll-uni/components/mescroll-uni/mescroll-mixins.js';
-import MescrollMoreItemMixin from '@/uni_modules/mescroll-uni/components/mescroll-uni/mixins/mescroll-more-item.js';
 import { apiGoods } from '@/api/mock.js';
 
 export default {
-  mixins: [MescrollMixin, MescrollMoreItemMixin], // 注意此处还需使用MescrollMoreItemMixin (必须写在MescrollMixin后面)
+  mixins: [MescrollMixin],
   data() {
     return {
       downOption: {
@@ -38,7 +44,6 @@ export default {
       },
       upOption: {
         auto: false, // 不自动加载
-        noMoreSize: 4, //如果列表已无数据,可设置列表的总数量要大于半页才显示无更多数据;避免列表数据过少(比如只有一条数据),显示无更多数据会不好看; 默认5
         empty: {
           tip: '~ 空空如也 ~', // 提示
           btnText: '去看看'

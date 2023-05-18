@@ -210,22 +210,6 @@ export default {
       }
     }
   },
-  // updated() {
-  //   uni.getImageInfo({
-  //     src: this.image,
-  //     success: image => {
-  //       this.$emit('finish', {
-  //         e: {
-  //           detail: {
-  //             width: image.width,
-  //             height: image.height
-  //           }
-  //         },
-  //         index: this.index
-  //       });
-  //     }
-  //   });
-  // },
   methods: {
     // 用于demo改变展示状态
     changeStatus(val) {
@@ -298,7 +282,7 @@ export default {
   },
   beforeDestroy() {
     // 销毁页面时，可能还没触发某张很底部的懒加载图片，所以把这个事件给去掉
-    // observer.disconnect();
+    this.disconnectObserver('contentObserver');
   },
   mounted() {
     // 由父组件生命周期onReachBottom发出，目的是让页面到底时，保证所有图片都进行加载，做到绝对稳定且可靠

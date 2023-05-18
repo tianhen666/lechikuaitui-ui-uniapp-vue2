@@ -11,6 +11,11 @@ Vue.config.productionTip = false
 Vue.prototype.$store = store
 
 
+// 处理 onLaunched异步问题
+Vue.prototype.$onLaunched = new Promise((resolve, reject) => {
+  Vue.prototype.$resolve = resolve
+})
+
 // #ifdef H5
 // 提交前需要注释  本地调试使用
 const vconsole = require('vconsole')

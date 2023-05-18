@@ -7,6 +7,6 @@ module.exports = {
   withCredentials: false,
   header: {
     //租户ID
-    'tenant-id': 1
+    'tenant-id': uni.getStorageSync('TENANTID') || 1
   }
 }

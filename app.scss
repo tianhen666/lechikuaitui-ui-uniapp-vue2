@@ -6,3 +6,8 @@ page {
 image {
   will-change: transform;
 }
+.button-hover {
+  &:after {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+}

@@ -37,6 +37,52 @@ export const getSourceMaterialDetailsViewDO = params => http.post(
 // 获取个人中心页面信息
 export const getMemberUser = params => http.get('/yxx/memberUser/get', { params })
 
+// 添加修改个人信息接口
+export const updateMember = data => http.post('/yxx/memberUser/updateMember', data)
 
 // 行为记录
 export const getClueRecordBehavior = params => http.post('/yxx/source-material/getClueRecordBehavior', {}, { params })
+
+
+//用户端上传图片
+export const updateFileNamer = filePath =>
+  http.upload('/yxx/memberUser/fileName', {
+    name: 'avatarFile',
+    fileType: 'image',
+    filePath: filePath
+  })
+
+// 创建一个门诊
+export const saveTenant = data => http.post('/yxx/tenant/saveTenant', data)
+
+// 获取当前用户所有的门诊
+export const getUserListTenant = params => http.get('/yxx/tenant/getUserListTenant', { params })
+
+// 切换门诊
+export const cutTenant = params => http.get('/yxx/tenant/cutTenant', { params })
+
+
+// 获取邀请人的用户信息
+export const getShareUser = params => http.post('/yxx/memberUser/getShareUser', {}, { params })
+
+// 获取指定门诊信息
+export const getShareTenant = params => http.post('/yxx/memberUser/getShareTenant', {}, { params })
+
+// 更新指定门诊信息
+export const updateTenant = data => http.post('/yxx/tenant/updateTenant', data)
+
+// 获取指定门诊信息
+export const getOne = params => http.get('/yxx/tenant/getOne', { params })
+
+// 获取当前门诊下所有用户
+export const getUserList = params => http.get('/yxx/tenant/getUserList', { params })
+
+
+// 新建一个素材
+export const createSourceMaterial = data => http.post('/yxx/source-material/create', data)
+
+// 创建一个员工
+export const createinviteUser = data => http.post('/yxx/memberUser/createinviteUser', data)
+
+// 判断是否还有剩余员工
+export const handleTenantInfo = params => http.post('/yxx/memberUser/handleTenantInfo', {}, { params })

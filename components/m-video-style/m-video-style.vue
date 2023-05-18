@@ -19,153 +19,163 @@
         <view class="videoImg">
           <!-- 视频播放图标 -->
           <view class="play-icon"></view>
-          <image class="img" mode="aspectFit" :src="itemData.content+'?vframe/jpg/offset/2/w/300'">
-          </image>
+          <image
+            class="img"
+            mode="aspectFit"
+            :src="itemData.content + '?vframe/jpg/offset/2/w/300'"
+          ></image>
         </view>
       </view>
     </view>
 
     <view class="b">
       <view class="views">
-        <u-icon name="eye" color="#bbb" size="30rpx" :label="'浏览 ' + itemData.heat" labelSize="22rpx" labelColor="#bbb"
-          space="10rpx"></u-icon>
+        <u-icon
+          name="eye"
+          color="#bbb"
+          size="30rpx"
+          :label="'浏览 ' + itemData.heat"
+          labelSize="22rpx"
+          labelColor="#bbb"
+          space="10rpx"
+        ></u-icon>
       </view>
     </view>
   </view>
 </template>
 
 <script>
-  import dayJs from 'dayjs'
-  export default {
-    name: 'm-article-style',
-    props: {
-      itemData: Object
+import dayJs from 'dayjs';
+export default {
+  name: 'm-article-style',
+  props: {
+    itemData: Object
+  },
+  data() {
+    return {};
+  },
+  methods: {
+    goToPage(url) {
+      uni.navigateTo({
+        url: url
+      });
     },
-    data() {
-      return {};
-    },
-    methods: {
-      goToPage(url) {
-        uni.navigateTo({
-          url: url
-        })
-      },
-      mDayJs(val) {
-        // 时间转换
-        return dayJs(val).format("YYYY-MM-DD HH:mm:ss")
-      }
+    mDayJs(val) {
+      // 时间转换
+      return dayJs(val).format('YYYY-MM-DD HH:mm:ss');
     }
-  };
+  }
+};
 </script>
 
 <style lang="scss" scoped>
-  .box {
-    background-color: #fff;
-    margin: 24rpx 18rpx;
-    padding: 20rpx 20rpx 30rpx;
-    border-radius: 10rpx;
+.box {
+  background-color: #fff;
+  margin: 24rpx 10rpx;
+  padding: 20rpx 20rpx 30rpx;
+  border-radius: 10rpx;
 
-    >.t {
-      display: flex;
-      align-items: center;
+  > .t {
+    display: flex;
+    align-items: center;
 
-      .left {
-        flex: none;
+    .left {
+      flex: none;
 
-        .img {
-          width: 60rpx;
-          height: 60rpx;
-          display: block;
-        }
-      }
-
-      .center {
-        flex: auto;
-        margin-left: 24rpx;
-
-        .text {
-          display: block;
-          font-size: 25rpx;
-          margin-bottom: 4rpx;
-        }
-
-        .time {
-          display: block;
-          font-size: 24rpx;
-          color: #aaa;
-        }
-      }
-
-      .right {
-        flex: none;
-
-        .botton {
-          background-color: $main-color;
-          color: #fff;
-          font-size: 22rpx;
-          line-height: 2;
-          padding: 0 12rpx;
-        }
+      .img {
+        width: 60rpx;
+        height: 60rpx;
+        display: block;
       }
     }
 
-    >.c {
-      margin-top: 20rpx;
+    .center {
+      flex: auto;
+      margin-left: 24rpx;
 
-      .title {
-        font-size: 30rpx;
-        @include overHeiddenText(1);
+      .text {
+        display: block;
+        font-size: 25rpx;
+        margin-bottom: 4rpx;
       }
 
-      .warpper {
-        border: 1px solid #e1e1e1;
-        background-color: #efefef;
-        padding: 20rpx;
-        margin-top: 30rpx;
-
-        .videoImg {
-          position: relative;
-
-          .img {
-            height: 480rpx;
-            width: 100%;
-          }
-        }
-      }
-    }
-
-    >.b {
-      .views {
+      .time {
+        display: block;
         font-size: 24rpx;
-        color: #bbb;
-        margin-top: 20rpx;
+        color: #aaa;
       }
     }
 
-    .play-icon {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 80rpx;
-      height: 80rpx;
-      margin-left: -40rpx;
-      margin-top: -40rpx;
-      border-radius: 50%;
-      background-color: rgba(0, 0, 0, 0.6);
-      z-index: 2;
-    }
+    .right {
+      flex: none;
 
-    .play-icon:before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 0;
-      height: 0;
-      border-style: solid;
-      border-width: 18rpx 0 18rpx 28rpx;
-      border-color: transparent transparent transparent #fff;
+      .botton {
+        background-color: $main-color;
+        color: #fff;
+        font-size: 22rpx;
+        line-height: 2;
+        padding: 0 12rpx;
+      }
     }
   }
+
+  > .c {
+    margin-top: 20rpx;
+
+    .title {
+      font-size: 26rpx;
+      line-height: 1.5;
+      @include overHeiddenText(2);
+    }
+
+    .warpper {
+      border: 1px solid #efefef;
+      background-color: #fafafa;
+      padding: 20rpx;
+      margin-top: 10rpx;
+      border-radius: 10rpx;
+      .videoImg {
+        position: relative;
+
+        .img {
+          height: 300rpx;
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  > .b {
+    .views {
+      font-size: 24rpx;
+      color: #bbb;
+      margin-top: 20rpx;
+    }
+  }
+
+  .play-icon {
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    left: 50%;
+    width: 50rpx;
+    height: 50rpx;
+    margin-left: -25rpx;
+    margin-top: -25rpx;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .play-icon:before {
+    content: '';
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 10rpx 0 10rpx 18rpx;
+    border-color: transparent transparent transparent #fff;
+  }
+}
 </style>

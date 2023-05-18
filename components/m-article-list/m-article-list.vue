@@ -47,10 +47,12 @@ export default {
 .box {
   .warpper {
     border: 1px solid #e1e1e1;
-    background-color: #efefef;
+    background-color: #f9f9f9;
+    border-radius: 10rpx;
+    overflow: hidden;
     display: flex;
     padding: 20rpx;
-    margin-top: 20rpx;
+    margin-bottom: 20rpx;
     .img_box {
       float: none;
       .img {

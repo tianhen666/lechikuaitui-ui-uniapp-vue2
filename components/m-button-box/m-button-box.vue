@@ -37,14 +37,19 @@ export default {
 .btnBox {
   display: flex;
   margin: 0 -10rpx;
+  flex-wrap: wrap;
   .btnItem {
     .btn {
-      background-color: #eee;
+      background-color: #fff;
       color: #666;
-      font-size: 22rpx;
-      line-height: 2;
-      padding: 0 12rpx;
+      font-size: 24rpx;
+      line-height: 2.4;
+      padding: 0 18rpx;
       margin: 0 10rpx;
+      border-radius: 50rpx;
+      &:after {
+        border: none;
+      }
     }
     .cur {
       background-color: $main-color;

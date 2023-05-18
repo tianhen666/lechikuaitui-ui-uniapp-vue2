@@ -23,7 +23,7 @@ export function GetQueryString(name) {
 }
 
 // 全局唯一标识符
-function guid(len = 32, firstU = true, radix = null) {
+export function guid(len = 32, firstU = true, radix = null) {
   let chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
   let uuid = [];
   radix = radix || chars.length;
@@ -48,5 +48,33 @@ function guid(len = 32, firstU = true, radix = null) {
     return 'u' + uuid.join('');
   } else {
     return uuid.join('');
+  }
+}
+
+
+// 删除指定url中参数
+export function removeUrlParameters(url, parameters) {
+  // 将URL分解为基本部分和查询字符串
+  var urlParts = url.split("?");
+  if (urlParts.length >= 2) {
+    // 将查询字符串分解为参数数组
+    var params = urlParts[1].split("&");
+    // 构造新的查询字符串
+    var newParams = [];
+    for (var i = 0; i < params.length; i++) {
+      var paramParts = params[i].split("=");
+      if (!parameters.includes(paramParts[0])) {
+        newParams.push(params[i]);
+      }
+    }
+    // 如果有新的查询字符串，则将其添加到基本URL中
+    if (newParams.length > 0) {
+      return urlParts[0] + "?" + newParams.join("&");
+    } else {
+      return urlParts[0];
+    }
+  } else {
+    // 如果没有查询字符串，则返回原始URL
+    return url;
   }
 }

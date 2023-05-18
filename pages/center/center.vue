@@ -5,7 +5,8 @@
     <!-- 切换门诊列表 -->
     <u-action-sheet
       :actions="tenantlist"
-      :title="title"
+      :description="title"
+      round="10"
       :show="show"
       :closeOnClickAction="false"
       :closeOnClickOverlay="true"
@@ -13,8 +14,8 @@
       @close="show = false"
       cancelText="取消"
     ></u-action-sheet>
-
-    <view class="switchTheClinic">
+    <!-- 显示当前登录的门诊 -->
+    <view class="switchTheClinic" v-if="tenantlist.length > 1">
       <text class="left">当前门诊</text>
       <view class="right" @tap.stop="show = true">
         <text class="text">{{ tenantInfo.name }}</text>
@@ -22,6 +23,16 @@
       </view>
     </view>
 
+    <view class="switchTheClinic" v-else>
+      <text class="left">当前门诊</text>
+      <view class="right">
+        <text class="text">{{ tenantInfo.name }}</text>
+      </view>
+    </view>
+
+    <view style="margin: 0 -30rpx;"><u-gap height="1" bgColor="#eee"></u-gap></view>
+
+    <!-- 显示登录的用户 -->
     <view class="businessCardInformation">
       <view class="headPortrait">
         <u-avatar :src="userInfo.avatar || userInfo.savatar"></u-avatar>
@@ -31,18 +42,23 @@
         <view class="name">
           <text>{{ userInfo.nickname || userInfo.snickName }}</text>
         </view>
-        <view class="role"><text>超级管理员</text></view>
+        <view class="role" v-if="isMember">
+          <text>{{ userInfo.roleName }}</text>
+        </view>
+        <view class="role" v-else><text>普通用户</text></view>
       </view>
 
       <view class="editCard">
         <u-icon name="edit-pen-fill" color="#909399" size="16"></u-icon>
-        <text class="text">编辑名片</text>
+        <text class="text" @tap.stop="gotoPage('/pages/userInfoInput/userInfoInput')">
+          编辑名片
+        </text>
       </view>
     </view>
-    <u-gap height="8" bgColor="#eee"></u-gap>
+    <view style="margin: 0 -30rpx;"><u-gap height="6" bgColor="#eee"></u-gap></view>
 
-    <!-- 团队管理 -->
-    <view class="theTeamReport">
+    <!-- 团队管理  普通会员不可见 -->
+    <view class="theTeamReport" v-if="isMember">
       <view class="title">
         <view class="left"><text>团队报告</text></view>
         <view class="right"><u-icon name="arrow-right" color="#909399" size="16"></u-icon></view>
@@ -66,24 +82,38 @@
           <text class="text">阅读次数</text>
         </view> -->
       </view>
+      <view style="margin: 0 -30rpx;"><u-gap height="6" bgColor="#eee"></u-gap></view>
     </view>
-    <u-gap height="8" bgColor="#eee"></u-gap>
+
+    <!-- 创建门诊   普通会员可见 -->
+    <view class="createClinic" v-if="!isMember">
+      <view class="wrapper">
+        <button class="btn" @tap.stop="createClinic">创建我的门诊</button>
+        <text class="desc">您当前还没有门诊哦,创建一个门诊</text>
+      </view>
+      <view style="margin: 0 -30rpx;"><u-gap height="6" bgColor="#eee"></u-gap></view>
+    </view>
 
     <!-- 管理工具 -->
-    <!-- <view class="commonlyUsedTools">
+    <view class="commonlyUsedTools" v-if="isMember">
       <view class="title">
         <view class="left"><text>管理工具</text></view>
       </view>
 
       <view class="commonlyUsedToolsBox">
-        <view class="warpper" v-for="(item, index) in 6" :key="index">
-          <image class="img" :src="`/static/images/empty/us${index + 1}.png`" mode="aspectFill"></image>
-          <text class="name">企业官网</text>
-          <text class="desc">未创建</text>
+        <view
+          class="warpper"
+          v-for="(item, index) in managementTool"
+          :key="index"
+          @tap.stop="gotoPage(item.url)"
+        >
+          <image class="img" :src="item.imgUrl" mode="aspectFill"></image>
+          <text class="name">{{ item.name }}</text>
+          <!-- <text class="desc">{{ item.desc }}</text> -->
         </view>
       </view>
+      <view style="margin: 0 -30rpx;"><u-gap height="6" bgColor="#eee"></u-gap></view>
     </view>
-    <u-gap height="8" bgColor="#eee"></u-gap> -->
 
     <!-- 个人工具 -->
     <!-- <view class="commonlyUsedTools">
@@ -125,6 +155,10 @@
 
     <!-- 列表设置 -->
     <view class="theListOfSet">
+      <view class="title">
+        <view class="left"><text>其他选项</text></view>
+      </view>
+
       <u-cell-group :border="false" :customStyle="{ margin: '0 -15px' }">
         <u-cell
           title="设置"
@@ -170,9 +204,10 @@
 </template>
 
 <script>
+import { removeUrlParameters } from '@/utils/index.js';
 import wx from '@/wxJsSDK/index.js';
-import { getMemberUser } from '@/api/materialLibrary.js';
-import { mapState } from 'vuex';
+import { getMemberUser, getUserListTenant, cutTenant } from '@/api/materialLibrary.js';
+import { mapState, mapGetters } from 'vuex';
 export default {
   data() {
     return {
@@ -185,25 +220,55 @@ export default {
 
       // 切换门诊
       title: '选择需要登录的门诊',
-      tenantlist: [
-        {
-          name: '选项一'
-        }
-      ],
+      tenantlist: [],
       show: false,
 
-      // 个人中心信息获取
-      centerObj: {}
+      // 个人页面显示
+      centerObj: {},
+
+      // 管理工具
+      managementTool: [
+        // { name: '企业官网', desc: '未创建', imgUrl: '/static/images/empty/us4.png', url: '' },
+        {
+          name: '门诊管理',
+          desc: '未创建',
+          imgUrl: '/static/images/empty/us5.png',
+          url: '/pages/clinicManagement/clinicManagement'
+        },
+        {
+          name: '员工管理',
+          desc: '未创建',
+          imgUrl: '/static/images/empty/us3.png',
+          url: '/pages/staffManagement/staffManagement'
+        },
+        {
+          name: '充值中心',
+          desc: '未创建',
+          imgUrl: '/static/images/empty/us7.png',
+          url: '/pages/voucherCenter/voucherCenter'
+        },
+        {
+          name: '订单管理',
+          desc: '未创建',
+          imgUrl: '/static/images/empty/us6.png',
+          url: '/pages/myOrder/myOrder'
+        }
+      ]
     };
   },
   computed: {
     ...mapState({
       tenantInfo: state => state.tenant.info,
       userInfo: state => state.user.userInfo
-    })
+    }),
+    ...mapGetters(['isMember'])
   },
-  onLoad() {
+  async onShow() {
+    // 等待onLaunch 加载完成
+    await this.$onLaunched;
+
     this.mGetMemberUser();
+    this.mGetUserListTenant();
   },
   mounted() {
     // wx.openLocation({
@@ -215,38 +280,95 @@ export default {
     // });
   },
   methods: {
+    //创建门诊
+    createClinic() {
+      if (this.userInfo.mobile) {
+        this.gotoPage('/pages/tenantInfoInput/tenantInfoInput');
+      } else {
+        this.gotoPage('/pages/userInfoInput/userInfoInput?newClinic=1');
+      }
+    },
+
     // 底部列表点击
     ListOfSet({ name }) {
       if (name === 'setUp') {
-        this.$refs.uToast.show({
-          message: '正常开发中'
-        });
+        this.gotoPage('/pages/setUp/setUp');
       }
       if (name === 'onlineCustomerService') {
-        this.$refs.uToast.show({
-          message: '正常开发中'
+        uni.showToast({
+          title: '正在努力开发中...',
+          icon: 'none'
         });
       }
       if (name === 'usingTheTutorial') {
-        this.$refs.uToast.show({
-          message: '正常开发中'
+        uni.showToast({
+          title: '正在努力开发中...',
+          icon: 'none'
         });
       }
       if (name === 'feedback') {
-        this.$refs.uToast.show({
-          message: '正常开发中'
-        });
+        this.gotoPage('/pages/feedback/feedback');
       }
     },
-    // 选择其他门诊
+
     actionSheetSelect(val) {
-      console.log(val);
+      this.show = false;
+      if (val.id === -1) {
+        uni.navigateTo({
+          url: '/pages/tenantInfoInput/tenantInfoInput'
+        });
+        return;
+      }
+
+      // 门诊ID不相等
+      if (this.tenantInfo.id === val.id) {
+        return;
+      }
+
+      // 选择其他门诊
+      this.mCutTenant(val);
     },
 
-    // 获取个人中心信息
+    async mCutTenant(val) {
+      // 切换门诊
+
+      const res = await cutTenant({ id: val.id });
+
+      // 清理当前的缓存
+      uni.clearStorageSync();
+      // 设置切换的缓存
+      uni.setStorageSync('TENANTID', val.id);
+
+      // 重新打开当前网页
+      const href = window.location.href;
+      //删除url中code和state
+      const newHref = removeUrlParameters(href, ['code', 'state']);
+      //重新获取授权链接
+      this.$store
+        .dispatch('getWXSocialAuthRedirect', { type: 31, redirectUri: newHref })
+        .then(res => {
+          window.location.href = res;
+        });
+    },
+
+    // 获取个人中心的数据
     async mGetMemberUser() {
       const res = await getMemberUser();
       this.centerObj = res.data;
+    },
+
+    // 获取当前用户下的所有门诊
+    async mGetUserListTenant() {
+      const res = await getUserListTenant();
+      this.tenantlist = [{ name: '创建一个新门诊', color: '#3898ff', fontSize: '28rpx', id: -1 }];
+      this.tenantlist.unshift(...res.data);
+    },
+
+    gotoPage(url) {
+      // 页面跳转
+      uni.navigateTo({
+        url: url
+      });
     }
   }
 };
@@ -258,9 +380,9 @@ page {
 }
 
 .container {
+  padding: 0 30rpx;
   .title {
     height: 70rpx;
-    padding: 0 30rpx;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -279,9 +401,7 @@ page {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 30rpx;
     height: 80rpx;
-    border-bottom: 1px solid #e1e1e1;
 
     .left {
       font-size: 26rpx;
@@ -302,7 +422,7 @@ page {
   .businessCardInformation {
     display: flex;
     align-items: center;
-    padding: 30rpx 30rpx;
+    padding: 30rpx 0;
 
     .headPortrait {
       flex: none;
@@ -325,7 +445,8 @@ page {
         font-size: 21rpx;
         line-height: 1.6;
         text-align: center;
-        width: 140rpx;
+        display: inline-block;
+        padding: 0 20rpx;
       }
     }
 
@@ -344,7 +465,7 @@ page {
   .theTeamReport {
     .theTeamReportBox {
       display: flex;
-      justify-content: space-around;
+      justify-content: space-between;
       align-items: center;
       margin-bottom: 30rpx;
       margin-top: 10rpx;
@@ -367,15 +488,14 @@ page {
   }
 
   .commonlyUsedTools {
-    padding-bottom: 30rpx;
-
     .commonlyUsedToolsBox {
-      margin-top: 10rpx;
+      margin-top: 15rpx;
       display: grid;
       row-gap: 20rpx;
-      justify-content: space-around;
+      justify-content: space-between;
       justify-items: center;
       grid-template-columns: repeat(4, 120rpx);
+      padding-bottom: 30rpx;
 
       .warpper {
         text-align: center;
@@ -404,7 +524,31 @@ page {
   }
 
   .theListOfSet {
-    padding: 0 30rpx;
+  }
+
+  .createClinic {
+    .wrapper {
+      padding: 40rpx 0 40rpx;
+      text-align: center;
+      .btn {
+        color: #fff;
+        background-color: $main-color;
+        border-radius: 100px;
+        overflow: hidden;
+        line-height: 2.2;
+        font-size: 26rpx;
+        width: 300rpx;
+        &:after {
+          border: none;
+        }
+      }
+      .desc {
+        display: block;
+        margin-top: 20rpx;
+        color: #aaa;
+        font-size: 25rpx;
+      }
+    }
   }
 }
 </style>

@@ -52,27 +52,103 @@
         "navigationBarTitleText": "视频详情",
         "disableScroll": true
       }
+    }, {
+      "path": "pages/testNvue/testNvue",
+      "style": {
+        "navigationBarTitleText": "",
+        "enablePullDownRefresh": false
+      }
+
+    }, {
+      "path": "pages/activityDetails/activityDetails",
+      "style": {
+        "navigationBarTitleText": "活动详情"
+      }
+
+    }, {
+      "path": "pages/userInfoInput/userInfoInput",
+      "style": {
+        "navigationBarTitleText": "个人资料",
+        "enablePullDownRefresh": false
+      }
+
+    }, {
+      "path": "pages/tenantInfoInput/tenantInfoInput",
+      "style": {
+        "navigationBarTitleText": "门诊信息",
+        "enablePullDownRefresh": false
+      }
+
+    }, {
+      "path": "pages/clinicManagement/clinicManagement",
+      "style": {
+        "navigationBarTitleText": "门诊管理",
+        "enablePullDownRefresh": false
+      }
+
+    }, {
+      "path": "pages/staffManagement/staffManagement",
+      "style": {
+        "navigationBarTitleText": "员工管理",
+        "enablePullDownRefresh": false
+      }
+
+    }, {
+      "path": "pages/voucherCenter/voucherCenter",
+      "style": {
+        "navigationBarTitleText": "充值中心",
+        "enablePullDownRefresh": false
+      }
+
+    }, {
+      "path": "pages/myOrder/myOrder",
+      "style": {
+        "navigationBarTitleText": "订单管理",
+        "enablePullDownRefresh": false
+      }
+
+    }, {
+      "path": "pages/inviteEmployees/inviteEmployees",
+      "style": {
+        "navigationBarTitleText": "门诊邀请",
+        "enablePullDownRefresh": false
+      }
+
+    }, {
+      "path": "pages/setUp/setUp",
+      "style": {
+        "navigationBarTitleText": "设置",
+        "enablePullDownRefresh": false
+      }
+
+    }, {
+      "path": "pages/feedback/feedback",
+      "style": {
+        "navigationBarTitleText": "意见反馈",
+        "enablePullDownRefresh": false
+      }
+
+    }, {
+      "path": "pages/contribute/contribute",
+      "style": {
+        "navigationBarTitleText": "新增投稿",
+        "enablePullDownRefresh": false
+      }
+
+    }, {
+      "path": "pages/createinviteUserInput/createinviteUserInput",
+      "style": {
+        "navigationBarTitleText": "信息填写",
+        "enablePullDownRefresh": false
+      }
+
     }
-      ,{
-            "path" : "pages/testNvue/testNvue",
-            "style" :                                                                                    
-            {
-                "navigationBarTitleText": "",
-                "enablePullDownRefresh": false
-            }
-            
-        }
-        ,{
-            "path" : "pages/activityDetails/activityDetails",
-            "style" :                                                                                    
-            {
-                "navigationBarTitleText": "活动详情"
-            }
-            
-        }
-    ],
+  ],
   "tabBar": {
-    "selectedColor": "#333333",
+    "selectedColor": "#3898ff",
+    "borderStyle": "white",
+    "blurEffect": "light",
+    "backgroundColor": "#fff",
     "color": "#bfbfbf",
     "list": [{
         "pagePath": "pages/material/material",

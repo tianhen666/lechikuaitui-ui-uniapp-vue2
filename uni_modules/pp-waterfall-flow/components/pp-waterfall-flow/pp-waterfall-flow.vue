@@ -18,7 +18,7 @@
       <!-- 图片 -->
       <view class="coverBox" v-if="listType === 'img' && item.listTyptShow">
         <text class="text">点击</text>
-        <text class="text">预览</text>
+        <text class="text">使用</text>
       </view>
 
       <!-- 视频播放图标 -->

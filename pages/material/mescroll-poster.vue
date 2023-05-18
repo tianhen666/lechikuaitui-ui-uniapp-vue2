@@ -16,6 +16,9 @@
             <u-search
               placeholder="输入关键字搜索海报"
               v-model="searchName"
+              bgColor="#fff"
+              :showAction="false"
+              height="72rpx"
               @search="mySearch"
               @custom="mySearch"
             ></u-search>
@@ -62,8 +65,7 @@ export default {
         auto: false, // 初始完成后第一次不自动加载
         isBounce: true,
         empty: {
-          tip: '~ 空空如也 ~', // 提示
-          btnText: '去看看'
+          tip: '~ 空空如也 ~' // 提示
         },
         textNoMore: '没有更多了'
       },
@@ -97,7 +99,9 @@ export default {
     height: [Number, String], // mescroll的高度
     disableScroll: Boolean // 是否禁止滚动, 默认false
   },
-  mounted() {
+  async mounted() {
+    // 等待onLaunch 加载完成
+    await this.$onLaunched;
     // 获取分类
     this.mGetClassIfyList();
   },
@@ -151,7 +155,7 @@ export default {
     },
     // 获取分类数据
     async mGetClassIfyList() {
-      this.classificationList = [{ id: -1, name: '推荐' }];
+      this.classificationList = [{ id: -1, name: '最多分享' }];
       const res = await getClassIfyList({
         sourceMaterialType: 3
       });
@@ -161,7 +165,15 @@ export default {
 
     //点击单个项目
     itemClicK(index) {
-      this.$store.commit('SET_PREVIEW', this.dataList[index]);
+      this.gotoPage(`/pages/generatePoster/generatePoster?id=${this.dataList[index].id}`);
+      // this.$store.commit('SET_PREVIEW', this.dataList[index]);
+    },
+
+    //跳转页面
+    gotoPage(url) {
+      uni.navigateTo({
+        url: url
+      });
     },
 
     // 搜索
@@ -174,7 +186,7 @@ export default {
 <style scoped lang="scss">
 .boxTop {
   padding: 20rpx 0 20rpx;
-
+  overflow: hidden;
   .search {
     margin-bottom: 30rpx;
   }

@@ -2,23 +2,23 @@
   <!-- 移动区域 -->
   <view class="movableArea" @tap="movableAreaTap" :style="this.posterData.css">
     <!-- 修改 -->
-    <view
+    <!-- <view
       v-if="movableViewIndex !== ''"
       :style="styleRendering"
       class="tip"
       @tap.prevent.stop="edit"
     >
       点击修改
-    </view>
+    </view> -->
     <!-- 删除 -->
-    <!-- <view
+    <view
       v-if="movableViewIndex !== ''"
       :style="styleRendering2"
       @tap.prevent.stop="del"
       class="del"
     >
       <image class="image" src="./images/del_1.png" mode="aspectFit" />
-    </view> -->
+    </view>
     <!-- 缩放 -->
     <!-- <view :style="styleRendering3" v-if="movableViewIndex !== ''" class="zoom">
       <image class="image" src="./images/scale_icon.png" mode="aspectFit" />

@@ -22,152 +22,160 @@
 
         <view class="warpper_right">
           <text class="desc">{{ itemData.description }}</text>
-          <text class="tips">{{ itemData.tips||'一起来看看吧' }}</text>
+          <text class="tips">{{ itemData.tips || '一起来看看吧' }}</text>
         </view>
       </view>
     </view>
 
     <view class="b">
       <view class="views">
-        <u-icon name="eye" color="#bbb" size="30rpx" :label="'浏览 ' + itemData.heat" labelSize="22rpx" labelColor="#bbb"
-          space="10rpx"></u-icon>
+        <u-icon
+          name="eye"
+          color="#bbb"
+          size="30rpx"
+          :label="'浏览 ' + itemData.heat"
+          labelSize="22rpx"
+          labelColor="#bbb"
+          space="10rpx"
+        ></u-icon>
       </view>
     </view>
   </view>
 </template>
 
 <script>
-  import dayJs from 'dayjs'
-  export default {
-    name: 'm-article-style',
-    props: {
-      itemData: Object
+import dayJs from 'dayjs';
+export default {
+  name: 'm-article-style',
+  props: {
+    itemData: Object
+  },
+  data() {
+    return {};
+  },
+  methods: {
+    goToPage(url) {
+      uni.navigateTo({
+        url: url
+      });
     },
-    data() {
-      return {};
-    },
-    methods: {
-      goToPage(url) {
-        uni.navigateTo({
-          url: url
-        });
-      },
-      mDayJs(val) {
-        // 时间转换
-        return dayJs(val).format("YYYY-MM-DD HH:mm:ss")
-      }
+    mDayJs(val) {
+      // 时间转换
+      return dayJs(val).format('YYYY-MM-DD HH:mm:ss');
     }
-  };
+  }
+};
 </script>
 
 <style lang="scss" scoped>
-  .box {
-    background-color: #fff;
-    margin: 24rpx 18rpx;
-    padding: 20rpx 20rpx 30rpx;
-    border-radius: 10rpx;
+.box {
+  background-color: #fff;
+  margin: 24rpx 18rpx;
+  padding: 20rpx 20rpx 30rpx;
+  border-radius: 10rpx;
 
-    >.t {
+  > .t {
+    display: flex;
+    align-items: center;
+
+    .left {
+      flex: none;
+
+      .img {
+        width: 60rpx;
+        height: 60rpx;
+        display: block;
+      }
+    }
+
+    .center {
+      flex: auto;
+      margin-left: 24rpx;
+
+      .text {
+        display: block;
+        font-size: 25rpx;
+        margin-bottom: 4rpx;
+      }
+
+      .time {
+        display: block;
+        font-size: 24rpx;
+        color: #aaa;
+      }
+    }
+
+    .right {
+      flex: none;
+
+      .botton {
+        background-color: $main-color;
+        color: #fff;
+        font-size: 22rpx;
+        line-height: 2;
+        padding: 0 12rpx;
+      }
+    }
+  }
+
+  > .c {
+    margin-top: 20rpx;
+
+    .title {
+      font-size: 26rpx;
+      @include overHeiddenText(1);
+    }
+
+    .warpper {
+      border: 1px solid #efefef;
+      background-color: #fafafa;
+      border-radius: 10rpx;
       display: flex;
-      align-items: center;
+      padding: 20rpx;
+      margin-top: 10rpx;
 
-      .left {
-        flex: none;
+      .img_box {
+        float: none;
 
         .img {
-          width: 60rpx;
-          height: 60rpx;
+          width: 200rpx;
+          height: 200rpx * 3 * 0.25;
           display: block;
         }
       }
 
-      .center {
+      .warpper_right {
         flex: auto;
-        margin-left: 24rpx;
+        margin-left: 20rpx;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border-radius: 6rpx;
 
-        .text {
+        .desc {
+          width: 100%;
           display: block;
-          font-size: 25rpx;
-          margin-bottom: 4rpx;
+          font-size: 26rpx;
+          line-height: 1.8;
+          text-align: justify;
+          @include overHeiddenText;
         }
 
-        .time {
+        .tips {
           display: block;
           font-size: 24rpx;
           color: #aaa;
         }
       }
-
-      .right {
-        flex: none;
-
-        .botton {
-          background-color: $main-color;
-          color: #fff;
-          font-size: 22rpx;
-          line-height: 2;
-          padding: 0 12rpx;
-        }
-      }
-    }
-
-    >.c {
-      margin-top: 20rpx;
-
-      .title {
-        font-size: 30rpx;
-        @include overHeiddenText(1);
-      }
-
-      .warpper {
-        border: 1px solid #e1e1e1;
-        background-color: #efefef;
-        display: flex;
-        padding: 20rpx;
-        margin-top: 20rpx;
-
-        .img_box {
-          float: none;
-
-          .img {
-            width: 200rpx;
-            height: 200rpx * 3 * 0.25;
-            display: block;
-          }
-        }
-
-        .warpper_right {
-          flex: auto;
-          margin-left: 20rpx;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          border-radius: 6rpx;
-
-          .desc {
-            width: 100%;
-            display: block;
-            font-size: 26rpx;
-            line-height: 1.8;
-            text-align: justify;
-            @include overHeiddenText;
-          }
-
-          .tips {
-            display: block;
-            font-size: 24rpx;
-            color: #aaa;
-          }
-        }
-      }
-    }
-
-    >.b {
-      .views {
-        font-size: 24rpx;
-        color: #bbb;
-        margin-top: 30rpx;
-      }
     }
   }
+
+  > .b {
+    .views {
+      font-size: 24rpx;
+      color: #bbb;
+      margin-top: 30rpx;
+    }
+  }
+}
 </style>
