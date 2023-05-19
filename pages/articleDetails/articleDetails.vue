@@ -1,64 +1,119 @@
 <template>
-  <view class="boxArticleDetails">
-    <u-loading-page
-      :loading="loading"
-      loading-mode="spinner"
-      icon-size="30"
-      fontSize="30rpx"
-      bgColor="#fff"
-      style="position: fixed;inset: 0;z-index: 999;"
-      loadingText="正在加载中..."
-    ></u-loading-page>
+  <mescroll-body
+    :sticky="true"
+    @init="mescrollInit"
+    @down="downCallback"
+    :down="downOption"
+    :up="upOption"
+    :bottombar="false"
+  >
+    <view class="boxArticleDetails">
+      <u-loading-page
+        :loading="loading"
+        loading-mode="spinner"
+        icon-size="30"
+        fontSize="30rpx"
+        bgColor="#fff"
+        style="position: fixed;inset: 0;z-index: 999;"
+        loadingText="正在加载中..."
+      ></u-loading-page>
 
-    <view v-show="!loading">
-      <!-- 顶部 -->
-      <!-- 有邀请人 -->
-      <m-business-card-invitation v-if="invitationID"></m-business-card-invitation>
-      <!-- 没有邀请人 -->
-      <m-business-card v-else></m-business-card>
-      <!-- 标题 -->
-      <view class="title">{{ articleObj.name }}</view>
-      <!-- 内容 -->
-      <view class="content">
-        <mp-html :content="articleObj.content" lazyLoad @load="htmlLoad" />
-      </view>
+      <view v-show="!loading">
+        <!-- 顶部卡片 -->
+        <!-- 有邀请人 -->
+        <m-business-card-invitation v-if="invitationID"></m-business-card-invitation>
+        <!-- 没有邀请人 -->
+        <m-business-card v-else></m-business-card>
 
-      <!-- 底部卡片 -->
-      <m-business-card-bottom-invitation v-if="invitationID"></m-business-card-bottom-invitation>
-      <m-business-card-bottom v-else></m-business-card-bottom>
-
-      <!-- 修改成我的 -->
-      <view class="btnBox">
         <view
-          class="btn_box"
-          v-if="!!invitationID && invitationID != userInfo.id"
-          @tap.stop="myClinic"
+          style="background-color: #fff;
+        border-radius: 20rpx;
+        width: 720rpx;
+        margin: 20rpx auto;
+        overflow: hidden;
+        padding-bottom: 40rpx;
+        "
         >
-          <button class="btn">修改成我的门诊</button>
+          <!-- 标题 -->
+          <view class="title">{{ articleObj.name }}</view>
+
+          <!-- 发布时间和分类 -->
+          <view class="classAndTime">
+            <view class="class">
+              <text style="padding-right: 10rpx;">分类:</text>
+              <text>{{ articleObj.type }}</text>
+            </view>
+
+            <view class="time">
+              <text style="padding-right: 10rpx;">创建时间:</text>
+              <text>{{ mDayjs(articleObj.createTime) }}</text>
+            </view>
+          </view>
+
+          <view style="margin-top: 15rpx;padding: 10rpx 20rpx 0;">
+            <u-line color="#ddd"></u-line>
+          </view>
+
+          <!-- 内容 -->
+          <view class="content">
+            <mp-html :content="articleObj.content" lazyLoad @load="htmlLoad" />
+          </view>
         </view>
-        <text class="text">口腔推提供技术支持</text>
+
+        <!-- 底部卡片 -->
+        <!-- 有邀请人 -->
+        <m-business-card-bottom-invitation v-if="invitationID"></m-business-card-bottom-invitation>
+        <!-- 没有邀请人 -->
+        <m-business-card-bottom v-else></m-business-card-bottom>
+
+        <view class="btnBox"><text class="text">口腔推提供技术支持</text></view>
+
+        <!-- 修改成我的,有邀请人并且邀请人不是自己 -->
+        <view class="fixdBottom" v-if="!!invitationID && invitationID != userInfo.id">
+          <view class="btnBox111" @tap.stop="myClinic">
+            <button class="btn">修改成我的</button>
+          </view>
+        </view>
+
+        <!-- 没有邀请人并且没有店铺 -->
+        <view class="fixdBottom" v-if="!invitationID && !isMember">
+          <view class="btnBox111" @tap.stop="createClinic">
+            <button class="btn">创建我的店铺</button>
+          </view>
+        </view>
       </view>
     </view>
-  </view>
+  </mescroll-body>
 </template>
 
 <script>
-import { getSourceMaterialId, getUserListTenant, getShareUser } from '@/api/materialLibrary.js';
+import MescrollMixin from '@/uni_modules/mescroll-uni/components/mescroll-uni/mescroll-mixins.js';
+import { getSourceMaterialId } from '@/api/materialLibrary.js';
 import wx from '@/wxJsSDK/index.js';
 import { mapState, mapGetters } from 'vuex';
 import { removeUrlParameters } from '@/utils/index.js';
+import dayjs from 'dayjs';
 export default {
+  mixins: [MescrollMixin], // 使用mixin
   data() {
     return {
+      upOption: {
+        use: false, // 主体框架只启用下拉刷新
+        toTop: {
+          bottom: 360
+        }
+      },
+      downOption: {
+        auto: false // 不自动加载
+      },
+
       id: 0, //资源ID
       articleObj: {}, // 素材内容
 
       invitationID: 0, //邀请人的ID
-      invitationTenantId: 0, // 邀请人的门诊ID
+      invitationTenantID: 0, // 邀请人的门诊ID
 
-      loading: true, // 富文本加载中
-
-      tenantlist: [] // 我的门诊列表
+      loading: true // 富文本加载中
     };
   },
   computed: {
@@ -73,12 +128,12 @@ export default {
     await this.$onLaunched;
 
     // 设置邀请人的ID
-    this.invitationID = invitationID;
+    this.invitationID = Number(invitationID) || 0;
     // 邀请的门诊ID
-    this.invitationTenantID = invitationTenantID;
+    this.invitationTenantID = Number(invitationTenantID) || 0;
 
     // 设置资源ID
-    this.id = id;
+    this.id = Number(id) || 0;
 
     if (invitationID && invitationTenantID) {
       // 获取邀请人的个人信息
@@ -95,11 +150,18 @@ export default {
 
     // 获取素材资源
     this.getData();
-
-    //获取门诊列表
-    this.mGetUserListTenant();
   },
   methods: {
+    /*下拉刷新的回调 */
+    downCallback() {
+      setTimeout(() => {
+        this.mescroll.endSuccess();
+      }, 1000);
+    },
+    mDayjs(val) {
+      // 时间处理
+      return dayjs(val).format('YYYY-MM-DD HH:ss:mm');
+    },
     htmlLoad(val) {
       // 富文本加载完成
       setTimeout(() => {
@@ -108,14 +170,23 @@ export default {
     },
     getData() {
       // 获取资源
-      getSourceMaterialId({ id: this.id, clueId: this.invitationID }).then(res => {
+      getSourceMaterialId({
+        id: this.id,
+        clueId: this.invitationID,
+        clueTenantId: this.invitationTenantID
+      }).then(res => {
         this.articleObj = res.data;
+
+        // 设置标题
+        uni.setNavigationBarTitle({
+          title: this.articleObj.name || '文章详情'
+        });
 
         // 微信jsdk初始化
         wx.initJssdk(() => {
           // 朋友分享
           wx.updateAppMessageShareData({
-            title: `${this.tenantInfo.name}--${this.articleObj.name}`,
+            title: `（${this.tenantInfo.name}）${this.articleObj.name}`,
             desc: this.articleObj.description,
             link: `${window.location.href.split('?')[0]}?id=${this.articleObj.id}&invitationID=${
               this.userInfo.id
@@ -125,7 +196,7 @@ export default {
 
           // 朋友圈分享
           wx.updateTimelineShareData({
-            title: `${this.tenantInfo.name}--${this.articleObj.name}`,
+            title: `（${this.tenantInfo.name}）${this.articleObj.name}`,
             link: `${window.location.href.split('?')[0]}?id=${this.articleObj.id}&invitationID=${
               this.userInfo.id
             }&invitationTenantID=${this.tenantInfo.id}`,
@@ -134,60 +205,93 @@ export default {
         });
       });
     },
+    // 判断是否有店铺
     myClinic() {
       if (this.isMember) {
         // 如果有店铺
-        const newHref = removeUrlParameters(window.location.href, [
-          'invitationID',
-          'invitationTenantID'
-        ]);
-        window.location.href = newHref;
+        uni.redirectTo({
+          url: `/pages/articleDetails/articleDetails?id=${this.id}`
+        });
       } else {
         //如果没有店铺
+        this.createClinic();
       }
     },
-    async mGetUserListTenant() {
-      // 获取当前用户拥有的门诊
-      const res = await getUserListTenant();
-      this.tenantlist = res.data;
+    //创建店铺
+    createClinic() {
+      // 判断是否有手机号
+      if (this.userInfo.mobile) {
+        this.gotoPage('/pages/tenantInfoInput/tenantInfoInput');
+      } else {
+        this.gotoPage('/pages/userInfoInput/userInfoInput?newClinic=1');
+      }
+    },
+    // 关闭所有页面跳转
+    gotoPage(url) {
+      uni.reLaunch({
+        url: url
+      });
     }
   }
 };
 </script>
 
 <style scoped lang="scss">
-page {
-  background-color: #fff;
-}
-
 .boxArticleDetails {
-  padding-bottom: 60rpx;
   .title {
-    margin: 10rpx 50rpx;
-    line-height: 2;
+    line-height: 1.4;
     font-size: 38rpx;
+    padding: 20rpx 20rpx 0;
+  }
+
+  .classAndTime {
+    padding: 10rpx 20rpx 0;
+    font-size: 25rpx;
+    margin-top: 0;
+    .class {
+      color: #999;
+    }
+    .time {
+      color: #999;
+      margin-top: 10rpx;
+    }
   }
 
   .btnBox {
     overflow: hidden;
     text-align: center;
-    margin-top: 30rpx;
-    .btn {
-      background-color: $sub-color;
-      color: #fff;
-      font-size: 20rpx;
-      line-height: 2.2;
-      display: inline-block;
-      border-radius: 50px;
-    }
+    padding-bottom: 20rpx;
     .text {
       color: #999;
-      font-size: 20rpx;
+      font-size: 22rpx;
+    }
+  }
+
+  .fixdBottom {
+    height: 90rpx;
+    .btnBox111 {
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+      left: 0;
+      background-color: #eee;
+      height: 90rpx;
+      z-index: 999;
+      .btn {
+        margin-top: 15rpx;
+        width: 680rpx;
+        background-color: $sub-color;
+        color: #fff;
+        font-size: 25rpx;
+        height: 55rpx;
+        line-height: 55rpx;
+        border-radius: 50px;
+      }
     }
   }
 }
+
 page {
-  background-color: #fff;
   background-image: url('@/static/images/myimg/bg.png');
   background-repeat: no-repeat;
   background-size: 100% auto;

@@ -65,7 +65,6 @@ export default {
     },
     async switching(val) {
       // 切换门诊
-
       const res = await cutTenant({ id: val.id });
 
       // 清理当前的缓存
@@ -75,10 +74,10 @@ export default {
 
       // 重新打开当前网页
       const protocol = window.location.protocol;
-      const hostname = window.location.hostname;
+      const host = window.location.host;
 
       // 重定向到个人中心
-      const newHref = protocol + '//' + hostname + '/pages/center/center';
+      const newHref = protocol + '//' + host + '/pages/center/center';
 
       //重新获取授权链接
       this.$store

@@ -74,7 +74,7 @@
             "https" : false,
             "port" : 8080
         },
-        "title" : "口腔推",
+        "title" : " ",
         "router" : {
             "mode" : "history"
         },

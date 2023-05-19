@@ -71,9 +71,6 @@ export const getShareTenant = params => http.post('/yxx/memberUser/getShareTenan
 // 更新指定门诊信息
 export const updateTenant = data => http.post('/yxx/tenant/updateTenant', data)
 
-// 获取指定门诊信息
-export const getOne = params => http.get('/yxx/tenant/getOne', { params })
-
 // 获取当前门诊下所有用户
 export const getUserList = params => http.get('/yxx/tenant/getUserList', { params })
 

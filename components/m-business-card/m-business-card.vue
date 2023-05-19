@@ -3,19 +3,19 @@
     <view class="bg">
       <view class="wrapper">
         <!-- 头像 -->
-        <view class="avatar" v-if="userInfo.avatar">
-          <image class="img" :src="userInfo.avatar || userInfo.savatar"></image>
+        <view class="avatar">
+          <u-avatar size="90rpx" :src="userInfo.avatar || userInfo.savatar"></u-avatar>
         </view>
 
         <!-- 信息 -->
-        <view class="nameBox" v-if="tenantInfo.name">
+        <view class="nameBox">
           <view class="nickname">
             <text>{{ tenantInfo.name }}</text>
           </view>
 
           <view class="postName">
             <text>{{ userInfo.nickname || userInfo.snickName }}</text>
-            <text style="padding: 0 10rpx;">|</text>
+            <text v-if="userInfo.postName" style="padding: 0 10rpx;">|</text>
             <text>{{ userInfo.postName }}</text>
             <text class="slogan" v-if="userInfo.slogan">{{ userInfo.slogan }}</text>
           </view>
@@ -39,7 +39,7 @@
               @tap.stop="tel(userInfo.mobile || tenantInfo.contactMobile)"
             ></image>
           </view>
-          <text class="desc">拨打电话</text>
+          <text class="desc">电话咨询</text>
         </view>
 
         <view class="bottonBoxItme ">
@@ -69,6 +69,7 @@
         <image
           style="width: 160px;height: 160px;display: block;margin: auto;"
           :src="userInfo.wechatCode"
+          mode="widthFix"
         ></image>
         <view class="tips">{{ userInfo.remark }}</view>
       </view>
@@ -98,7 +99,7 @@ export default {
       });
     },
     showImg() {
-      if (this.userInfo.wechatCode) {
+      if (this.userInfo?.wechatCode) {
         this.mShow = true;
       } else {
         uni.showToast({
@@ -114,9 +115,8 @@ export default {
       });
     },
     goToPage() {
-      uni.showToast({
-        title: '正在努力开发中',
-        icon: 'none'
+      uni.switchTab({
+        url: '/pages/material/material'
       });
     }
   }
@@ -125,7 +125,9 @@ export default {
 
 <style lang="scss" scoped>
 .box {
-  padding: 35rpx 28rpx 10rpx;
+  margin: 20rpx auto 0;
+  width: 720rpx;
+  overflow: hidden;
 
   .bg {
     background-color: #fff;
@@ -139,16 +141,7 @@ export default {
         overflow: hidden;
         flex: none;
         position: relative;
-        height: 90rpx;
-        width: 90rpx;
         margin-right: 26rpx;
-
-        .img {
-          position: absolute;
-          display: block;
-          height: 100%;
-          width: 100%;
-        }
       }
       .nameBox {
         flex: auto;

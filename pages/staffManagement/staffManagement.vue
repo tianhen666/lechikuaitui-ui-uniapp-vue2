@@ -84,6 +84,7 @@ export default {
     // 等待onLaunch执行完成
     await this.$onLaunched;
 
+    //获取员工列表
     this.mGetUserList();
   },
   methods: {
@@ -99,11 +100,14 @@ export default {
     generateQRCode() {
       // 生成邀请二维码
       const protocol = window.location.protocol;
-      const hostname = window.location.hostname;
-      const newHref = `${protocol}//${hostname}/pages/inviteEmployees/inviteEmployees?tenantId=${
+      const host = window.location.host;
+      const newHref = `${protocol}//${host}/pages/inviteEmployees/inviteEmployees?invitationTenantID=${
         this.tenantInfo.id
-      }`;
+      }&invitationID=${this.userInfo.id}`;
       this.urlValue = newHref;
+
+      console.log(newHref);
+
       // 生成二维码
       this.mShow = true;
     },

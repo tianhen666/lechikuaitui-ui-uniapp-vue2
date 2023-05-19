@@ -3,7 +3,7 @@
     <view
       class="warpper"
       v-for="(itemData, index) in dataList"
-      :key="index"
+      :key="itemData.id"
       @tap.stop="itemClicK(index)"
     >
       <view class="img_box">
@@ -11,7 +11,7 @@
       </view>
 
       <view class="warpper_right">
-        <text class="desc">{{ itemData.name }}</text>
+        <text class="desc">{{ `（${tenantInfo.name}）${itemData.name}` }}</text>
         <text class="tips">{{ itemData.tips || '一起来看看吧!' }}</text>
       </view>
     </view>
@@ -19,6 +19,7 @@
 </template>
 
 <script>
+import { mapState, mapGetters } from 'vuex';
 export default {
   name: 'm-article-list',
   emits: ['tapItem'],
@@ -31,6 +32,13 @@ export default {
       type: Array,
       default: () => []
     }
+  },
+  computed: {
+    ...mapState({
+      tenantInfo: state => state.tenant.info,
+      userInfo: state => state.user.userInfo
+    }),
+    ...mapGetters(['isMember'])
   },
   data() {
     return {};

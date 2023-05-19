@@ -129,7 +129,7 @@ export default {
     async mGetClassIfyList() {
       this.classificationList = [{ id: -1, name: '最多分享' }];
       const res = await getClassIfyList({
-        sourceMaterialType: 1 // 视频分类
+        sourceMaterialType: 1 // 文章素材
       });
       this.classificationList.splice(1, 0, ...res.data);
       this.mescroll.resetUpScroll(false);

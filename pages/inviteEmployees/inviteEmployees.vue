@@ -6,8 +6,13 @@
       mode="widthFix"
     ></image>
     <view class="box box1">
-      <view class="text1">邀请您加入</view>
-      <view class="text2">{{ tenantInfo.name }}</view>
+      <view class="text1">
+        <text class="nickname">{{ invitationInfo.nickname || invitationInfo.snickName }}</text>
+        <text class="nickname" style="padding: 0 10rpx;">|</text>
+        <text class="nickname" style="padding-right: 10rpx;">{{ invitationInfo.postName }}</text>
+        <text>邀请您加入</text>
+      </view>
+      <view class="text2">{{ invitationTenantInfo.name }}</view>
       <button class="btn" @tap="jionStore">接受邀请</button>
     </view>
   </view>
@@ -15,43 +20,63 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex';
-import { handleTenantInfo, getOne } from '@/api/materialLibrary.js';
+import { handleTenantInfo } from '@/api/materialLibrary.js';
 export default {
   data() {
     return {
-      tenantId: 0, // 邀请门诊ID
+      invitationTenantID: 0, // 邀请门诊ID
       tenantInfo: {} // 邀请门诊信息
     };
   },
   computed: {
     ...mapState({
-      userInfo: state => state.user.userInfo
+      invitationTenantInfo: state => state.tenant.invitationInfo,
+      invitationInfo: state => state.user.invitationInfo
     }),
     ...mapGetters(['isMember'])
   },
-  onLoad({ tenantId }) {
-    this.tenantId = Number(tenantId);
+  async onLoad({ invitationID, invitationTenantID }) {
+    console.log(`邀请人ID-${invitationID}`);
+    console.log(`需要加入的门诊ID-${invitationTenantID}`);
 
-    if (this.tenantId) {
-      this.mGetOne();
+    // 等待onLaunch执行完成
+    await this.$onLaunched;
+
+    // 设置邀请人的ID
+    this.invitationID = Number(invitationID) || 0;
+    // 邀请的门诊ID
+    this.invitationTenantID = Number(invitationTenantID) || 0;
+
+    if (invitationID && invitationTenantID) {
+      // 获取邀请人的个人信息
+      this.$store.dispatch('invitationInfoFun', {
+        clueId: invitationID,
+        tenantId: invitationTenantID
+      });
+
+      // 获取邀请门诊的个人信息
+      this.$store.dispatch('getShareTenantInfo', {
+        tenantId: invitationTenantID
+      });
     }
   },
   methods: {
-    async mGetOne() {
-      // 获取指定门诊信息
-      const res = await getOne({ tenantId: this.tenantId });
-      this.tenantInfo = res.data;
-    },
-    goTopage(url) {
-      uni.switchTab({
-        url: url
-      });
-    },
     async jionStore() {
-      const res = await handleTenantInfo({ tenantId: this.tenantId });
-      uni.redirectTo({
-        url: '/pages/createinviteUserInput/createinviteUserInput?tenantId=' + this.tenantId
-      });
+      // 判断是否已经加入过门诊,门诊是否还有剩余位置
+      const res = await handleTenantInfo({ tenantId: this.invitationTenantID });
+
+      if (res.data) {
+        uni.redirectTo({
+          url: `/pages/createinviteUserInput/createinviteUserInput?invitationTenantID=${
+            this.invitationTenantID
+          }&invitationID=${this.invitationID}`
+        });
+      } else {
+        uni.showToast({
+          title: '已加入门诊,或剩余员工数量不足',
+          icon: 'none'
+        });
+      }
     }
   }
 };
@@ -76,6 +101,10 @@ export default {
     font-size: 30rpx;
     text-align: center;
     margin-bottom: 60rpx;
+    .nickname {
+      font-weight: bold;
+      color: #333;
+    }
   }
   > .text2 {
     color: $main-color;

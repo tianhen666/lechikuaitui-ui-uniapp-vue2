@@ -62,7 +62,7 @@
         ></u--input>
       </u-form-item>
 
-      <u-form-item label="二维码上传" prop="userInfo.wechatCode" borderBottom>
+      <u-form-item required label="微信二维码上传" prop="userInfo.wechatCode" borderBottom>
         <u-upload
           :fileList="userInfoWechatCodeFileList"
           @afterRead="afterRead2"
@@ -73,10 +73,10 @@
         ></u-upload>
       </u-form-item>
 
-      <u-form-item label="二维码提示信息" prop="userInfo.remark" borderBottom>
+      <u-form-item label="微信二维码提示信息" prop="userInfo.remark" borderBottom>
         <u--input
           v-model="modeData.userInfo.remark"
-          placeholder="请填写二维码提示信息"
+          placeholder="请填写微信二维码提示信息"
           border="none"
           fontSize="14px"
           placeholderStyle="font-size:14px;color:#bbb;"
@@ -98,7 +98,7 @@ import { mapState } from 'vuex';
 export default {
   data() {
     return {
-      tenantId: 0, // 需要加入的门诊ID
+      invitationTenantID: 0, // 需要加入的门诊ID
 
       modeData: {
         userInfo: {
@@ -112,7 +112,7 @@ export default {
           remark: '',
           postIds: [],
           position: '',
-          tenantId: 0
+          tenantId: 0 // 必填
         }
       },
       rules: {
@@ -129,6 +129,14 @@ export default {
             },
             message: '手机号码不正确',
             trigger: ['change', 'blur']
+          }
+        ],
+        'userInfo.wechatCode': [
+          {
+            type: 'string',
+            required: true,
+            message: '请上传微信二维码',
+            trigger: ['blur', 'change']
           }
         ]
       },
@@ -173,11 +181,17 @@ export default {
       immediate: true
     }
   },
-  onLoad({ tenantId }) {
-    this.tenantId = Number(tenantId);
+  onLoad({ invitationID, invitationTenantID }) {
+    console.log(`邀请人ID-${invitationID}`);
+    console.log(`需要加入的门诊ID-${invitationTenantID}`);
+
+    // 设置邀请人的ID
+    this.invitationID = Number(invitationID) || 0;
+    // 邀请的门诊ID
+    this.invitationTenantID = Number(invitationTenantID) || 0;
   },
   methods: {
-    // 删除图片
+    // 删除头像
     deletePic(event) {
       this.userInfoAvatarFileList.splice(event.index, 1);
       this.modeData.userInfo.avatar = '';
@@ -198,7 +212,7 @@ export default {
         })
       );
     },
-    // 删除图片
+    // 删除二维码
     deletePic2(event) {
       this.userInfoWechatCodeFileList.splice(event.index, 1);
       this.modeData.userInfo.wechatCode = '';
@@ -241,26 +255,33 @@ export default {
           });
           this.btnLoading = true;
 
-          // 赋值需要添加员工的门诊ID
-          this.modeData.userInfo.tenantId = this.tenantId;
+          // 需要加入哪家门诊 赋值门诊ID
+          this.modeData.userInfo.tenantId = this.invitationTenantID;
           createinviteUser(this.modeData.userInfo).then(res => {
             setTimeout(res => {
               this.btnLoading = false;
               // 关闭loading
               uni.hideLoading();
 
-              // 重新获取用户信息
-              this.$store.dispatch('ObtainUserInfo');
+              // 清空缓存,应为邀请员工成功后会自动切换门诊
+              uni.clearStorage();
 
-              // 修改完成跳转
-              const pages = getCurrentPages();
-              if (pages.length > 1) {
-                uni.navigateBack();
-              } else {
-                uni.switchTab({
-                  url: '/pages/center/center'
+              // 设置切换的缓存
+              uni.setStorageSync('TENANTID', this.invitationTenantID);
+
+              // 重新打开当前网页
+              const protocol = window.location.protocol;
+              const host = window.location.host;
+
+              // 重定向到个人中心
+              const newHref = protocol + '//' + host + '/pages/center/center';
+
+              //重新获取授权链接
+              this.$store
+                .dispatch('getWXSocialAuthRedirect', { type: 31, redirectUri: newHref })
+                .then(res => {
+                  window.location.href = res;
                 });
-              }
             }, 1000);
           });
         })

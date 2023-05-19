@@ -1,5 +1,7 @@
 import errorCode from '@/utils/request/errorCode'
 import { refreshToken } from '@/api/auth'
+import { removeUrlParameters } from '@/utils/index.js';
+
 
 // 需要忽略的提示。忽略后，自动 Promise.reject('error')
 const ignoreMsgs = [
@@ -78,7 +80,19 @@ module.exports = vm => {
           // 系统异常 100003
           // 清空缓存重新访问
           uni.clearStorageSync()
-          window.location.href = window.location.href
+
+          // 重新打开当前网页
+          const href = window.location.href;
+          //删除url中code和state
+          const newHref = removeUrlParameters(href, ['code', 'state']);
+          //重新获取授权链接
+          vm.$store
+            .dispatch('getWXSocialAuthRedirect', { type: 31, redirectUri: newHref })
+            .then(res => {
+              window.location.href = res;
+            });
+
+
           return Promise.reject(res)
         } else if (code !== 0) {
           if (msg === '无效的刷新令牌') {

@@ -1,10 +1,10 @@
 <template>
-  <view class="box" v-if="invitationInfo.avatar">
+  <view class="box">
     <view class="bg">
       <view class="wrapper">
         <!-- 头像 -->
         <view class="avatar">
-          <image class="img" :src="invitationInfo.avatar || invitationInfo.savatar"></image>
+          <u-avatar size="90rpx" :src="invitationInfo.avatar || invitationInfo.savatar"></u-avatar>
         </view>
 
         <!-- 信息 -->
@@ -14,7 +14,7 @@
           </view>
           <view class="postName">
             <text>{{ invitationInfo.nickname || invitationInfo.snickName }}</text>
-            <text style="padding: 0 10rpx;">|</text>
+            <text v-if="invitationInfo.postName" style="padding: 0 10rpx;">|</text>
             <text>{{ invitationInfo.postName }}</text>
             <text class="slogan">{{ invitationInfo.slogan }}</text>
           </view>
@@ -38,7 +38,7 @@
               @tap.stop="tel(invitationInfo.mobile || invitationTenantInfo.contactMobile)"
             ></image>
           </view>
-          <text class="desc">拨打电话</text>
+          <text class="desc">电话咨询</text>
         </view>
 
         <view class="bottonBoxItme ">
@@ -60,7 +60,6 @@
         </view>
       </view>
     </view>
-
     <u-popup :show="mShow" @close="mShow = false" mode="center" closeable round="10rpx">
       <view class="popupBox">
         <view class="title">{{ invitationTenantInfo.name }}</view>
@@ -68,6 +67,7 @@
         <image
           style="width: 160px;height: 160px;display: block;margin: auto;"
           :src="invitationInfo.wechatCode"
+          mode="widthFix"
         ></image>
         <view class="tips">{{ invitationInfo.remark }}</view>
       </view>
@@ -104,7 +104,7 @@ export default {
       }
     },
     showImg() {
-      if (this.invitationInfo.wechatCode) {
+      if (this.invitationInfo?.wechatCode) {
         this.mShow = true;
       } else {
         uni.showToast({
@@ -120,9 +120,8 @@ export default {
       });
     },
     goToPage() {
-      uni.showToast({
-        title: '正在努力开发中',
-        icon: 'none'
+      uni.switchTab({
+        url: '/pages/material/material'
       });
     }
   }
@@ -131,7 +130,9 @@ export default {
 
 <style lang="scss" scoped>
 .box {
-  padding: 35rpx 28rpx 10rpx;
+  margin: 20rpx auto 0;
+  width: 720rpx;
+  overflow: hidden;
 
   .bg {
     background-color: #fff;
@@ -145,16 +146,7 @@ export default {
         overflow: hidden;
         flex: none;
         position: relative;
-        height: 90rpx;
-        width: 90rpx;
         margin-right: 26rpx;
-
-        .img {
-          position: absolute;
-          display: block;
-          height: 100%;
-          width: 100%;
-        }
       }
       .nameBox {
         flex: auto;

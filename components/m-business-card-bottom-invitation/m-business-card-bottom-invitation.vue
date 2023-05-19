@@ -4,13 +4,14 @@
       <!-- 左侧 -->
       <view class="left" @tap.stop="showImg()">
         <u--image
-          mode="aspectFit"
+          mode="aspectFill"
+          radius="10"
           width="134rpx"
           height="134rpx"
           loadingIcon="photo-fill"
           errorIcon="photo-fill"
           bgColor="#fff"
-          :src="invitationInfo.wechatCode"
+          :src="invitationTenantInfo.tenantLog"
         ></u--image>
       </view>
 
@@ -20,9 +21,9 @@
           <text>{{ invitationTenantInfo.name }}</text>
         </view>
         <view class="name">
-          <text>{{ invitationInfo.postName }}</text>
-          <text style="padding: 0 10rpx;">|</text>
           <text>{{ invitationInfo.nickname || invitationInfo.snickName }}</text>
+          <text v-if="invitationInfo.postName" style="padding: 0 10rpx;">|</text>
+          <text>{{ invitationInfo.postName }}</text>
         </view>
         <view class="address">
           <text>{{ invitationTenantInfo.address }}</text>
@@ -34,10 +35,10 @@
         <view class="bottonBox">
           <button
             class="bottonItem"
-            style="margin-bottom: 20rpx;"
+            style="margin-bottom: 30rpx;"
             @tap.stop="tel(invitationInfo.mobile || invitationTenantInfo.contactMobile)"
           >
-            拨打电话
+            电话咨询
           </button>
           <button class="bottonItem" @tap.stop="onlineConsultation">在线咨询</button>
         </view>
@@ -51,6 +52,7 @@
         <image
           style="width: 160px;height: 160px;display: block;margin: auto;"
           :src="invitationInfo.wechatCode"
+          mode="widthFix"
         ></image>
         <view class="tips">{{ invitationInfo.remark }}</view>
       </view>
@@ -109,10 +111,10 @@ export default {
 <style scoped lang="scss">
 .box123 {
   overflow: hidden;
-  margin-top: 30rpx;
+  margin: 0 auto 20rpx;
+  width: 720rpx;
   .warpper {
     background-color: #fcf8ff;
-    width: 694rpx;
     border-radius: 24rpx;
     padding: 20rpx;
     box-sizing: border-box;
@@ -159,14 +161,14 @@ export default {
         align-items: center;
 
         .bottonItem {
-          width: 160rpx;
-          height: 48rpx;
-          line-height: 48rpx;
+          width: 155rpx;
+          height: 40rpx;
+          line-height: 40rpx;
           background: linear-gradient(135deg, #87cdff 0%, #568cfc 100%);
           border-radius: 29rpx;
           color: #fff;
           margin: 0;
-          font-size: 26rpx;
+          font-size: 24rpx;
           &:after {
             border: none;
           }

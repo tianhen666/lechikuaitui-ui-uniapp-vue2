@@ -25,7 +25,7 @@ const user = {
   mutations: {
     // 设置邀请人的用户信息
     SET_INVITATION_INFO(state, data) {
-      state.invitationInfo = data
+      state.invitationInfo = data || {}
     },
 
     // 更新 state 的通用方法
@@ -59,7 +59,7 @@ const user = {
     },
     // 更新用户信息
     SET_USER_INFO(state, data) {
-      state.userInfo = data
+      state.userInfo = data || {}
     },
     // 清空令牌 和 用户信息
     CLEAR_LOGIN_INFO(state) {

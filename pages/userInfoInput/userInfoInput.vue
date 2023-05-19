@@ -62,7 +62,7 @@
         ></u--input>
       </u-form-item>
 
-      <u-form-item label="二维码上传" prop="userInfo.wechatCode" borderBottom>
+      <u-form-item required label="微信二维码上传" prop="userInfo.wechatCode" borderBottom>
         <u-upload
           :fileList="userInfoWechatCodeFileList"
           @afterRead="afterRead2"
@@ -73,10 +73,10 @@
         ></u-upload>
       </u-form-item>
 
-      <u-form-item label="二维码备注" prop="userInfo.remark" borderBottom>
+      <u-form-item label="微信二维码备注" prop="userInfo.remark" borderBottom>
         <u--input
           v-model="modeData.userInfo.remark"
-          placeholder="二维码备注"
+          placeholder="请输入微信二维码备注"
           border="none"
           fontSize="14px"
           placeholderStyle="font-size:14px;color:#bbb;"
@@ -139,6 +139,14 @@ export default {
             },
             message: '手机号码不正确',
             trigger: ['change', 'blur']
+          }
+        ],
+        'userInfo.wechatCode': [
+          {
+            type: 'string',
+            required: true,
+            message: '请上传微信二维码',
+            trigger: ['blur', 'change']
           }
         ]
       },
@@ -301,7 +309,7 @@ page {
 }
 
 .mBox {
-  padding: 0 30rpx 0;
+  padding: 0 20rpx 0;
 }
 .myInfo {
   background-color: $main-color;

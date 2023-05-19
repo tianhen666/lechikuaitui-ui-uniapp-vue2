@@ -5,6 +5,7 @@
       :sticky="true"
       @init="mescrollInit"
       @down="downCallback"
+      :down="downOption"
       :up="upOption"
       :bottombar="false"
     >
@@ -107,6 +108,9 @@ export default {
       upOption: {
         use: false // 主体框架只启用下拉刷新
       },
+      downOption: {
+        auto: false // 不自动加载
+      },
       topHeight: uni.upx2px(340), // 顶部内容的高度 (单位px)
       swiperHeight: '', // 需要固定swiper的高度 (单位px)
       tabs: [
@@ -154,7 +158,7 @@ export default {
       /*下拉刷新的回调 */
       setTimeout(() => {
         this.mescroll.endSuccess();
-      }, 2000);
+      }, 1000);
     },
     swiperChange(e) {
       // 轮播菜单

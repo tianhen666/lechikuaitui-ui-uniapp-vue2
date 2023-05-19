@@ -14,18 +14,15 @@
       @close="show = false"
       cancelText="取消"
     ></u-action-sheet>
+
     <!-- 显示当前登录的门诊 -->
-    <view class="switchTheClinic" v-if="tenantlist.length > 1">
+    <view class="switchTheClinic">
       <text class="left">当前门诊</text>
-      <view class="right" @tap.stop="show = true">
+      <view class="right" v-if="tenantlist.length > 1" @tap.stop="show = true">
         <text class="text">{{ tenantInfo.name }}</text>
         <u-icon name="arrow-down-fill" color="#909399" size="14"></u-icon>
       </view>
-    </view>
-
-    <view class="switchTheClinic" v-else>
-      <text class="left">当前门诊</text>
-      <view class="right">
+      <view class="right" v-else>
         <text class="text">{{ tenantInfo.name }}</text>
       </view>
     </view>
@@ -208,6 +205,7 @@ import { removeUrlParameters } from '@/utils/index.js';
 import wx from '@/wxJsSDK/index.js';
 import { getMemberUser, getUserListTenant, cutTenant } from '@/api/materialLibrary.js';
 import { mapState, mapGetters } from 'vuex';
+import { onLoad } from '../../uni_modules/uview-ui/libs/mixin/mixin';
 export default {
   data() {
     return {
@@ -263,7 +261,7 @@ export default {
     }),
     ...mapGetters(['isMember'])
   },
-  async onShow() {
+  async onLoad() {
     // 等待onLaunch 加载完成
     await this.$onLaunched;
 
@@ -331,7 +329,6 @@ export default {
 
     async mCutTenant(val) {
       // 切换门诊
-
       const res = await cutTenant({ id: val.id });
 
       // 清理当前的缓存
@@ -361,6 +358,11 @@ export default {
     async mGetUserListTenant() {
       const res = await getUserListTenant();
       this.tenantlist = [{ name: '创建一个新门诊', color: '#3898ff', fontSize: '28rpx', id: -1 }];
+      res.data.forEach(item => {
+        if (item.id === this.tenantInfo.id) {
+          item.subname = '当前所在门诊';
+        }
+      });
       this.tenantlist.unshift(...res.data);
     },
 

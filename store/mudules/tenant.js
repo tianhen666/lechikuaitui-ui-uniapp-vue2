@@ -11,11 +11,11 @@
    mutations: {
      //设置邀请人的门诊信息
      SET_INVITATION_TENANT_INFO(state, data) {
-       state.invitationInfo = data
+       state.invitationInfo = data || {}
      },
      //设置门诊信息
      SET_TENANT_INFO(state, data) {
-       state.info = data
+       state.info = data || {}
      },
    },
    actions: {

@@ -102,7 +102,13 @@
 </template>
 
 <script>
-import { updateFileNamer, saveTenant, updateTenant, getOne } from '@/api/materialLibrary.js';
+import {
+  updateFileNamer,
+  saveTenant,
+  updateTenant,
+  getShareTenant,
+  cutTenant
+} from '@/api/materialLibrary.js';
 import { mapState } from 'vuex';
 import color from '../../uni_modules/uview-ui/libs/config/color';
 export default {
@@ -153,7 +159,7 @@ export default {
       tenantLogFileList: [],
       licenseFileList: [],
 
-      tenantId: 0,
+      tenantId: 0, // 门诊ID
       btnLoading: false
     };
   },
@@ -163,10 +169,10 @@ export default {
     })
   },
   onLoad({ id }) {
-    this.tenantId = Number(id);
-
-    if (this.tenantId) {
-      this.mGetOne();
+    // 赋值门诊ID,并且获取门诊新
+    if (id) {
+      this.tenantId = Number(id) || 0;
+      this.mGetOneTenant();
     }
   },
   methods: {
@@ -175,32 +181,26 @@ export default {
       if (this.tenantId) {
         this.modeData.tenantInfo = tenantObj;
 
-        // 设置图片显示列表
+        // 设置门诊logo回显列表
         if (this.modeData.tenantInfo.tenantLog) {
-          this.tenantLogFileList = [
-            {
-              url: this.modeData.tenantInfo.tenantLog
-            }
-          ];
+          this.tenantLogFileList = [{ url: this.modeData.tenantInfo.tenantLog }];
         }
 
+        // 设置营业执照回显
         if (this.modeData.tenantInfo.license) {
-          this.licenseFileList = [
-            {
-              url: this.modeData.tenantInfo.license
-            }
-          ];
+          this.licenseFileList = [{ url: this.modeData.tenantInfo.license }];
         }
       }
     },
 
-    // 删除图片
+    // 删除门诊logo
     deletePic3(event) {
       this.tenantLogFileList.splice(event.index, 1);
       this.modeData.tenantInfo.tenantLog = '';
     },
+
+    // 上传店铺logo
     async afterRead3(event) {
-      // 上传店铺logo
       this.tenantLogFileList.push({
         ...event.file,
         status: 'uploading',
@@ -220,13 +220,14 @@ export default {
       );
     },
 
-    // 删除图片
+    // 删除删除营业执照
     deletePic4(event) {
       this.licenseFileList.splice(event.index, 1);
       this.modeData.tenantInfo.license = '';
     },
+
+    // 上传店铺营业执照
     async afterRead4(event) {
-      // 上传店铺营业执照
       this.licenseFileList.push({
         ...event.file,
         status: 'uploading',
@@ -247,8 +248,8 @@ export default {
       );
     },
 
+    // 上传图片
     uploadFilePromise(item) {
-      // 上传图片
       return new Promise((resolve, reject) => {
         updateFileNamer(item.url).then(res => {
           resolve(res);
@@ -256,17 +257,23 @@ export default {
       });
     },
 
-    async mGetOne() {
-      // 获取指定门诊信息
-      const res = await getOne({ tenantId: this.tenantId });
+    // 获取指定门诊信息
+    async mGetOneTenant() {
+      const res = await getShareTenant({ tenantId: this.tenantId });
       this.initInfo(res.data);
     },
+
+    // 表单提交
     mSubmit() {
+      // 是否在加载中,防止多次提交
       if (this.btnLoading) return;
-      // 表单提交
+
       this.$refs.uForm11
         .validate()
         .then(async res => {
+          // 验证通过
+
+          // 验证协议
           if (this.checkboxValue1[0] === '同意') {
             // 加载中
             uni.showLoading({
@@ -275,27 +282,34 @@ export default {
             this.btnLoading = true;
 
             let resObj = {};
-            // 判断是修改,还是新建
+
+            // 有门诊ID代表修改
             if (this.tenantId) {
               this.$set(this.modeData.tenantInfo, 'deleted', 0);
               resObj = await updateTenant(this.modeData.tenantInfo);
             } else {
+              // 没有门诊ID代码新建
               resObj = await saveTenant(this.modeData.tenantInfo);
             }
 
-            setTimeout(resObj => {
+            setTimeout(() => {
               this.btnLoading = false;
               // 关闭loading
               uni.hideLoading();
 
-              // 修改完成跳转
-              const pages = getCurrentPages();
-              if (pages.length > 1) {
-                uni.navigateBack();
+              // 有门诊ID完成跳转逻辑
+              if (this.tenantId) {
+                const pages = getCurrentPages();
+                if (pages.length > 1) {
+                  uni.navigateBack();
+                } else {
+                  uni.switchTab({
+                    url: '/pages/center/center'
+                  });
+                }
               } else {
-                uni.switchTab({
-                  url: '/pages/center/center'
-                });
+                // 没有门诊ID处理逻辑,完成切换逻辑
+                this.switching(resObj.data);
               }
             }, 1000);
           } else {
@@ -308,9 +322,34 @@ export default {
             uni.$u.toast(errors[0].message);
           }
         });
+    },
+    // 切换门诊
+    async switching(val) {
+      const res = await cutTenant({ id: val.id });
+
+      // 清理当前的缓存
+      uni.clearStorageSync();
+      // 设置切换的缓存
+      uni.setStorageSync('TENANTID', val.id);
+
+      // 重新打开当前网页
+      const protocol = window.location.protocol;
+      const host = window.location.host;
+
+      // 重定向到个人中心
+      const newHref = protocol + '//' + host + '/pages/center/center';
+
+      //重新获取授权链接
+      this.$store
+        .dispatch('getWXSocialAuthRedirect', { type: 31, redirectUri: newHref })
+        .then(res => {
+          window.location.href = res;
+        });
     }
   },
+
   onReady() {
+    // 绑定表单验证规则
     this.$refs.uForm11.setRules(this.rules);
   }
 };

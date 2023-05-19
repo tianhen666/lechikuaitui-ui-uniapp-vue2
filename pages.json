@@ -26,7 +26,7 @@
     }, {
       "path": "pages/articleDetails/articleDetails",
       "style": {
-        "navigationBarTitleText": "文章详情"
+        "navigationBarTitleText": ""
       }
     }, {
       "path": "pages/dataDetails/dataDetails",
