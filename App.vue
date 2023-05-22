@@ -14,7 +14,7 @@ export default {
         if (code && state) {
           // 通过微信code登录
           this.$store.dispatch('loginWxCodeToken', { type: 31, code, state }).then(res => {
-            // 处理租户问题
+            // 处理租户的ID问题
             if (res.tentId && (!res.accessToken || !res.expiresTime || !res.refreshToken)) {
               // 设置租户
               uni.setStorageSync('TENANTID', res.tentId);

@@ -20,9 +20,16 @@
       <image class="image" src="./images/del_1.png" mode="aspectFit" />
     </view>
     <!-- 缩放 -->
-    <!-- <view :style="styleRendering3" v-if="movableViewIndex !== ''" class="zoom">
+    <view
+      :style="styleRendering3"
+      v-if="movableViewIndex !== ''"
+      class="zoom"
+      @touchstart.prevent.stop="zoomTouchStart($event, movableViewIndex)"
+      @touchmove.prevent.stop="zoomTouchMove($event, movableViewIndex)"
+      @touchend.prevent.stop="zoomTouchEnd($event, movableViewIndex)"
+    >
       <image class="image" src="./images/scale_icon.png" mode="aspectFit" />
-    </view> -->
+    </view>
 
     <template v-for="(item, index) in posterData.views">
       <!-- 容器 -->
@@ -97,7 +104,7 @@
 <script>
 import myTree from './my-tree.vue';
 export default {
-  emits: ['changeIndex'],
+  emits: ['changeIndex', 'setPopup', 'del'],
   components: { myTree },
   props: {
     posterData: Object,
@@ -105,13 +112,19 @@ export default {
   },
   data() {
     return {
+      // 设置弹窗
+      doubleTap: false, // 双击
+
       query: null,
       initialX: 0,
       initialY: 0,
+      zoomX: 0,
+      zoomY: 0,
       movableViewObj: {}
     };
   },
   computed: {
+    // 修改按钮位置
     styleRendering() {
       if (this.movableViewIndex === '') {
         return '';
@@ -135,76 +148,81 @@ export default {
 
       return styleStr;
     },
+    // 删除按钮位置
     styleRendering2() {
       if (this.movableViewIndex === '') {
         return '';
       }
       let styleStr = ``;
-      if (this.posterData.views[this.movableViewIndex].css.top) {
-        styleStr += `top:${uni.upx2px(
-          parseInt(this.posterData.views[this.movableViewIndex].css.top)
-        ) - 18}px;`;
+      const item = this.posterData.views[this.movableViewIndex].css;
+      if (item.top) {
+        styleStr += `top:${uni.upx2px(parseFloat(item.top)) - 15}px;`;
       } else {
-        styleStr += `bottom:${uni.upx2px(
-          parseInt(this.posterData.views[this.movableViewIndex].css.bottom)
-        ) + this.movableViewObj.height}px;`;
+        styleStr += `bottom:${uni.upx2px(parseFloat(item.bottom)) +
+          (uni.upx2px(parseFloat(item.height)) || this.movableViewObj.height) -
+          0}px;`;
       }
 
-      if (this.posterData.views[this.movableViewIndex].css.left) {
-        styleStr += `left:${parseInt(this.posterData.views[this.movableViewIndex].css.left) -
-          40}rpx;`;
+      if (item.left) {
+        styleStr += `left:${uni.upx2px(parseFloat(item.left)) - 15}px;`;
       } else {
-        styleStr += `right:${uni.upx2px(
-          parseInt(this.posterData.views[this.movableViewIndex].css.right)
-        ) +
-          this.movableViewObj.width +
-          5}px;`;
+        styleStr += `right:${uni.upx2px(parseFloat(item.right)) +
+          (uni.upx2px(parseFloat(item.width)) || this.movableViewObj.width) +
+          0}px;`;
       }
 
       return styleStr;
     },
+    // 缩放按钮位置
     styleRendering3() {
       if (this.movableViewIndex === '') {
         return '';
       }
       let styleStr = ``;
-      if (this.posterData.views[this.movableViewIndex].css.top) {
-        styleStr += `top:${uni.upx2px(
-          parseInt(this.posterData.views[this.movableViewIndex].css.top)
-        ) +
-          this.movableViewObj.height -
+      const item = this.posterData.views[this.movableViewIndex].css;
+      if (item.top) {
+        styleStr += `top:${uni.upx2px(parseFloat(item.top)) +
+          (uni.upx2px(parseFloat(item.height)) || this.movableViewObj.height) -
           9}px;`;
       } else {
-        styleStr += `bottom:${uni.upx2px(
-          parseInt(this.posterData.views[this.movableViewIndex].css.bottom)
-        ) - 9}px;`;
+        styleStr += `bottom:${uni.upx2px(parseFloat(item.bottom)) - 9}px;`;
       }
 
-      if (this.posterData.views[this.movableViewIndex].css.left) {
-        styleStr += `left:${uni.upx2px(
-          parseInt(this.posterData.views[this.movableViewIndex].css.left)
-        ) +
-          this.movableViewObj.width -
+      if (item.left) {
+        styleStr += `left:${uni.upx2px(parseFloat(item.left)) +
+          (uni.upx2px(parseFloat(item.width)) || this.movableViewObj.width) -
           9}px;`;
       } else {
-        styleStr += `right:${uni.upx2px(
-          parseInt(this.posterData.views[this.movableViewIndex].css.right)
-        ) - 9}px;`;
+        styleStr += `right:${uni.upx2px(parseFloat(item.right)) - 9}px;`;
       }
 
       return styleStr;
     }
   },
   methods: {
+    //移动区域点击事件
     movableAreaTap(e) {
-      //移动区域点击事件
       this.$emit('changeIndex', '');
     },
+
+    // 移动物体触摸开始
     handleTouchStart(event, item, index) {
       // 如果有多个触摸点，执行相应的操作
       if (event.touches.length > 1) {
         return;
       }
+
+      //判断双击
+      if (!this.doubleTap) {
+        this.doubleTap = true;
+        setTimeout(() => {
+          this.doubleTap = false;
+        }, 250);
+      } else {
+        // 弹出框
+        this.$emit('setPopup');
+      }
+
       // 设置当前滑块
       this.$emit('changeIndex', index);
 
@@ -214,13 +232,15 @@ export default {
       this.query.select(`#key${item.key}`).boundingClientRect();
       this.query.exec(res => {
         // 保存移动前的属性
-        this.movableViewObj = JSON.parse(JSON.stringify(res[1]));
+        this.movableViewObj = res[1];
       });
       // 设置触摸点位置
       this.initialX = event.changedTouches[0].pageX;
       this.initialY = event.changedTouches[0].pageY;
     },
-    handleTouchMove(e, item, index) {
+
+    // 移动物体移动中
+    handleTouchMove(event, item, index) {
       // 如果有多个触摸点，执行相应的操作
       if (event.touches.length > 1) {
         return;
@@ -267,9 +287,49 @@ export default {
         });
       }
     },
-    handleTouchEnd(e, item, index) {
+
+    // 移动物体触摸结束
+    handleTouchEnd(event, item, index) {
       this.query = null;
+      this.initialX = 0;
+      this.initialY = 0;
     },
+
+    // 放大触摸开始
+    zoomTouchStart(event, index) {
+      // 如果有多个触摸点，执行相应的操作
+      if (event.touches.length > 1) {
+        return;
+      }
+      this.zoomX = event.changedTouches[0].pageX;
+      this.zoomY = event.changedTouches[0].pageY;
+    },
+    // 缩放移动中
+    zoomTouchMove(event, index) {
+      // 如果有多个触摸点，执行相应的操作
+      if (event.touches.length > 1) {
+        return;
+      }
+      const currentX = event.changedTouches[0].pageX - this.zoomX;
+      const currentY = event.changedTouches[0].pageY - this.zoomY;
+
+      const item = this.posterData.views[this.movableViewIndex];
+
+      const width = Math.abs(this.movableViewObj.width + currentX);
+      const height = Math.abs(this.movableViewObj.height + currentY);
+      this.$set(item.css, 'width', `${width / (uni.upx2px(100) / 100)}rpx`);
+      this.$set(item.css, 'height', `${height / (uni.upx2px(100) / 100)}rpx`);
+    },
+    // 缩放结束
+    zoomTouchEnd(event, index) {
+      // 如果有多个触摸点，执行相应的操作
+      if (event.touches.length > 1) {
+        return;
+      }
+      this.zoomX = 0;
+      this.zoomY = 0;
+    },
+    // 删除当前选中索引
     del() {
       this.$emit('del', this.movableViewIndex);
     }
@@ -320,5 +380,9 @@ $iocn-size: 15px;
     width: 100%;
     height: 100%;
   }
+}
+
+.popupBox {
+  background-color: #fff;
 }
 </style>
