@@ -231,6 +231,7 @@ export default {
       this.query.select(`.movableArea`).boundingClientRect();
       this.query.select(`#key${item.key}`).boundingClientRect();
       this.query.exec(res => {
+        console.log(res);
         // 保存移动前的属性
         this.movableViewObj = res[1];
       });
@@ -347,13 +348,13 @@ $iocn-size: 15px;
 
 .movableArea {
   position: relative;
+  z-index: 0;
   width: $movable-area-w;
   height: $movable-area-h;
   background-color: #fff;
   background-size: 100% 100%;
   background-repeat: no-repeat;
   margin: auto;
-  transform: translateZ(1rpx);
 }
 .movableView {
   border: 1px dashed red;

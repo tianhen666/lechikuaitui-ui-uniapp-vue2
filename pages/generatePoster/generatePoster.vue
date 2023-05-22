@@ -188,7 +188,7 @@ export default {
       this.movableViewIndex = '';
     },
     // 生成海报需要添加的信息
-    btnTap(item) {
+    async btnTap(item) {
       // 如果选择了取消,没有选择则选择上
       item.isChoose = !item.isChoose;
 
@@ -300,6 +300,8 @@ export default {
 
         // 门诊logo
         if (item.key === 7) {
+          const imgInfo = await uni.getImageInfo({ src: this.tenantInfo.tenantLog });
+          console.log(imgInfo);
           this.posterData.views.push({
             key: item.key,
             type: 'image',
@@ -317,6 +319,8 @@ export default {
 
         // 个人二维码
         if (item.key === 8) {
+          const imgInfo = await uni.getImageInfo({ src: this.userInfo.wechatCode });
+          console.log(imgInfo);
           this.posterData.views.push({
             key: item.key,
             type: 'image',
@@ -422,9 +426,9 @@ export default {
 
   .diyBtn {
     height: 80rpx;
-
     > .warpper {
       position: fixed;
+      z-index: 88;
       bottom: 0;
       background-color: #fff;
       width: 100%;
