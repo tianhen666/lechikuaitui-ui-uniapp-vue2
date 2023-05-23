@@ -48,7 +48,7 @@ export const getClueRecordBehavior = params => http.post('/yxx/source-material/g
 export const updateFileNamer = filePath =>
   http.upload('/yxx/memberUser/fileName', {
     name: 'avatarFile',
-    fileType: 'image',
+    fileType: 'image/video/audio',
     filePath: filePath
   })
 
