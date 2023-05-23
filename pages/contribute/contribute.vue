@@ -56,27 +56,44 @@
 
       <!-- 上传海报 -->
       <u-form-item v-if="formData.type === 3" label="上传海报" required prop="content" borderBottom>
-        <u-upload
-          :fileList="contentFileList"
-          @afterRead="afterRead1"
-          @delete="deletePic1"
-          :maxCount="1"
-        ></u-upload>
+        <htz-image-upload
+          mediaType="image"
+          v-model="contentFileList"
+          @chooseSuccess="afterRead1"
+          @imgDelete="deletePic1"
+          :dataType="1"
+          :compress="false"
+        ></htz-image-upload>
       </u-form-item>
 
       <!-- 上传视频 -->
       <u-form-item v-if="formData.type === 2" label="上传视频" required prop="content" borderBottom>
-        <u-upload
-          accept="video"
-          :fileList="contentFileList"
-          :compressed="false"
-          @afterRead="afterRead1"
-          @delete="deletePic1"
-          :maxCount="1"
-        ></u-upload>
+        <htz-image-upload
+          mediaType="video"
+          v-model="contentFileList"
+          @chooseSuccess="afterRead1"
+          @imgDelete="deletePic1"
+          :dataType="1"
+          :compress="false"
+        ></htz-image-upload>
       </u-form-item>
 
-      {{ formData }}
+      <!-- 上传文章封面图 -->
+      <u-form-item v-if="formData.type === 1" label="上传文章封面图" required prop="coverImage">
+        <htz-image-upload
+          mediaType="image"
+          v-model="coverImageList"
+          @chooseSuccess="afterRead2"
+          @imgDelete="deletePic2"
+          :dataType="1"
+          :compress="false"
+        ></htz-image-upload>
+      </u-form-item>
+
+      <!-- 文章内容 -->
+      <u-form-item v-if="formData.type === 1" required label="文章内容" prop="content">
+        <u--textarea v-model="formData.content" placeholder="请输入文章内容内容"></u--textarea>
+      </u-form-item>
     </u--form>
 
     <!-- 底部按钮 -->
@@ -103,7 +120,7 @@ export default {
         name: '',
         description: '',
         classId: '',
-        type: 3,
+        type: 1,
         status: 0,
         content: '',
         coverImage: ''
@@ -116,19 +133,19 @@ export default {
           type: 'string',
           required: true,
           message: '素材名称不能为空',
-          trigger: ['blur', 'change']
+          trigger: ['change']
         },
         classId: {
           type: 'number',
           required: true,
           message: '分类ID不能为空',
-          trigger: ['blur', 'change']
+          trigger: ['change']
         },
         content: {
           type: 'string',
           required: true,
           message: '素材内容不能为空',
-          trigger: ['blur', 'change']
+          trigger: ['change']
         }
       },
 
@@ -139,8 +156,11 @@ export default {
       classColumns: [], // 子分类数据,
       currentClass: [], // 当前选中的分类
 
-      // 上传图片
-      contentFileList: []
+      // 上传内容的预览列表
+      contentFileList: [],
+
+      // 封面图上传列表
+      coverImageList: []
     };
   },
   computed: {
@@ -163,12 +183,16 @@ export default {
     // 选择大分类
     classGroupChange(e) {
       this.mGetClassIfyList(e);
+      this.formData.content = '';
+      this.formData.coverImage = '';
+      this.coverImageList = [];
+      this.contentFileList = [];
     },
     // 子分类选择
     classChangeHandler(e) {
       const { columnIndex, value, values, index, picker = this.$refs.uPicker } = e;
       if (columnIndex === 0) {
-        picker.setColumnValues(1, this.classColumns[0][index].parentId);
+        picker.setColumnValues(1, this.classColumns[0][index].parentListId);
       }
     },
     // 选择分类确认
@@ -188,39 +212,50 @@ export default {
         sourceMaterialType: type
       });
       this.classColumns.splice(0, 1, res.data);
-      this.classColumns.splice(1, 1, res.data[0].parentId);
+      this.classColumns.splice(1, 1, res.data[0].parentListId);
       this.currentClass = [];
       this.$refs.uPicker.setIndexs([0, 0]);
     },
 
     // 删除列表
     deletePic1(event) {
-      this.contentFileList.splice(event.index, 1);
       this.formData.content = '';
     },
+    deletePic2(event) {
+      this.formData.coverImage = '';
+    },
 
-    // 上传到列表
-    async afterRead1(event) {
-      this.contentFileList.push({
-        ...event.file,
-        status: 'uploading',
-        message: '上传中'
+    // 上传内容
+    async afterRead1(tempFilePaths, type) {
+      uni.showLoading({
+        title: '上传中'
       });
-      const result = await this.uploadFilePromise(this.contentFileList[0]);
+      const result = await this.uploadFilePromise(tempFilePaths[0]);
 
       // 上传成功,重新设置显示列表
       this.formData.content = result;
-      const newObj = Object.assign(this.contentFileList[0], {
-        status: 'success',
-        message: '上传成功',
-        url: result
-      });
-      this.contentFileList.splice(0, 1, newObj);
+      if (this.formData.type === 3) {
+        this.contentFileList.push({ type: 0, url: tempFilePaths[0] });
+      } else if (this.formData.type === 2) {
+        this.contentFileList.push({ type: 1, url: tempFilePaths[0] });
+      }
+      uni.hideLoading();
     },
-    // 上传图片
-    uploadFilePromise(item) {
+    async afterRead2(tempFilePaths, type) {
+      uni.showLoading({
+        title: '上传中'
+      });
+      const result = await this.uploadFilePromise(tempFilePaths[0]);
+
+      // 上传成功,重新设置显示列表
+      this.formData.coverImage = result;
+      this.coverImageList.push({ type: 0, url: tempFilePaths[0] });
+      uni.hideLoading();
+    },
+    // 上传接口
+    uploadFilePromise(url) {
       return new Promise((resolve, reject) => {
-        updateFileNamer(item.url).then(res => {
+        updateFileNamer(url).then(res => {
           resolve(res);
         });
       });
@@ -242,12 +277,13 @@ export default {
 
           // 数据提交
           const resObj = await createSourceMaterial(this.formData);
-          console.log(resObj);
 
           setTimeout(() => {
             this.btnLoading = false;
             // 关闭loading
             uni.hideLoading();
+
+            uni.navigateBack();
           }, 1000);
         })
         .catch(errors => {

@@ -143,7 +143,16 @@
       }
 
     }
-  ],
+      ,{
+            "path" : "pages/editor/editor",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "富文本编辑器",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+    ],
   "tabBar": {
     "selectedColor": "#3898ff",
     "borderStyle": "white",
