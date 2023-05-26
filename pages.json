@@ -37,7 +37,7 @@
     }, {
       "path": "pages/clueDetails/clueDetails",
       "style": {
-        "navigationBarTitleText": "客户详情"
+        "navigationBarTitleText": "客户浏览详情"
       }
 
     }, {
@@ -142,17 +142,15 @@
         "enablePullDownRefresh": false
       }
 
+    }, {
+      "path": "pages/editor/editor",
+      "style": {
+        "navigationBarTitleText": "富文本编辑器",
+        "enablePullDownRefresh": false
+      }
+
     }
-      ,{
-            "path" : "pages/editor/editor",
-            "style" :                                                                                    
-            {
-                "navigationBarTitleText": "富文本编辑器",
-                "enablePullDownRefresh": false
-            }
-            
-        }
-    ],
+  ],
   "tabBar": {
     "selectedColor": "#3898ff",
     "borderStyle": "white",

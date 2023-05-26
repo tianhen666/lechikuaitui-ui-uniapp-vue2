@@ -61,4 +61,10 @@ export default {
 .box {
   overflow: hidden;
 }
+page {
+  background-color: #fff;
+  background-image: url('@/static/images/myimg/bg.png');
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+}
 </style>

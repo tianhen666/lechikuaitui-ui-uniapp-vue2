@@ -1,6 +1,5 @@
 <template>
   <mescroll-body
-    :sticky="true"
     @init="mescrollInit"
     @down="downCallback"
     :down="downOption"

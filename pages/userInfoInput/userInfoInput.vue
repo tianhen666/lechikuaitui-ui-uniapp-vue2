@@ -29,7 +29,13 @@
         ></u--input>
       </u-form-item>
 
-      <u-form-item label="手机号码" required prop="userInfo.contactMobile" borderBottom>
+      <u-form-item
+        label="手机号码"
+        @tap="smsCodeOpen"
+        required
+        prop="userInfo.contactMobile"
+        borderBottom
+      >
         <u--input
           type="number"
           v-model="modeData.userInfo.contactMobile"
@@ -95,12 +101,64 @@
       </view>
     </view>
 
+    <!-- 验证手机弹窗 -->
+    <uni-popup ref="smsCodePopup" type="center">
+      <view class="smsCodeBox">
+        <view class="close" @tap.stop="smsCodeClose">
+          <image class="img" src="/static/images/empty/close.png"></image>
+        </view>
+        <u--form
+          labelWidth="55px"
+          :model="modeDataSmsCode"
+          :rules="rulesSmsCode"
+          :labelStyle="{ color: '#666', fontSize: '28rpx' }"
+          ref="uFormSmsCode"
+        >
+          <u-form-item label="手机号:" prop="contactMobile">
+            <u--input
+              v-model="modeDataSmsCode.contactMobile"
+              placeholder="请填写手机号"
+              type="number"
+              fontSize="14px"
+              placeholderStyle="font-size:14px;color:#bbb;"
+            >
+              <template slot="suffix">
+                <u-code
+                  ref="uCode"
+                  @change="smsCodeChange"
+                  seconds="60"
+                  changeText="X秒重新获取"
+                ></u-code>
+                <u-button
+                  @tap="getCodeSms"
+                  :text="smsCodeTips"
+                  type="success"
+                  size="mini"
+                ></u-button>
+              </template>
+            </u--input>
+          </u-form-item>
+
+          <u-form-item label="验证码:" prop="code">
+            <u--input
+              v-model="modeDataSmsCode.code"
+              placeholder="请输入验证码"
+              type="number"
+              fontSize="14px"
+              placeholderStyle="font-size:14px;color:#bbb;"
+            ></u--input>
+          </u-form-item>
+        </u--form>
+
+        <view class="smsCodeBtn"><button @tap="verifyCodeSms" class="btn">确认</button></view>
+      </view>
+    </uni-popup>
     <u-toast ref="uToast"></u-toast>
   </view>
 </template>
 
 <script>
-import { updateFileNamer, updateMember } from '@/api/materialLibrary.js';
+import { updateFileNamer, updateMember, sendSmsCode, useSmsCode } from '@/api/materialLibrary.js';
 import { mapState } from 'vuex';
 export default {
   data() {
@@ -128,22 +186,18 @@ export default {
       rules: {
         'userInfo.contactMobile': [
           {
-            type: 'string',
             required: true,
-            message: '请填写手机号',
-            trigger: ['blur', 'change']
+            message: '请填写手机号'
           },
           {
             validator: (rule, value, callback) => {
               return uni.$u.test.mobile(value);
             },
-            message: '手机号码不正确',
-            trigger: ['change', 'blur']
+            message: '手机号码不正确'
           }
         ],
         'userInfo.wechatCode': [
           {
-            type: 'string',
             required: true,
             message: '请上传微信二维码',
             trigger: ['blur', 'change']
@@ -154,7 +208,44 @@ export default {
       userInfoWechatCodeFileList: [],
       btnLoading: false,
 
-      newClinic: false
+      // 新建门诊
+      newClinic: false,
+
+      //验证手机
+      smsCodeShow: false,
+      smsCodeTips: '获取验证码',
+      modeDataSmsCode: {
+        contactMobile: '',
+        code: ''
+      },
+      rulesSmsCode: {
+        contactMobile: [
+          {
+            required: true,
+            message: '请填写手机号'
+          },
+          {
+            validator: (rule, value, callback) => {
+              return uni.$u.test.mobile(value);
+            },
+            message: '手机号码不正确'
+          }
+        ],
+        code: [
+          {
+            type: 'number',
+            message: '验证码不正确'
+          },
+          {
+            required: true,
+            message: '请输入验证码'
+          },
+          {
+            len: 4,
+            message: '验证码不正确'
+          }
+        ]
+      }
     };
   },
   computed: {
@@ -295,6 +386,57 @@ export default {
           this.btnLoading = false;
           uni.$u.toast(errors[0].message);
         });
+    },
+    // 获取验证码
+    getCodeSms() {
+      this.$refs.uFormSmsCode.validateField('contactMobile', async errorsRes => {
+        // 手机号验证失败
+        if (errorsRes.length > 0) {
+          return;
+        }
+
+        // 验证通过发送短信验证码
+        const resSmsCode = await sendSmsCode({ mobile: this.modeDataSmsCode.contactMobile });
+        this.$refs.uCode.start();
+      });
+    },
+    //验证验证码
+    verifyCodeSms() {
+      // 表单验证
+      this.$refs.uFormSmsCode
+        .validate()
+        .then(async res => {
+          // 接口验证
+          const resSmsCode = await useSmsCode({
+            mobile: this.modeDataSmsCode.contactMobile,
+            code: this.modeDataSmsCode.code
+          });
+
+          //验证通过后重新赋值
+          this.modeData.userInfo.contactMobile = this.modeDataSmsCode.contactMobile;
+
+          this.$refs.smsCodePopup.close();
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    },
+    // 设置验证码文字
+    smsCodeChange(text) {
+      this.smsCodeTips = text;
+    },
+    // 验证码弹窗关闭
+    smsCodeClose() {
+      this.$refs.smsCodePopup.close();
+    },
+    // 验证码打开
+    smsCodeOpen() {
+      this.$refs.smsCodePopup.open();
+      this.hideKeyboard();
+    },
+    // 不弹出输入法
+    hideKeyboard() {
+      uni.hideKeyboard();
     }
   },
   onReady() {
@@ -303,7 +445,7 @@ export default {
 };
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 page {
   background-color: #fff;
 }
@@ -330,23 +472,6 @@ page {
     margin: 0 -30rpx;
     padding: 15rpx 30rpx 40rpx;
     box-sizing: border-box;
-    .agreement {
-      font-size: 26rpx;
-      margin-bottom: 20rpx;
-      display: flex;
-      align-items: center;
-
-      .s12 {
-        color: $main-color;
-        padding-left: 10rpx;
-      }
-      .u-checkbox-group {
-        flex: none;
-        .u-checkbox {
-          margin-bottom: 0 !important;
-        }
-      }
-    }
     .btn {
       background-color: $main-color;
       color: #fff;
@@ -356,15 +481,37 @@ page {
     }
   }
 }
-.u-textarea {
+/deep/ .u-textarea {
   padding: 9rpx 0;
 }
 
-.outpatientService {
-  background-color: #ddd;
-  margin: 0 -30rpx;
-  padding: 20rpx 30rpx;
-  font-size: 30rpx;
-  color: #888;
+.smsCodeBox {
+  position: relative;
+  width: 600rpx;
+  padding: 40rpx 30rpx;
+  box-sizing: border-box;
+  background-color: #fff;
+  border-radius: 10rpx;
+  .close {
+    position: absolute;
+    top: -45rpx;
+    right: -45rpx;
+
+    .img {
+      width: 45rpx;
+      height: 45rpx;
+      display: block;
+    }
+  }
+  .smsCodeBtn {
+    .btn {
+      color: #fff;
+      background-color: $main-color;
+      font-size: 28rpx;
+      height: 65rpx;
+      line-height: 65rpx;
+      margin-top: 20rpx;
+    }
+  }
 }
 </style>

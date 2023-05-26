@@ -1,8 +1,8 @@
 <template>
   <view class="container">
-    <!-- 提示 -->
+    <!-- 提示 弹窗 -->
     <u-toast ref="uToast" />
-    <!-- 切换门诊列表 -->
+    <!-- 切换门诊列表 弹窗 -->
     <u-action-sheet
       :actions="tenantlist"
       :description="title"
@@ -17,7 +17,7 @@
 
     <!-- 显示当前登录的门诊 -->
     <view class="switchTheClinic">
-      <text class="left">当前门诊</text>
+      <text class="left">当前登录的门诊</text>
       <view class="right" v-if="tenantlist.length > 1" @tap.stop="show = true">
         <text class="text">{{ tenantInfo.name }}</text>
         <u-icon name="arrow-down-fill" color="#909399" size="14"></u-icon>
@@ -26,25 +26,34 @@
         <text class="text">{{ tenantInfo.name }}</text>
       </view>
     </view>
-
-    <view style="margin: 0 -30rpx;"><u-gap height="1" bgColor="#eee"></u-gap></view>
+    <view style="margin:0 -30rpx"><u-line color="#ccc"></u-line></view>
 
     <!-- 显示登录的用户 -->
     <view class="businessCardInformation">
+      <!-- 头像 -->
       <view class="headPortrait">
-        <u-avatar :src="userInfo.avatar || userInfo.savatar"></u-avatar>
+        <u-avatar size="100rpx" :src="userInfo.avatar || userInfo.savatar"></u-avatar>
       </view>
 
+      <!-- 名称信息 -->
       <view class="nameBox">
-        <view class="name">
-          <text>{{ userInfo.nickname || userInfo.snickName }}</text>
+        <view class="nameBoxWarpper">
+          <view class="name">
+            <text>{{ userInfo.nickname || userInfo.snickName }}</text>
+          </view>
+          <view class="role" v-if="isMember">
+            <text>{{ userInfo.roleName }}</text>
+          </view>
+          <view class="role" v-else><text>普通用户</text></view>
         </view>
-        <view class="role" v-if="isMember">
-          <text>{{ userInfo.roleName }}</text>
+
+        <!-- 到期时间 -->
+        <view class="expirationTime">
+          <text>店铺到期时间：{{ mDayjs(tenantInfo.expireTime) }}</text>
         </view>
-        <view class="role" v-else><text>普通用户</text></view>
       </view>
 
+      <!-- 编辑 -->
       <view class="editCard">
         <u-icon name="edit-pen-fill" color="#909399" size="16"></u-icon>
         <text class="text" @tap.stop="gotoPage('/pages/userInfoInput/userInfoInput')">
@@ -52,34 +61,32 @@
         </text>
       </view>
     </view>
-    <view style="margin: 0 -30rpx;"><u-gap height="6" bgColor="#eee"></u-gap></view>
 
     <!-- 团队管理  普通会员不可见 -->
     <view class="theTeamReport" v-if="isMember">
       <view class="title">
-        <view class="left"><text>团队报告</text></view>
+        <view class="left"><text>今日概况</text></view>
         <view class="right"><u-icon name="arrow-right" color="#909399" size="16"></u-icon></view>
       </view>
 
       <view class="theTeamReportBox">
         <view class="warpper">
-          <text class="theNumberOf">{{ centerObj.heat }}</text>
           <text class="text">阅读次数</text>
+          <text class="theNumberOf">{{ centerObj.heat }}</text>
         </view>
         <view class="warpper">
-          <text class="theNumberOf">{{ centerObj.threadCount }}</text>
           <text class="text">分享次数</text>
+          <text class="theNumberOf">{{ centerObj.threadCount }}</text>
         </view>
         <view class="warpper">
+          <text class="text">浏览人数</text>
           <text class="theNumberOf">{{ centerObj.transmitCount }}</text>
-          <text class="text">新增线索</text>
         </view>
         <!-- <view class="warpper">
           <text class="theNumberOf">0</text>
           <text class="text">阅读次数</text>
         </view> -->
       </view>
-      <view style="margin: 0 -30rpx;"><u-gap height="6" bgColor="#eee"></u-gap></view>
     </view>
 
     <!-- 创建门诊   普通会员可见 -->
@@ -88,7 +95,6 @@
         <button class="btn" @tap.stop="createClinic">创建我的门诊</button>
         <text class="desc">您当前还没有门诊哦,创建一个门诊</text>
       </view>
-      <view style="margin: 0 -30rpx;"><u-gap height="6" bgColor="#eee"></u-gap></view>
     </view>
 
     <!-- 管理工具 -->
@@ -109,7 +115,6 @@
           <!-- <text class="desc">{{ item.desc }}</text> -->
         </view>
       </view>
-      <view style="margin: 0 -30rpx;"><u-gap height="6" bgColor="#eee"></u-gap></view>
     </view>
 
     <!-- 个人工具 -->
@@ -156,47 +161,49 @@
         <view class="left"><text>其他选项</text></view>
       </view>
 
-      <u-cell-group :border="false" :customStyle="{ margin: '0 -15px' }">
+      <u-cell-group :border="false">
         <u-cell
-          title="设置"
+          title="通用设置"
           name="setUp"
           isLink
-          :titleStyle="{ 'font-size': '27rpx', 'margin-left': '10rpx' }"
+          titleStyle="font-size:28rpx;margin-left:15rpx"
+          iconStyle="width:55rpx;height:55rpx;"
+          icon="../../static/img/index/sz.png"
+          :border="false"
           @click="ListOfSet"
-        >
-          <u-icon slot="icon" size="20" name="search"></u-icon>
-        </u-cell>
+        ></u-cell>
         <u-cell
           title="在线客服"
           name="onlineCustomerService"
           isLink
-          :titleStyle="{ 'font-size': '27rpx', 'margin-left': '10rpx' }"
+          titleStyle="font-size:28rpx;margin-left:15rpx"
+          iconStyle="width:55rpx;height:55rpx;"
+          icon="../../static/img/index/zxzx.png"
+          :border="false"
           @click="ListOfSet"
-        >
-          <u-icon slot="icon" size="20" name="setting-fill"></u-icon>
-        </u-cell>
+        ></u-cell>
         <u-cell
           title="使用教程"
           name="usingTheTutorial"
           isLink
-          :titleStyle="{ 'font-size': '27rpx', 'margin-left': '10rpx' }"
+          titleStyle="font-size:28rpx;margin-left:15rpx"
+          iconStyle="width:55rpx;height:55rpx;"
+          icon="../../static/img/index/syjc.png"
+          :border="false"
           @click="ListOfSet"
-        >
-          <u-icon slot="icon" size="20" name="setting-fill"></u-icon>
-        </u-cell>
+        ></u-cell>
         <u-cell
           title="意见反馈"
           name="feedback"
           isLink
-          :titleStyle="{ 'font-size': '27rpx', 'margin-left': '10rpx' }"
+          titleStyle="font-size:28rpx;margin-left:15rpx"
+          iconStyle="width:55rpx;height:55rpx;"
+          icon="../../static/img/index/yjfk.png"
+          :border="false"
           @click="ListOfSet"
-        >
-          <u-icon slot="icon" size="20" name="setting-fill"></u-icon>
-        </u-cell>
+        ></u-cell>
       </u-cell-group>
     </view>
-
-    <!-- <u-gap height="20" bgColor="#eee"></u-gap> -->
   </view>
 </template>
 
@@ -205,7 +212,7 @@ import { removeUrlParameters } from '@/utils/index.js';
 import wx from '@/wxJsSDK/index.js';
 import { getMemberUser, getUserListTenant, cutTenant } from '@/api/materialLibrary.js';
 import { mapState, mapGetters } from 'vuex';
-import { onLoad } from '../../uni_modules/uview-ui/libs/mixin/mixin';
+import dayjs from 'dayjs';
 export default {
   data() {
     return {
@@ -371,6 +378,10 @@ export default {
       uni.navigateTo({
         url: url
       });
+    },
+    mDayjs(val) {
+      // 时间处理
+      return dayjs(val).format('YYYY-MM-DD');
     }
   }
 };
@@ -379,8 +390,10 @@ export default {
 <style scoped lang="scss">
 page {
   background-color: #fff;
+  background-image: url('@/static/images/myimg/bg.png');
+  background-repeat: no-repeat;
+  background-size: 100% auto;
 }
-
 .container {
   padding: 0 30rpx;
   .title {
@@ -390,7 +403,7 @@ page {
     justify-content: space-between;
 
     .left {
-      font-size: 28rpx;
+      font-size: 30rpx;
       font-weight: bold;
       flex: none;
     }
@@ -407,7 +420,7 @@ page {
 
     .left {
       font-size: 26rpx;
-      color: #999;
+      color: #666;
     }
 
     .right {
@@ -433,22 +446,34 @@ page {
     .nameBox {
       flex: auto;
       margin-left: 20rpx;
+      .nameBoxWarpper {
+        display: flex;
+        align-items: center;
+        .name {
+          font-size: 28rpx;
+          font-weight: bold;
+          margin-right: 20rpx;
+        }
 
-      .name {
-        font-size: 28rpx;
-        font-weight: bold;
+        .role {
+          color: #c94950;
+          border-radius: 50px;
+          border: 1px solid #c94950;
+          font-size: 21rpx;
+          line-height: 1.6;
+          text-align: center;
+          display: inline-block;
+          padding: 0 10rpx;
+        }
       }
 
-      .role {
-        margin-top: 10rpx;
-        color: #c94950;
-        border-radius: 50px;
-        border: 1px solid #c94950;
-        font-size: 21rpx;
-        line-height: 1.6;
-        text-align: center;
-        display: inline-block;
-        padding: 0 20rpx;
+      .expirationTime {
+        height: 25rpx;
+        font-size: 25rpx;
+        font-family: PingFangSC-Regular, PingFang SC;
+        color: #7b7b7b;
+        line-height: 25rpx;
+        margin-top: 24rpx;
       }
     }
 
@@ -465,31 +490,43 @@ page {
   }
 
   .theTeamReport {
+    background: #ffffff;
+    border-radius: 20rpx;
+    padding: 10rpx 20rpx 30rpx;
+    border: 1px solid #f1f1f1;
     .theTeamReportBox {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 30rpx;
-      margin-top: 10rpx;
-
+      margin-top: 20rpx;
       .warpper {
         display: flex;
         flex-direction: column;
         text-align: center;
-
         .theNumberOf {
+          margin-top: 20rpx;
           font-weight: bold;
+          font-size: 45rpx;
+          font-family: DINAlternate-Bold, DINAlternate;
+          color: #fe9f26;
+          line-height: 45rpx;
         }
-
         .text {
-          color: #999;
-          font-size: 24rpx;
+          font-size: 28rpx;
+          font-family: PingFangSC-Regular, PingFang SC;
+          color: #9f9f9f;
+          line-height: 28rpx;
         }
       }
     }
   }
 
   .commonlyUsedTools {
+    padding: 10rpx 20rpx 30rpx;
+    border-radius: 20rpx;
+    background-color: #fff;
+    margin-top: 30rpx;
+    border: 1px solid #f1f1f1;
     .commonlyUsedToolsBox {
       margin-top: 15rpx;
       display: grid;
@@ -526,6 +563,16 @@ page {
   }
 
   .theListOfSet {
+    padding: 10rpx 20rpx 30rpx;
+    border-radius: 20rpx;
+    background-color: #fff;
+    margin-top: 30rpx;
+    border: 1px solid #f1f1f1;
+
+    /deep/ .u-cell__body {
+      padding-left: 0;
+      padding-right: 0;
+    }
   }
 
   .createClinic {

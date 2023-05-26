@@ -20,12 +20,15 @@
     </view>
 
     <mescroll-uni
+      bottom="110px"
       @init="mescrollInit"
       :height="height"
       :disable-scroll="disableScroll"
       :down="downOption"
+      @down="downCallback"
       :up="upOption"
       @up="upCallback"
+      :bottombar="false"
       @emptyclick="emptyClick"
     >
       <view class="listBox">
@@ -54,7 +57,7 @@ export default {
   data() {
     return {
       downOption: {
-        use: false // 禁用
+        auto: false
       },
       upOption: {
         auto: false, // 不自动加载
@@ -100,7 +103,11 @@ export default {
     this.mGetClassIfyList();
   },
   methods: {
-    /*上拉加载的回调: 其中page.num:当前页 从1开始, page.size:每页数据条数,默认10 */
+    downCallback() {
+      setTimeout(() => {
+        this.mescroll.resetUpScroll(false);
+      }, 500);
+    },
     upCallback(page) {
       //联网加载数据
       // let keyword = this.tabs[this.i].name;
@@ -149,6 +156,7 @@ export default {
     switchClassification(index) {
       if (this.btnIndex === index) return;
       this.btnIndex = index;
+      this.mescroll.scrollTo(0, 0);
       this.mescroll.resetUpScroll(false);
     },
     //点击单个项目
@@ -175,7 +183,7 @@ export default {
 <style scoped lang="scss">
 .boxTop {
   padding: 20rpx 20rpx 20rpx;
-
+  overflow: hidden;
   .search {
     margin-bottom: 30rpx;
   }

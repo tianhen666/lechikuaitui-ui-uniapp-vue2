@@ -70,6 +70,7 @@ export default {
 <style lang="scss" scoped>
 .box {
   background-color: #fff;
+  border: 1px solid #f1f1f1;
   margin: 24rpx 18rpx;
   padding: 20rpx 20rpx 30rpx;
   border-radius: 10rpx;
@@ -127,7 +128,6 @@ export default {
     }
 
     .warpper {
-      border: 1px solid #efefef;
       background-color: #fafafa;
       border-radius: 10rpx;
       display: flex;

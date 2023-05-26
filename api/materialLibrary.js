@@ -21,10 +21,11 @@ export const getTenantUser = params => http.get('/yxx/tenant/getTenantUser', { p
 export const getshareEveryDay = data => http.post('/yxx/source-material/getshareEveryDay', data)
 
 // 数据总揽
-export const getSourceMaterialDataViewDO = data => http.post('/yxx/source-material/getSourceMaterialDataViewDO', data)
+export const getSourceMaterialDataViewDO = params => http.post(
+  '/yxx/source-material/getSourceMaterialDataViewDO', {}, { params })
 
 // 线索列表
-export const getMemberUserList = data => http.post('/yxx/source-material/getMemberUserList', data)
+export const getMemberUserList = params => http.post('/yxx/source-material/getMemberUserList', {}, { params })
 
 
 // 根据用户查询看了哪些资源
@@ -82,3 +83,9 @@ export const createinviteUser = data => http.post('/yxx/memberUser/createinviteU
 
 // 判断是否还有剩余员工
 export const handleTenantInfo = params => http.post('/yxx/memberUser/handleTenantInfo', {}, { params })
+
+// 发送验证码
+export const sendSmsCode = params => http.post('/yxx/tenant/sendSmsCode', {}, { params })
+
+// 验证验证码
+export const useSmsCode = params => http.post('/yxx/tenant/useSmsCode', {}, { params })

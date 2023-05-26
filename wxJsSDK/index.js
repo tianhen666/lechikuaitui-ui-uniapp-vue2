@@ -27,17 +27,20 @@ export default {
         signature: res.data.signature, // 必填，签名
         jsApiList: ['openLocation', 'getLocation', 'updateAppMessageShareData',
           'updateTimelineShareData', 'onMenuShareAppMessage'
-        ], // 必填，需要使用的JS接口列表
-        openTagList: ['wx-open-launch-weapp'] // 非必填，
+        ],
+        openTagList: ['wx-open-launch-weapp', 'wx-open-launch-weapp',
+          'wx-open-launch-app', 'wx-open-subscribe', 'wx-open-audio'
+        ]
       });
-
 
       /* **  api检测 ** */
       jWeixin.checkJsApi({
         jsApiList: ['openLocation', 'getLocation', 'updateAppMessageShareData',
           'updateTimelineShareData', 'onMenuShareAppMessage'
-        ], // 需要检测的JS接口列表，所有JS接口列表见附录2,
-        openTagList: ['wx-open-launch-weapp'] // 需要检测的微信公众号开放标签,
+        ],
+        openTagList: ['wx-open-launch-weapp', 'wx-open-launch-weapp',
+          'wx-open-launch-app', 'wx-open-subscribe', 'wx-open-audio'
+        ]
       });
 
       if (callback) {

@@ -73,6 +73,7 @@ export default {
 
 <style lang="scss" scoped>
 .box {
+  border: 1px solid #f1f1f1;
   background-color: #fff;
   margin: 24rpx 18rpx;
   padding: 20rpx 20rpx 30rpx;
@@ -136,7 +137,6 @@ export default {
     }
 
     .warpper {
-      border: 1px solid #efefef;
       background-color: #fafafa;
       padding: 10rpx;
       margin-top: 10rpx;

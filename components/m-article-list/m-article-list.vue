@@ -1,7 +1,7 @@
 <template>
   <view class="box">
     <view
-      class="warpper"
+      class="warpperActicle"
       v-for="(itemData, index) in dataList"
       :key="itemData.id"
       @tap.stop="itemClicK(index)"
@@ -53,9 +53,9 @@ export default {
 
 <style lang="scss" scoped>
 .box {
-  .warpper {
-    border: 1px solid #e1e1e1;
-    background-color: #f9f9f9;
+  .warpperActicle {
+    border: 1px solid #f1f1ff;
+    background-color: #fff;
     border-radius: 10rpx;
     overflow: hidden;
     display: flex;

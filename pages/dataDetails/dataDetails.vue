@@ -1,66 +1,36 @@
 <template>
-  <view>
+  <view class="dataDetails">
     <view class="box">
-      <text class="time">分享时间：{{ mDayJs(dataObj.createTime) }}</text>
-
-      <view class="title">
-        <text class="type">
-          {{
-            dataObj.sourceMaterialType === 1
-              ? '文章'
-              : dataObj.sourceMaterialType === 2
-              ? '视频'
-              : dataObj.sourceMaterialType === 3
-              ? '海报'
-              : ''
-          }}
-        </text>
-        <text class="name">{{ dataObj.name }}</text>
-      </view>
-
-      <u-gap height="1rpx" marginTop="20rpx" marginBottom="20rpx" bgColor="#bbb"></u-gap>
-
       <view class="listBoxItem">
         <view class="listItem">
           <text class="text1">{{ dataObj.heat }}</text>
-          <text class="text2">阅读次数</text>
+          <text class="text2">浏览总次数</text>
         </view>
         <view class="listItem">
           <text class="text1">{{ dataObj.threadCount }}</text>
-          <text class="text2">线索量</text>
-        </view>
-        <view class="listItem">
-          <text class="text1">{{ dataObj.transmitCount }}</text>
-          <text class="text2">转发量</text>
+          <text class="text2">浏览总人数</text>
         </view>
       </view>
     </view>
 
-    <!-- 间隔条 -->
-    <u-gap height="16rpx" marginTop="20rpx" marginBottom="20rpx" bgColor="#eee"></u-gap>
-
     <view class="detailsBox">
       <view class="detailsItem" v-for="(item, index) in dataObj.userList" :key="item.id">
-        <view class="time">最近访问：{{ mDayJs(item.createTime) }}</view>
-        <u-gap height="1rpx" marginTop="8rpx" marginBottom="8rpx" bgColor="#bbb"></u-gap>
+        <view class="time">最新浏览时间：{{ mDayJs(item.createTime) }}</view>
 
         <view class="info">
           <view class="left"><u-avatar :src="item.avatar || item.savatar"></u-avatar></view>
 
           <view class="right">
             <view class="text1">{{ item.nickname || item.snickName }}</view>
-            <view class="text2">联系电话:{{ item.mobile }}</view>
-            <!-- <view class="text2">客户位置：xxxxxxxx</view> -->
-            <!-- <view class="text2">距离：2.5km</view> -->
+            <view class="text2">联系电话：{{ item.mobile || '无' }}</view>
           </view>
         </view>
 
-        <u-gap height="1rpx" marginTop="8rpx" marginBottom="8rpx" bgColor="#bbb"></u-gap>
-
         <view class="bottom">
-          <view class="text text1">阅读次数：{{ item.userCount }}次</view>
-          <!-- <view class="text text2">文章阅读：{{item.transmitCount}}次</view> -->
-          <!-- <view class="text text3">观看视频：{{item.watchVideoCount}}次</view> -->
+          <view class="bottomItem">
+            <text class="text text1">浏览次数：</text>
+            <text class="text text2">{{ item.userCount }}次</text>
+          </view>
         </view>
       </view>
     </view>
@@ -101,41 +71,17 @@ export default {
 <style lang="scss" scoped>
 page {
   background-color: #fff;
+  background-image: url('@/static/images/myimg/bg.png');
+  background-repeat: no-repeat;
+  background-size: 100% auto;
 }
-
+.dataDetails {
+  padding-bottom: 40rpx;
+}
 .box {
   padding: 20rpx 30rpx;
 
-  > .time {
-    font-size: 26rpx;
-    color: #aaa;
-  }
-
-  > .title {
-    margin-top: 16rpx;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-
-    .type {
-      display: flex;
-      flex: none;
-      border: 1px solid #aaa;
-      padding: 0 10rpx;
-      font-size: 20rpx;
-      border-radius: 10rpx;
-    }
-
-    .name {
-      margin-left: 20rpx;
-      font-size: 24rpx;
-      font-weight: bold;
-      @include overHeiddenText(2);
-    }
-  }
-
   .listBoxItem {
-    margin-top: 20rpx;
     display: flex;
     justify-content: flex-start;
     align-items: center;
@@ -145,14 +91,17 @@ page {
       margin-right: 80rpx;
 
       .text1 {
-        font-size: 25rpx;
+        font-weight: bold;
+        font-size: 34rpx;
         display: block;
+        color: #333;
       }
 
       .text2 {
         padding-top: 10rpx;
         font-size: 25rpx;
         display: block;
+        color: #999;
       }
     }
   }
@@ -162,17 +111,25 @@ page {
   padding: 0 30rpx;
 
   .detailsItem {
-    background-color: #efefef;
+    background-color: #fff;
+    border: 1px solid #f1f1f1;
     padding: 26rpx 16rpx;
-    margin: 30rpx 0;
     border-radius: 10rpx;
+    margin-bottom: 30rpx;
+    &:last-of-type {
+      margin-bottom: 0;
+    }
 
     > .time {
-      font-size: 26rpx;
+      font-size: 24rpx;
       color: #aaa;
+      display: block;
     }
 
     .info {
+      padding: 20rpx;
+      border-radius: 10rpx;
+      background-color: #fafafa;
       display: flex;
       margin-top: 20rpx;
 
@@ -187,7 +144,6 @@ page {
 
         .text1 {
           font-size: 28rpx;
-          font-weight: bold;
           margin-bottom: 14rpx;
         }
 
@@ -200,11 +156,19 @@ page {
     .bottom {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       margin-top: 20rpx;
-
-      .text {
-        font-size: 25rpx;
+      .bottomItem {
+        margin-right: 40rpx;
+        .text {
+          flex: none;
+          line-height: 40rpx;
+          font-size: 26rpx;
+          color: #333;
+        }
+        .text2 {
+          font-weight: bold;
+        }
       }
     }
   }

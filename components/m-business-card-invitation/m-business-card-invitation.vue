@@ -52,10 +52,21 @@
           <text class="desc">在线咨询</text>
         </view>
 
-        <view class="bottonBoxItme ">
-          <view class="imgBox">
-            <image class="img" src="/static/images/myimg/wx2.png" @tap.stop="goToPage()"></image>
-          </view>
+        <view class="bottonBoxItme">
+          <!-- 跳转微信小程序 -->
+          <wx-open-launch-weapp
+            id="launch-btn"
+            ref="launchBtn"
+            appid="wxc4b2eb2e4a97ff84"
+            path="pages/main/index/index"
+            style="position: absolute;inset: 0;z-index:9;opacity: 0;"
+          >
+            <script type="text/wxtag-template">
+              <div style="position: absolute;inset: 0;z-index:9;opacity: 0;">跳转小程序</div>
+            </script>
+          </wx-open-launch-weapp>
+
+          <view class="imgBox"><image class="img" src="/static/images/myimg/wx2.png"></image></view>
           <text class="desc">进入门诊</text>
         </view>
       </view>
@@ -118,11 +129,6 @@ export default {
         title: '正在努力开发中',
         icon: 'none'
       });
-    },
-    goToPage() {
-      uni.switchTab({
-        url: '/pages/material/material'
-      });
     }
   }
 };
@@ -178,6 +184,7 @@ export default {
       align-items: center;
       justify-content: space-between;
       .bottonBoxItme {
+        position: relative;
         margin-top: 32rpx;
         text-align: center;
         .img {

@@ -1,35 +1,38 @@
 <template>
   <view class="warpper">
+    <view class="boxTop">
+      <view class="search">
+        <u-search
+          placeholder="输入关键字搜索海报"
+          v-model="searchName"
+          bgColor="#fff"
+          :showAction="false"
+          height="72rpx"
+          @search="mySearch"
+          @custom="mySearch"
+        ></u-search>
+      </view>
+      <m-button-box
+        v-if="classificationList.length > 0"
+        :m-index="btnIndex"
+        :bData="classificationList"
+        @switchClassification="switchClassification"
+      ></m-button-box>
+    </view>
+
     <mescroll-uni
+      bottom="110px"
       @init="mescrollInit"
       :height="height"
       :bottombar="false"
       :disable-scroll="disableScroll"
       :down="downOption"
+      @down="downCallback"
       :up="upOption"
       @up="upCallback"
       @emptyclick="emptyClick"
     >
       <view class="listBox">
-        <view class="boxTop">
-          <view class="search">
-            <u-search
-              placeholder="输入关键字搜索海报"
-              v-model="searchName"
-              bgColor="#fff"
-              :showAction="false"
-              height="72rpx"
-              @search="mySearch"
-              @custom="mySearch"
-            ></u-search>
-          </view>
-          <m-button-box
-            v-if="classificationList.length > 0"
-            :m-index="btnIndex"
-            :bData="classificationList"
-            @switchClassification="switchClassification"
-          ></m-button-box>
-        </view>
         <pp-waterfall-flow
           :list="dataList"
           :columns="3"
@@ -58,7 +61,7 @@ export default {
     return {
       // 下拉状态配置
       downOption: {
-        use: false // 禁用
+        auto: false
       },
       // 上拉状态配置
       upOption: {
@@ -102,6 +105,7 @@ export default {
   async mounted() {
     // 等待onLaunch 加载完成
     await this.$onLaunched;
+
     // 获取分类
     this.mGetClassIfyList();
   },
@@ -111,6 +115,11 @@ export default {
     })
   },
   methods: {
+    downCallback() {
+      setTimeout(() => {
+        this.mescroll.resetUpScroll(false);
+      }, 500);
+    },
     upCallback(page) {
       // let keyword = this.tabs[this.i].name;
       getSourceMaterial({
@@ -151,6 +160,7 @@ export default {
     switchClassification(index) {
       if (this.btnIndex === index) return;
       this.btnIndex = index;
+      this.mescroll.scrollTo(0, 0);
       this.mescroll.resetUpScroll(false);
     },
     // 获取分类数据
@@ -185,7 +195,7 @@ export default {
 </script>
 <style scoped lang="scss">
 .boxTop {
-  padding: 20rpx 0 20rpx;
+  padding: 20rpx 20rpx 20rpx;
   overflow: hidden;
   .search {
     margin-bottom: 30rpx;

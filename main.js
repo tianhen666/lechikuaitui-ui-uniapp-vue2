@@ -8,6 +8,9 @@ import uView from '@/uni_modules/uview-ui'
 import store from './store'
 
 Vue.config.productionTip = false
+// 微信开放性标签,跳转微信小程序
+Vue.config.ignoredElements.push('wx-open-launch-weapp')
+
 Vue.prototype.$store = store
 
 
