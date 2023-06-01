@@ -1,23 +1,25 @@
 <template>
-  <mescroll-body
-    @init="mescrollInit"
-    @down="downCallback"
-    :down="downOption"
-    :up="upOption"
-    :bottombar="false"
-  >
-    <view class="boxArticleDetails">
-      <u-loading-page
-        :loading="loading"
-        loading-mode="spinner"
-        icon-size="30"
-        fontSize="30rpx"
-        bgColor="#fff"
-        style="position: fixed;inset: 0;z-index: 999;"
-        loadingText="正在加载中..."
-      ></u-loading-page>
+  <view>
+    <!-- 全屏加载 -->
+    <u-loading-page
+      :loading="loading"
+      loading-mode="spinner"
+      icon-size="30"
+      fontSize="30rpx"
+      bgColor="#fff"
+      style="position: fixed;inset: 0;z-index: 999;"
+      loadingText="正在加载中..."
+    ></u-loading-page>
 
-      <view v-show="!loading">
+    <mescroll-body
+      v-show="!loading"
+      @init="mescrollInit"
+      @down="downCallback"
+      :down="downOption"
+      :up="upOption"
+      :bottombar="false"
+    >
+      <view class="boxArticleDetails">
         <!-- 顶部卡片 -->
         <!-- 有邀请人 -->
         <m-business-card-invitation v-if="invitationID"></m-business-card-invitation>
@@ -25,16 +27,10 @@
         <m-business-card v-else></m-business-card>
 
         <view
-          style="background-color: #fff;
-        border-radius: 20rpx;
-        width: 720rpx;
-        margin: 20rpx auto;
-        overflow: hidden;
-        padding-bottom: 40rpx;
-        "
+          style="background-color: #fff;border-radius: 20rpx;width: 720rpx;margin: 20rpx auto;overflow: hidden;padding-bottom: 40rpx;"
         >
           <!-- 标题 -->
-          <view class="title">{{ articleObj.name }}</view>
+          <view class="title">{{ `(${this.tenantInfo.name})` + articleObj.name }}</view>
 
           <!-- 发布时间和分类 -->
           <view class="classAndTime">
@@ -45,7 +41,7 @@
 
             <view class="time">
               <text style="padding-right: 10rpx;">创建时间:</text>
-              <text>{{ mDayjs(articleObj.createTime) }}</text>
+              <text>{{ _$mDayJs(articleObj.createTime) }}</text>
             </view>
           </view>
 
@@ -66,23 +62,34 @@
         <m-business-card-bottom v-else></m-business-card-bottom>
 
         <view class="btnBox"><text class="text">口腔推提供技术支持</text></view>
+      </view>
+    </mescroll-body>
 
-        <!-- 修改成我的,有邀请人并且邀请人不是自己 -->
-        <view class="fixdBottom" v-if="!!invitationID && invitationID != userInfo.id">
-          <view class="btnBox111" @tap.stop="myClinic">
-            <button class="btn">修改成我的</button>
-          </view>
-        </view>
-
-        <!-- 没有邀请人并且没有店铺 -->
-        <view class="fixdBottom" v-if="!invitationID && !isMember">
-          <view class="btnBox111" @tap.stop="createClinic">
-            <button class="btn">创建我的店铺</button>
-          </view>
-        </view>
+    <!-- 修改成我的, 有邀请人, 并且邀请人不是自己 -->
+    <view class="fixdBottom" v-if="!!invitationID && invitationID != userInfo.id">
+      <view class="btnBox111" @tap.stop="modifyToMine">
+        <button class="btn">免费修改成我的</button>
       </view>
     </view>
-  </mescroll-body>
+
+    <!-- 分享提示 -->
+    <point-share
+      width="450rpx"
+      :show="pointShareShow"
+      @close="pointShareShow = false"
+    ></point-share>
+
+    <!-- 立即分享 -->
+    <view class="contribute" @tap.stop="pointShareShow = true"><text>分享</text></view>
+
+    <!-- 弹窗提示 -->
+    <m-uni-popup
+      ref="tipsPopupRef"
+      :mPopupDesc="mPopupDesc"
+      :mPopupBtn1="mPopupBtn1"
+      @Btn1Fun="_$tipsPopupBtn1"
+    ></m-uni-popup>
+  </view>
 </template>
 
 <script>
@@ -91,7 +98,6 @@ import { getSourceMaterialId } from '@/api/materialLibrary.js';
 import wx from '@/wxJsSDK/index.js';
 import { mapState, mapGetters } from 'vuex';
 import { removeUrlParameters } from '@/utils/index.js';
-import dayjs from 'dayjs';
 export default {
   mixins: [MescrollMixin], // 使用mixin
   data() {
@@ -99,7 +105,7 @@ export default {
       upOption: {
         use: false, // 主体框架只启用下拉刷新
         toTop: {
-          bottom: 360
+          bottom: 460
         }
       },
       downOption: {
@@ -112,7 +118,14 @@ export default {
       invitationID: 0, //邀请人的ID
       invitationTenantID: 0, // 邀请人的门诊ID
 
-      loading: true // 富文本加载中
+      loading: true, // 富文本加载中
+
+      // 分享引导
+      pointShareShow: false,
+
+      // 弹窗提示
+      mPopupDesc: '',
+      mPopupBtn1: ''
     };
   },
   computed: {
@@ -120,7 +133,7 @@ export default {
       tenantInfo: state => state.tenant.info,
       userInfo: state => state.user.userInfo
     }),
-    ...mapGetters(['isMember'])
+    ...mapGetters(['isMember', 'isTenantExpired'])
   },
   async onLoad({ id, invitationID, invitationTenantID }) {
     // 等待onLaunch执行完成
@@ -134,14 +147,13 @@ export default {
     // 设置资源ID
     this.id = Number(id) || 0;
 
+    // 获取邀请人的, 个人信息, 门诊信息
     if (invitationID && invitationTenantID) {
-      // 获取邀请人的个人信息
       this.$store.dispatch('invitationInfoFun', {
         clueId: invitationID,
         tenantId: invitationTenantID
       });
 
-      // 获取邀请门诊的个人信息
       this.$store.dispatch('getShareTenantInfo', {
         tenantId: invitationTenantID
       });
@@ -154,21 +166,16 @@ export default {
     /*下拉刷新的回调 */
     downCallback() {
       setTimeout(() => {
-        this.mescroll.endSuccess();
-      }, 1000);
-    },
-    mDayjs(val) {
-      // 时间处理
-      return dayjs(val).format('YYYY-MM-DD HH:ss:mm');
-    },
-    htmlLoad(val) {
-      // 富文本加载完成
-      setTimeout(() => {
-        this.loading = false;
+        this.getData();
       }, 500);
     },
+    /*富文本加载完成 */
+    htmlLoad(val) {
+      this.loading = false;
+    },
+
+    /** 获取资源 */
     getData() {
-      // 获取资源
       getSourceMaterialId({
         id: this.id,
         clueId: this.invitationID,
@@ -176,9 +183,9 @@ export default {
       }).then(res => {
         this.articleObj = res.data;
 
-        // 设置标题
+        // 设置页面标题
         uni.setNavigationBarTitle({
-          title: this.articleObj.name || '文章详情'
+          title: `(${this.tenantInfo.name})` + this.articleObj.name || '文章详情'
         });
 
         // 微信jsdk初始化
@@ -186,7 +193,7 @@ export default {
           // 朋友分享
           wx.updateAppMessageShareData({
             title: `（${this.tenantInfo.name}）${this.articleObj.name}`,
-            desc: this.articleObj.description,
+            desc: this.articleObj.description || '',
             link: `${window.location.href.split('?')[0]}?id=${this.articleObj.id}&invitationID=${
               this.userInfo.id
             }&invitationTenantID=${this.tenantInfo.id}`,
@@ -201,35 +208,16 @@ export default {
             }&invitationTenantID=${this.tenantInfo.id}`,
             imgUrl: this.articleObj.coverImage
           });
+
+          this.mescroll.endSuccess();
         });
       });
     },
-    // 判断是否有店铺
-    myClinic() {
-      if (this.isMember) {
-        // 如果有店铺
-        uni.redirectTo({
-          url: `/pages/articleDetails/articleDetails?id=${this.id}`
-        });
-      } else {
-        //如果没有店铺
-        this.createClinic();
+    // 修改成我的
+    modifyToMine() {
+      if (this._$verifyPopup()) {
+        this._$reLaunchGotoPage(`/pages/articleDetails/articleDetails?id=${this.id}`);
       }
-    },
-    //创建店铺
-    createClinic() {
-      // 判断是否有手机号
-      if (this.userInfo.mobile) {
-        this.gotoPage('/pages/tenantInfoInput/tenantInfoInput');
-      } else {
-        this.gotoPage('/pages/userInfoInput/userInfoInput?newClinic=1');
-      }
-    },
-    // 关闭所有页面跳转
-    gotoPage(url) {
-      uni.reLaunch({
-        url: url
-      });
     }
   }
 };
@@ -265,29 +253,46 @@ export default {
       font-size: 22rpx;
     }
   }
-
-  .fixdBottom {
-    height: 90rpx;
-    .btnBox111 {
-      position: fixed;
-      width: 100%;
-      bottom: 0;
-      left: 0;
-      background-color: #eee;
-      height: 90rpx;
-      z-index: 999;
-      .btn {
-        margin-top: 15rpx;
-        width: 680rpx;
-        background-color: $sub-color;
-        color: #fff;
-        font-size: 25rpx;
-        height: 55rpx;
-        line-height: 55rpx;
-        border-radius: 50px;
-      }
+}
+.fixdBottom {
+  height: 70rpx;
+  padding-top: 10rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  .btnBox111 {
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    background-color: #eee;
+    height: 70rpx;
+    z-index: 999;
+    padding-top: 10rpx;
+    padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+    .btn {
+      width: 680rpx;
+      background-color: $sub-color;
+      color: #fff;
+      font-size: 28rpx;
+      height: 70rpx;
+      line-height: 70rpx;
+      border-radius: 50px;
     }
   }
+}
+
+.contribute {
+  position: fixed;
+  background-color: $main-color;
+  color: #fff;
+  right: 10px;
+  bottom: 600rpx;
+  font-size: 24rpx;
+  border-radius: 50%;
+  height: 36px;
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 page {

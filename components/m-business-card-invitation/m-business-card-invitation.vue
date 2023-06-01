@@ -4,7 +4,10 @@
       <view class="wrapper">
         <!-- 头像 -->
         <view class="avatar">
-          <u-avatar size="90rpx" :src="invitationInfo.avatar || invitationInfo.savatar"></u-avatar>
+          <u-avatar
+            size="90rpx"
+            :src="invitationUserInfo.avatar || invitationUserInfo.savatar"
+          ></u-avatar>
         </view>
 
         <!-- 信息 -->
@@ -13,10 +16,10 @@
             <text>{{ invitationTenantInfo.name }}</text>
           </view>
           <view class="postName">
-            <text>{{ invitationInfo.nickname || invitationInfo.snickName }}</text>
-            <text v-if="invitationInfo.postName" style="padding: 0 10rpx;">|</text>
-            <text>{{ invitationInfo.postName }}</text>
-            <text class="slogan">{{ invitationInfo.slogan }}</text>
+            <text>{{ invitationUserInfo.nickname || invitationUserInfo.snickName }}</text>
+            <text v-if="invitationUserInfo.postName" style="padding: 0 10rpx;">|</text>
+            <text>{{ invitationUserInfo.postName }}</text>
+            <text class="slogan">{{ invitationUserInfo.slogan }}</text>
           </view>
         </view>
       </view>
@@ -35,13 +38,13 @@
             <image
               class="img"
               src="/static/images/myimg/wx3.png"
-              @tap.stop="tel(invitationInfo.mobile || invitationTenantInfo.contactMobile)"
+              @tap.stop="_$tel(invitationUserInfo.mobile)"
             ></image>
           </view>
           <text class="desc">电话咨询</text>
         </view>
 
-        <view class="bottonBoxItme ">
+        <!-- <view class="bottonBoxItme ">
           <view class="imgBox">
             <image
               class="img"
@@ -50,15 +53,16 @@
             ></image>
           </view>
           <text class="desc">在线咨询</text>
-        </view>
+        </view> -->
 
         <view class="bottonBoxItme">
           <!-- 跳转微信小程序 -->
           <wx-open-launch-weapp
-            id="launch-btn"
+            id="launchBtn"
             ref="launchBtn"
-            appid="wxc4b2eb2e4a97ff84"
-            path="pages/main/index/index"
+            :appid="invitationTenantInfo.appId"
+            :path="invitationTenantInfo.path"
+            :extraData="invitationTenantInfo.extraData"
             style="position: absolute;inset: 0;z-index:9;opacity: 0;"
           >
             <script type="text/wxtag-template">
@@ -71,18 +75,13 @@
         </view>
       </view>
     </view>
-    <u-popup :show="mShow" @close="mShow = false" mode="center" closeable round="10rpx">
-      <view class="popupBox">
-        <view class="title">{{ invitationTenantInfo.name }}</view>
-        <view class="desc">添加我的微信</view>
-        <image
-          style="width: 160px;height: 160px;display: block;margin: auto;"
-          :src="invitationInfo.wechatCode"
-          mode="widthFix"
-        ></image>
-        <view class="tips">{{ invitationInfo.remark }}</view>
-      </view>
-    </u-popup>
+
+    <m-weChat-code-preview
+      :title="invitationTenantInfo.name"
+      :imgUrl="invitationUserInfo.wechatCode"
+      :remark="invitationUserInfo.remark"
+      ref="wPopup"
+    ></m-weChat-code-preview>
   </view>
 </template>
 
@@ -91,45 +90,25 @@ import { mapState } from 'vuex';
 export default {
   name: 'm-business-card-invitation',
   data() {
-    return {
-      mShow: false
-    };
+    return {};
   },
   computed: {
     ...mapState({
       invitationTenantInfo: state => state.tenant.invitationInfo,
-      invitationInfo: state => state.user.invitationInfo
+      invitationUserInfo: state => state.user.invitationInfo
     })
   },
   methods: {
-    tel(val) {
-      if (val) {
-        uni.makePhoneCall({
-          phoneNumber: val
-        });
-      } else {
-        uni.showToast({
-          title: '没有手机号',
-          icon: 'none'
-        });
-      }
-    },
+    // 微信二维码预览
     showImg() {
-      if (this.invitationInfo?.wechatCode) {
-        this.mShow = true;
+      if (this.invitationUserInfo?.wechatCode) {
+        this.$refs.wPopup.open();
       } else {
-        uni.showToast({
-          title: '没有微信二维码',
-          icon: 'none'
-        });
+        this._$showToast('没有微信二维码');
       }
     },
-    onlineConsultation() {
-      uni.showToast({
-        title: '正在努力开发中',
-        icon: 'none'
-      });
-    }
+    // 在线咨询
+    onlineConsultation() {}
   }
 };
 </script>
@@ -201,26 +180,6 @@ export default {
         }
       }
     }
-  }
-}
-
-.popupBox {
-  width: 600rpx;
-  text-align: center;
-  .title {
-    font-size: 34rpx;
-    line-height: 1;
-    padding: 30rpx 0;
-  }
-  .desc {
-    margin: 20rpx 0;
-    text-align: center;
-    font-size: 28rpx;
-  }
-  .tips {
-    color: #aaa;
-    margin: 20rpx 0 40rpx;
-    font-size: 28rpx;
   }
 }
 </style>

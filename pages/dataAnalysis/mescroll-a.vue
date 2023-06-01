@@ -50,9 +50,9 @@
           class="dataListItem"
           v-for="(item, index) in dataList"
           :key="item.id"
-          @tap.stop="gotoPage(`/pages/dataDetails/dataDetails?id=${item.id}`)"
+          @tap.stop="_$goToPage(`/pages/dataDetails/dataDetails?id=${item.id}`)"
         >
-          <text class="time">最新浏览时间：{{ mDayJs(item.createTime) }}</text>
+          <text class="time">最新浏览时间：{{ _$mDayJs(item.createTime) }}</text>
 
           <view class="type">
             <text>
@@ -182,13 +182,16 @@ export default {
     // 等待onLaunch 加载完成
     await this.$onLaunched;
     // 获取分类
-    this.mescroll.resetUpScroll(false);
+    this.loadData();
   },
   methods: {
-    downCallback() {
+    loadData() {
       setTimeout(() => {
-        this.mescroll.resetUpScroll(false);
+        this.mescroll.resetUpScroll(true);
       }, 500);
+    },
+    downCallback() {
+      this.loadData();
     },
     upCallback(page) {
       //联网加载数据
@@ -219,19 +222,9 @@ export default {
         title: '点击了按钮,具体逻辑自行实现'
       });
     },
-    // 跳转页面
-    gotoPage(url) {
-      uni.navigateTo({
-        url: url
-      });
-    },
-    // 时间转换
-    mDayJs(val) {
-      return dayJs(val).format('YYYY-MM-DD HH:mm:ss');
-    },
     // 搜索
     mySearch(value) {
-      this.mescroll.resetUpScroll(false);
+      this.loadData();
     }
   }
 };

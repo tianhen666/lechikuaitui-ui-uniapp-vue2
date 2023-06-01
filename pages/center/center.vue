@@ -2,6 +2,7 @@
   <view class="container">
     <!-- 提示 弹窗 -->
     <u-toast ref="uToast" />
+
     <!-- 切换门诊列表 弹窗 -->
     <u-action-sheet
       :actions="tenantlist"
@@ -17,13 +18,13 @@
 
     <!-- 显示当前登录的门诊 -->
     <view class="switchTheClinic">
-      <text class="left">当前登录的门诊</text>
+      <text class="left">登录的门诊</text>
       <view class="right" v-if="tenantlist.length > 1" @tap.stop="show = true">
-        <text class="text">{{ tenantInfo.name }}</text>
+        <text class="text">{{ _$tenantInfo.name }}</text>
         <u-icon name="arrow-down-fill" color="#909399" size="14"></u-icon>
       </view>
       <view class="right" v-else>
-        <text class="text">{{ tenantInfo.name }}</text>
+        <text class="text">{{ _$tenantInfo.name }}</text>
       </view>
     </view>
     <view style="margin:0 -30rpx"><u-line color="#ccc"></u-line></view>
@@ -32,38 +33,38 @@
     <view class="businessCardInformation">
       <!-- 头像 -->
       <view class="headPortrait">
-        <u-avatar size="100rpx" :src="userInfo.avatar || userInfo.savatar"></u-avatar>
+        <u-avatar size="100rpx" :src="_$userInfo.avatar || _$userInfo.savatar"></u-avatar>
       </view>
 
       <!-- 名称信息 -->
       <view class="nameBox">
         <view class="nameBoxWarpper">
           <view class="name">
-            <text>{{ userInfo.nickname || userInfo.snickName }}</text>
+            <text>{{ _$userInfo.nickname || _$userInfo.snickName }}</text>
           </view>
-          <view class="role" v-if="isMember">
-            <text>{{ userInfo.roleName }}</text>
+          <view class="role" v-if="_$isMember">
+            <text>{{ _$userInfo.roleName }}</text>
           </view>
           <view class="role" v-else><text>普通用户</text></view>
         </view>
 
         <!-- 到期时间 -->
         <view class="expirationTime">
-          <text>店铺到期时间：{{ mDayjs(tenantInfo.expireTime) }}</text>
+          <text>到期时间：{{ _$mDayJs(_$tenantInfo.expireTime, 2) }}</text>
         </view>
       </view>
 
       <!-- 编辑 -->
       <view class="editCard">
         <u-icon name="edit-pen-fill" color="#909399" size="16"></u-icon>
-        <text class="text" @tap.stop="gotoPage('/pages/userInfoInput/userInfoInput')">
+        <text class="text" @tap.stop="_$goToPage('/pages/userInfoInput/userInfoInput')">
           编辑名片
         </text>
       </view>
     </view>
 
-    <!-- 团队管理  普通会员不可见 -->
-    <view class="theTeamReport" v-if="isMember">
+    <!-- 团队管理  管理用户可见 -->
+    <view class="theTeamReport" v-if="_$isMember">
       <view class="title">
         <view class="left"><text>今日概况</text></view>
         <view class="right"><u-icon name="arrow-right" color="#909399" size="16"></u-icon></view>
@@ -82,23 +83,19 @@
           <text class="text">浏览人数</text>
           <text class="theNumberOf">{{ centerObj.transmitCount }}</text>
         </view>
-        <!-- <view class="warpper">
-          <text class="theNumberOf">0</text>
-          <text class="text">阅读次数</text>
-        </view> -->
       </view>
     </view>
 
-    <!-- 创建门诊   普通会员可见 -->
-    <view class="createClinic" v-if="!isMember">
+    <!-- 创建门诊   普通用户可见 -->
+    <view class="createClinic" v-if="!_$isMember">
       <view class="wrapper">
-        <button class="btn" @tap.stop="createClinic">创建我的门诊</button>
-        <text class="desc">您当前还没有门诊哦,创建一个门诊</text>
+        <button class="btn" @tap.stop="_$createClinic">免费创建门诊</button>
+        <text class="desc">您当前还没有门诊哦,请创建一个门诊哦</text>
       </view>
     </view>
 
     <!-- 管理工具 -->
-    <view class="commonlyUsedTools" v-if="isMember">
+    <view class="commonlyUsedTools">
       <view class="title">
         <view class="left"><text>管理工具</text></view>
       </view>
@@ -108,7 +105,7 @@
           class="warpper"
           v-for="(item, index) in managementTool"
           :key="index"
-          @tap.stop="gotoPage(item.url)"
+          @tap.stop="verifyIsMemberGoToPage(item.url)"
         >
           <image class="img" :src="item.imgUrl" mode="aspectFill"></image>
           <text class="name">{{ item.name }}</text>
@@ -172,7 +169,7 @@
           :border="false"
           @click="ListOfSet"
         ></u-cell>
-        <u-cell
+        <!-- <u-cell
           title="在线客服"
           name="onlineCustomerService"
           isLink
@@ -181,8 +178,8 @@
           icon="../../static/img/index/zxzx.png"
           :border="false"
           @click="ListOfSet"
-        ></u-cell>
-        <u-cell
+        ></u-cell> -->
+        <!-- <u-cell
           title="使用教程"
           name="usingTheTutorial"
           isLink
@@ -191,7 +188,7 @@
           icon="../../static/img/index/syjc.png"
           :border="false"
           @click="ListOfSet"
-        ></u-cell>
+        ></u-cell> -->
         <u-cell
           title="意见反馈"
           name="feedback"
@@ -204,15 +201,21 @@
         ></u-cell>
       </u-cell-group>
     </view>
+
+    <!-- 提示弹窗 -->
+    <m-uni-popup
+      ref="tipsPopupRef"
+      :mPopupDesc="mPopupDesc"
+      :mPopupBtn1="mPopupBtn1"
+      @Btn1Fun="_$tipsPopupBtn1"
+    ></m-uni-popup>
   </view>
 </template>
 
 <script>
-import { removeUrlParameters } from '@/utils/index.js';
 import wx from '@/wxJsSDK/index.js';
-import { getMemberUser, getUserListTenant, cutTenant } from '@/api/materialLibrary.js';
-import { mapState, mapGetters } from 'vuex';
-import dayjs from 'dayjs';
+import { delay } from '@/utils/index.js';
+import { getMemberUser, getUserListTenant } from '@/api/materialLibrary.js';
 export default {
   data() {
     return {
@@ -245,59 +248,49 @@ export default {
           desc: '未创建',
           imgUrl: '/static/images/empty/us3.png',
           url: '/pages/staffManagement/staffManagement'
-        },
-        {
-          name: '充值中心',
-          desc: '未创建',
-          imgUrl: '/static/images/empty/us7.png',
-          url: '/pages/voucherCenter/voucherCenter'
-        },
-        {
-          name: '订单管理',
-          desc: '未创建',
-          imgUrl: '/static/images/empty/us6.png',
-          url: '/pages/myOrder/myOrder'
         }
-      ]
+        // {
+        //   name: '充值中心',
+        //   desc: '未创建',
+        //   imgUrl: '/static/images/empty/us7.png',
+        //   url: '/pages/voucherCenter/voucherCenter'
+        // },
+        // {
+        //   name: '订单管理',
+        //   desc: '未创建',
+        //   imgUrl: '/static/images/empty/us6.png',
+        //   url: '/pages/myOrder/myOrder'
+        // }
+      ],
+
+      // 弹窗提示
+      mPopupDesc: '',
+      mPopupBtn1: ''
     };
   },
-  computed: {
-    ...mapState({
-      tenantInfo: state => state.tenant.info,
-      userInfo: state => state.user.userInfo
-    }),
-    ...mapGetters(['isMember'])
-  },
-  async onLoad() {
+  async onReady() {
     // 等待onLaunch 加载完成
     await this.$onLaunched;
 
     this.mGetMemberUser();
     this.mGetUserListTenant();
   },
-  mounted() {
-    // wx.openLocation({
-    //   latitude: 30.25308298,
-    //   longitude: 120.2155118,
-    //   name: '测试位置', // 位置名
-    //   address: '测试位置,测试位置', // 地址详情说明
-    //   scale: 10 // 地图缩放级别,整型值,范围从1~28。默认为最大
-    // });
-  },
   methods: {
-    //创建门诊
-    createClinic() {
-      if (this.userInfo.mobile) {
-        this.gotoPage('/pages/tenantInfoInput/tenantInfoInput');
-      } else {
-        this.gotoPage('/pages/userInfoInput/userInfoInput?newClinic=1');
+    // 验证是否为管理员,验证通过跳转
+    verifyIsMemberGoToPage(path) {
+      if (!this._$isMember) {
+        this.mPopupDesc = '没有门诊, 请创建门诊';
+        this.mPopupBtn1 = '免费创建门诊';
+        this.$refs.tipsPopupRef.open();
+        return false;
       }
+      this._$goToPage(path);
     },
 
     // 底部列表点击
     ListOfSet({ name }) {
       if (name === 'setUp') {
-        this.gotoPage('/pages/setUp/setUp');
+        this.verifyIsMemberGoToPage('/pages/setUp/setUp');
       }
       if (name === 'onlineCustomerService') {
         uni.showToast({
@@ -312,76 +305,45 @@ export default {
         });
       }
       if (name === 'feedback') {
-        this.gotoPage('/pages/feedback/feedback');
+        this._$goToPage('/pages/feedback/feedback');
       }
     },
 
+    // 选择切换门诊面板弹窗执行
     actionSheetSelect(val) {
       this.show = false;
+      // { name: '创建一个新门诊', color: '#3898ff', fontSize: '28rpx', id: -1 }
       if (val.id === -1) {
-        uni.navigateTo({
-          url: '/pages/tenantInfoInput/tenantInfoInput'
-        });
+        this._$createClinic();
         return;
       }
-
-      // 门诊ID不相等
-      if (this.tenantInfo.id === val.id) {
+      // 门诊相等不操作
+      if (this._$tenantInfo.id === val.id) {
         return;
       }
-
-      // 选择其他门诊
-      this.mCutTenant(val);
-    },
-
-    async mCutTenant(val) {
       // 切换门诊
-      const res = await cutTenant({ id: val.id });
-
-      // 清理当前的缓存
-      uni.clearStorageSync();
-      // 设置切换的缓存
-      uni.setStorageSync('TENANTID', val.id);
-
-      // 重新打开当前网页
-      const href = window.location.href;
-      //删除url中code和state
-      const newHref = removeUrlParameters(href, ['code', 'state']);
-      //重新获取授权链接
-      this.$store
-        .dispatch('getWXSocialAuthRedirect', { type: 31, redirectUri: newHref })
-        .then(res => {
-          window.location.href = res;
-        });
+      this._$mCutTenant(val);
     },
 
-    // 获取个人中心的数据
+    /** 获取个人中心的数据 */
     async mGetMemberUser() {
       const res = await getMemberUser();
       this.centerObj = res.data;
     },
 
-    // 获取当前用户下的所有门诊
+    /** 获取当前用户下的所有门诊 */
     async mGetUserListTenant() {
       const res = await getUserListTenant();
-      this.tenantlist = [{ name: '创建一个新门诊', color: '#3898ff', fontSize: '28rpx', id: -1 }];
+      this.tenantlist = [{ name: '创建新门诊', color: '#3898ff', fontSize: '28rpx', id: -1 }];
+
+      await delay(100);
+      // 标识当前所在门诊
       res.data.forEach(item => {
-        if (item.id === this.tenantInfo.id) {
+        if (item.id === this._$tenantInfo.id) {
           item.subname = '当前所在门诊';
         }
       });
       this.tenantlist.unshift(...res.data);
-    },
-
-    gotoPage(url) {
-      // 页面跳转
-      uni.navigateTo({
-        url: url
-      });
-    },
-    mDayjs(val) {
-      // 时间处理
-      return dayjs(val).format('YYYY-MM-DD');
     }
   }
 };
@@ -396,18 +358,17 @@ page {
 }
 .container {
   padding: 0 30rpx;
+  padding-bottom: 30rpx;
   .title {
     height: 70rpx;
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     .left {
       font-size: 30rpx;
       font-weight: bold;
       flex: none;
     }
-
     .right {
     }
   }
@@ -417,17 +378,14 @@ page {
     justify-content: space-between;
     align-items: center;
     height: 80rpx;
-
     .left {
       font-size: 26rpx;
       color: #666;
     }
-
     .right {
       display: flex;
       align-items: center;
       font-size: 28rpx;
-
       .text {
         margin-right: 10rpx;
       }
@@ -438,11 +396,9 @@ page {
     display: flex;
     align-items: center;
     padding: 30rpx 0;
-
     .headPortrait {
       flex: none;
     }
-
     .nameBox {
       flex: auto;
       margin-left: 20rpx;
@@ -454,7 +410,6 @@ page {
           font-weight: bold;
           margin-right: 20rpx;
         }
-
         .role {
           color: #c94950;
           border-radius: 50px;
@@ -466,7 +421,6 @@ page {
           padding: 0 10rpx;
         }
       }
-
       .expirationTime {
         height: 25rpx;
         font-size: 25rpx;
@@ -480,7 +434,6 @@ page {
     .editCard {
       flex: none;
       display: flex;
-
       .text {
         margin-left: 10rpx;
         font-size: 26rpx;
@@ -538,17 +491,14 @@ page {
 
       .warpper {
         text-align: center;
-
         .img {
-          width: 90rpx;
-          height: 90rpx;
+          width: 75rpx;
+          height: 75rpx;
         }
-
         .name {
           display: block;
           font-size: 24rpx;
         }
-
         .desc {
           display: block;
           font-size: 24rpx;

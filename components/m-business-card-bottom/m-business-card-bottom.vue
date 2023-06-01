@@ -33,30 +33,29 @@
       <!-- 右侧 -->
       <view class="right">
         <view class="bottonBox">
-          <button
-            class="bottonItem"
-            style="margin-bottom: 30rpx;"
-            @tap.stop="tel(userInfo.mobile || tenantInfo.contactMobile)"
-          >
+          <button class="bottonItem" style="margin-bottom: 30rpx;" @tap.stop="tel(userInfo.mobile)">
             电话咨询
           </button>
-          <button class="bottonItem" @tap.stop="onlineConsultation">在线咨询</button>
+          <!-- <button class="bottonItem" @tap.stop="onlineConsultation">在线咨询</button> -->
         </view>
       </view>
     </view>
 
-    <u-popup :show="mShow" @close="mShow = false" mode="center" closeable round="10rpx">
-      <view class="popupBox">
-        <view class="title">{{ tenantInfo.name }}</view>
-        <view class="desc">添加我的微信</view>
-        <image
-          style="width: 160px;height: 160px;display: block;margin: auto;"
-          :src="userInfo.wechatCode"
-          mode="widthFix"
-        ></image>
-        <view class="tips">{{ userInfo.remark }}</view>
-      </view>
-    </u-popup>
+    <!-- 验证提示弹窗 -->
+    <m-uni-popup
+      ref="tipsPopupRef"
+      :mPopupDesc="mPopupDesc"
+      :mPopupBtn1="mPopupBtn1"
+      @Btn1Fun="_$goToPage(`/pages/userInfoInput/userInfoInput`)"
+    ></m-uni-popup>
+
+    <!-- 预览提示弹窗 -->
+    <m-weChat-code-preview
+      :title="tenantInfo.name"
+      :imgUrl="userInfo.wechatCode"
+      :remark="userInfo.remark"
+      ref="wPopup"
+    ></m-weChat-code-preview>
   </view>
 </template>
 
@@ -66,7 +65,9 @@ export default {
   name: 'm-business-card-bottom-invitation',
   data() {
     return {
-      mShow: false
+      // 弹窗提示
+      mPopupDesc: '',
+      mPopupBtn1: ''
     };
   },
   computed: {
@@ -76,34 +77,26 @@ export default {
     })
   },
   methods: {
+    // 拨打电话
     tel(val) {
       if (val) {
-        uni.makePhoneCall({
-          phoneNumber: val
-        });
+        this._$tel(val);
       } else {
-        uni.showToast({
-          title: '没有手机号',
-          icon: 'none'
-        });
+        this.mPopupDesc = '没有联系方式, 请完善个人信息';
+        this.mPopupBtn1 = '去完善';
+        this.$refs.tipsPopupRef.open();
       }
-    },
-    onlineConsultation() {
-      uni.showToast({
-        title: '正在努力开发中',
-        icon: 'none'
-      });
     },
     showImg() {
-      if (this.userInfo.wechatCode) {
-        this.mShow = true;
+      if (this.userInfo?.wechatCode) {
+        this.$refs.wPopup.open();
       } else {
-        uni.showToast({
-          title: '没有微信二维码',
-          icon: 'none'
-        });
+        this.mPopupDesc = '没有微信二维码, 请完善个人信息';
+        this.mPopupBtn1 = '去完善';
+        this.$refs.tipsPopupRef.open();
       }
-    }
+    },
+    onlineConsultation() {}
   }
 };
 </script>

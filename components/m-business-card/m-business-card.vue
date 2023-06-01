@@ -36,13 +36,13 @@
             <image
               class="img"
               src="/static/images/myimg/wx3.png"
-              @tap.stop="tel(userInfo.mobile || tenantInfo.contactMobile)"
+              @tap.stop="tel(userInfo.mobile)"
             ></image>
           </view>
           <text class="desc">电话咨询</text>
         </view>
 
-        <view class="bottonBoxItme ">
+        <!-- <view class="bottonBoxItme ">
           <view class="imgBox">
             <image
               class="img"
@@ -51,15 +51,16 @@
             ></image>
           </view>
           <text class="desc">在线咨询</text>
-        </view>
+        </view> -->
 
-        <view class="bottonBoxItme ">
+        <view class="bottonBoxItme">
           <!-- 跳转微信小程序 -->
           <wx-open-launch-weapp
-            id="launch-btn"
+            id="launchBtn"
             ref="launchBtn"
-            appid="wxc4b2eb2e4a97ff84"
-            path="pages/main/index/index"
+            :appid="tenantInfo.appId"
+            :path="tenantInfo.path"
+            :extraData="tenantInfo.extraData"
             style="position: absolute;inset: 0;z-index:9;opacity: 0;"
           >
             <script type="text/wxtag-template">
@@ -73,18 +74,21 @@
       </view>
     </view>
 
-    <u-popup :show="mShow" @close="mShow = false" mode="center" closeable round="10rpx">
-      <view class="popupBox">
-        <view class="title">{{ tenantInfo.name }}</view>
-        <view class="desc">添加我的微信</view>
-        <image
-          style="width: 160px;height: 160px;display: block;margin: auto;"
-          :src="userInfo.wechatCode"
-          mode="widthFix"
-        ></image>
-        <view class="tips">{{ userInfo.remark }}</view>
-      </view>
-    </u-popup>
+    <!-- 验证提示弹窗 -->
+    <m-uni-popup
+      ref="tipsPopupRef"
+      :mPopupDesc="mPopupDesc"
+      :mPopupBtn1="mPopupBtn1"
+      @Btn1Fun="_$goToPage(`/pages/userInfoInput/userInfoInput`)"
+    ></m-uni-popup>
+
+    <!-- 预览提示弹窗 -->
+    <m-weChat-code-preview
+      :title="tenantInfo.name"
+      :imgUrl="userInfo.wechatCode"
+      :remark="userInfo.remark"
+      ref="wPopup"
+    ></m-weChat-code-preview>
   </view>
 </template>
 
@@ -94,7 +98,8 @@ export default {
   name: 'm-business-card',
   data() {
     return {
-      mShow: false
+      mPopupDesc: '',
+      mPopupBtn1: ''
     };
   },
   computed: {
@@ -104,27 +109,28 @@ export default {
     })
   },
   methods: {
+    // 拨打电话
     tel(val) {
-      uni.makePhoneCall({
-        phoneNumber: val
-      });
-    },
-    showImg() {
-      if (this.userInfo?.wechatCode) {
-        this.mShow = true;
+      if (val) {
+        this._$tel(val);
       } else {
-        uni.showToast({
-          title: '没有微信二维码',
-          icon: 'none'
-        });
+        this.mPopupDesc = '没有联系方式, 请完善个人信息';
+        this.mPopupBtn1 = '去完善';
+        this.$refs.tipsPopupRef.open();
       }
     },
-    onlineConsultation() {
-      uni.showToast({
-        title: '正在努力开发中',
-        icon: 'none'
-      });
-    }
+    // 弹窗二维码
+    showImg() {
+      if (this.userInfo?.wechatCode) {
+        this.$refs.wPopup.open();
+      } else {
+        this.mPopupDesc = '没有微信二维码, 请完善个人信息';
+        this.mPopupBtn1 = '去完善';
+        this.$refs.tipsPopupRef.open();
+      }
+    },
+    // 在线联系
+    onlineConsultation() {}
   }
 };
 </script>
@@ -196,26 +202,6 @@ export default {
         }
       }
     }
-  }
-}
-
-.popupBox {
-  width: 600rpx;
-  text-align: center;
-  .title {
-    font-size: 34rpx;
-    line-height: 1;
-    padding: 30rpx 0;
-  }
-  .desc {
-    margin: 20rpx 0;
-    text-align: center;
-    font-size: 28rpx;
-  }
-  .tips {
-    color: #aaa;
-    margin: 20rpx 0 40rpx;
-    font-size: 28rpx;
   }
 }
 </style>

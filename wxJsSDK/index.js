@@ -26,21 +26,19 @@ export default {
         nonceStr: res.data.nonceStr, // 必填，生成签名的随机串
         signature: res.data.signature, // 必填，签名
         jsApiList: ['openLocation', 'getLocation', 'updateAppMessageShareData',
-          'updateTimelineShareData', 'onMenuShareAppMessage'
+          'updateTimelineShareData', 'onMenuShareAppMessage', 'onMenuShareTimeline'
         ],
-        openTagList: ['wx-open-launch-weapp', 'wx-open-launch-weapp',
-          'wx-open-launch-app', 'wx-open-subscribe', 'wx-open-audio'
-        ]
+        openTagList: ['wx-open-launch-weapp', 'wx-open-launch-app', 'wx-open-subscribe', 'wx-open-audio']
       });
 
       /* **  api检测 ** */
       jWeixin.checkJsApi({
         jsApiList: ['openLocation', 'getLocation', 'updateAppMessageShareData',
-          'updateTimelineShareData', 'onMenuShareAppMessage'
+          'updateTimelineShareData', 'onMenuShareAppMessage', 'onMenuShareTimeline'
         ],
-        openTagList: ['wx-open-launch-weapp', 'wx-open-launch-weapp',
-          'wx-open-launch-app', 'wx-open-subscribe', 'wx-open-audio'
-        ]
+        success: function(res) {
+          console.log('检测完成', res)
+        }
       });
 
       if (callback) {
@@ -48,24 +46,25 @@ export default {
       }
     })
   },
-  //在需要定位页面调用
-  getLocation: function(data) {
+
+  //获取当前位置
+  getLocation: function(callback) {
     jWeixin.ready(() => {
       jWeixin.getLocation({
         type: 'gcj02',
-        // success: function(res) {
-        //   callback(res)
-        // },
-        // fail: function(res) {
-        //   console.log(res)
-        // },
+        success: (res) => {
+          console.log('获取当前位置', res)
+          if (callback) {
+            callback(res)
+          }
+        },
       });
     });
   },
-  //打开位置
+  //根据传入的坐标打开地图
   openLocation: function(data) {
     jWeixin.ready(() => {
-      jWeixin.openLocation({ //根据传入的坐标打开地图
+      jWeixin.openLocation({
         latitude: data.latitude,
         longitude: data.longitude,
         name: data.name, // 位置名
@@ -75,7 +74,7 @@ export default {
     });
   },
 
-  // 分享给朋友
+  // 分享给朋友, 新版分享
   updateAppMessageShareData(data) {
     jWeixin.ready(() => {
       jWeixin.updateAppMessageShareData({
@@ -83,30 +82,30 @@ export default {
         desc: data.desc, // 分享描述
         link: data.link, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
         imgUrl: data.imgUrl, // 分享图标
-        success: () => {
+        success: (res) => {
           // 设置成功
-          // console.log("朋友分享测试")
+          console.log("朋友分享设置成功", res)
         }
       })
     });
   },
 
-  // 分享到朋友圈
+  // 分享到朋友圈, 新版分享
   updateTimelineShareData(data) {
     jWeixin.ready(() => {
       jWeixin.updateTimelineShareData({
         title: data.title, // 分享标题
         link: data.link, // 分享链接，该链接域名或路径必须与当前页面对应的公众号JS安全域名一致
         imgUrl: data.imgUrl, // 分享图标
-        success: () => {
+        success: (res) => {
           // 设置成功
-          // console.log('朋友圈分享测试')
+          console.log('朋友圈分享设置成功', res)
         }
       })
     });
   },
 
-  // 点击按钮分享(即将废弃)
+  // 点击按钮分享(旧版即将废弃)
   onMenuShareAppMessage(data) {
     jWeixin.ready(() => {
       jWeixin.onMenuShareAppMessage({
@@ -116,9 +115,9 @@ export default {
         imgUrl: data.imgUrl, // 分享图标
         type: 'link', // 分享类型,music、video或link，不填默认为link
         dataUrl: '', // 如果type是music或video，则要提供数据链接，默认为空
-        success: () => {
+        success: (res) => {
           // 设置成功
-          console.log('朋友分享测试')
+          console.log('朋友分享测试', res)
         }
       })
     });

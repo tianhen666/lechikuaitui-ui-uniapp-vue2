@@ -21,9 +21,9 @@
           <text>{{ invitationTenantInfo.name }}</text>
         </view>
         <view class="name">
-          <text>{{ invitationInfo.nickname || invitationInfo.snickName }}</text>
-          <text v-if="invitationInfo.postName" style="padding: 0 10rpx;">|</text>
-          <text>{{ invitationInfo.postName }}</text>
+          <text>{{ invitationUserInfo.nickname || invitationUserInfo.snickName }}</text>
+          <text v-if="invitationUserInfo.postName" style="padding: 0 10rpx;">|</text>
+          <text>{{ invitationUserInfo.postName }}</text>
         </view>
         <view class="address">
           <text>{{ invitationTenantInfo.address }}</text>
@@ -36,27 +36,21 @@
           <button
             class="bottonItem"
             style="margin-bottom: 30rpx;"
-            @tap.stop="tel(invitationInfo.mobile || invitationTenantInfo.contactMobile)"
+            @tap.stop="_$tel(invitationUserInfo.mobile)"
           >
             电话咨询
           </button>
-          <button class="bottonItem" @tap.stop="onlineConsultation">在线咨询</button>
+          <!-- <button class="bottonItem" @tap.stop="onlineConsultation">在线咨询</button> -->
         </view>
       </view>
     </view>
 
-    <u-popup :show="mShow" @close="mShow = false" mode="center" closeable round="10rpx">
-      <view class="popupBox">
-        <view class="title">{{ invitationTenantInfo.name }}</view>
-        <view class="desc">添加我的微信</view>
-        <image
-          style="width: 160px;height: 160px;display: block;margin: auto;"
-          :src="invitationInfo.wechatCode"
-          mode="widthFix"
-        ></image>
-        <view class="tips">{{ invitationInfo.remark }}</view>
-      </view>
-    </u-popup>
+    <m-weChat-code-preview
+      :title="invitationTenantInfo.name"
+      :imgUrl="invitationUserInfo.wechatCode"
+      :remark="invitationUserInfo.remark"
+      ref="wPopup"
+    ></m-weChat-code-preview>
   </view>
 </template>
 
@@ -72,36 +66,18 @@ export default {
   computed: {
     ...mapState({
       invitationTenantInfo: state => state.tenant.invitationInfo,
-      invitationInfo: state => state.user.invitationInfo
+      invitationUserInfo: state => state.user.invitationInfo
     })
   },
   methods: {
-    tel(val) {
-      if (val) {
-        uni.makePhoneCall({
-          phoneNumber: val
-        });
-      } else {
-        uni.showToast({
-          title: '没有手机号',
-          icon: 'none'
-        });
-      }
-    },
-    onlineConsultation() {
-      uni.showToast({
-        title: '正在努力开发中',
-        icon: 'none'
-      });
-    },
+    // 在线咨询
+    onlineConsultation() {},
+    // 微信预览
     showImg() {
-      if (this.invitationInfo.wechatCode) {
-        this.mShow = true;
+      if (this.invitationUserInfo.wechatCode) {
+        this.$refs.wPopup.open();
       } else {
-        uni.showToast({
-          title: '没有微信二维码',
-          icon: 'none'
-        });
+        this._$showToast('没有微信二维码');
       }
     }
   }
@@ -175,25 +151,6 @@ export default {
         }
       }
     }
-  }
-}
-.popupBox {
-  width: 600rpx;
-  text-align: center;
-  .title {
-    font-size: 34rpx;
-    line-height: 1;
-    padding: 30rpx 0;
-  }
-  .desc {
-    margin: 20rpx 0;
-    text-align: center;
-    font-size: 28rpx;
-  }
-  .tips {
-    color: #aaa;
-    margin: 20rpx 0 40rpx;
-    font-size: 28rpx;
   }
 }
 </style>

@@ -37,8 +37,7 @@ export default {
     ...mapState({
       tenantInfo: state => state.tenant.info,
       userInfo: state => state.user.userInfo
-    }),
-    ...mapGetters(['isMember'])
+    })
   },
   data() {
     return {};

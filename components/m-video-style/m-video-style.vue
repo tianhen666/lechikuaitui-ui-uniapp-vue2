@@ -1,20 +1,28 @@
 <template>
-  <view class="box" @tap.stop="goToPage(`/pages/videoDetails/videoDetails?id=${itemData.id}`)">
+  <view class="box">
     <view class="t">
       <view class="left">
         <image mode="aspectFill" class="img" src="/static/images/empty/icon1.jpeg"></image>
       </view>
       <view class="center">
         <text class="text">{{ itemData.tag || '推荐视频' }}</text>
-        <text class="time">{{ mDayJs(itemData.createTime) }}</text>
+        <text class="time">{{ _$mDayJs(itemData.createTime) }}</text>
       </view>
       <view class="right">
-        <button class="botton">{{ itemData.shareText || '立即分享' }}</button>
+        <button
+          class="botton"
+          @tap.stop="_$verifyPopupGoToPage(`/pages/videoDetails/videoDetails?id=${itemData.id}`)"
+        >
+          {{ itemData.shareText || '立即分享' }}
+        </button>
       </view>
     </view>
 
-    <view class="c">
-      <view class="title">{{ itemData.name }}</view>
+    <view
+      class="c"
+      @tap.stop="_$verifyPopupGoToPage(`/pages/videoDetails/videoDetails?id=${itemData.id}`)"
+    >
+      <!-- <view class="title">{{ itemData.name }}</view> -->
       <view class="warpper">
         <view class="videoImg">
           <!-- 视频播放图标 -->
@@ -32,39 +40,39 @@
       <view class="views">
         <u-icon
           name="eye"
-          color="#bbb"
-          size="30rpx"
+          color="#aaa"
+          size="34rpx"
           :label="'浏览 ' + itemData.heat"
-          labelSize="22rpx"
-          labelColor="#bbb"
+          labelSize="24rpx"
+          labelColor="#aaa"
           space="10rpx"
         ></u-icon>
       </view>
     </view>
+
+    <!-- 提示弹窗 -->
+    <m-uni-popup
+      ref="tipsPopupRef"
+      :mPopupDesc="mPopupDesc"
+      :mPopupBtn1="mPopupBtn1"
+      @Btn1Fun="_$tipsPopupBtn1"
+    ></m-uni-popup>
   </view>
 </template>
 
 <script>
-import dayJs from 'dayjs';
 export default {
   name: 'm-article-style',
   props: {
     itemData: Object
   },
   data() {
-    return {};
+    return {
+      mPopupDesc: '',
+      mPopupBtn1: ''
+    };
   },
-  methods: {
-    goToPage(url) {
-      uni.navigateTo({
-        url: url
-      });
-    },
-    mDayJs(val) {
-      // 时间转换
-      return dayJs(val).format('YYYY-MM-DD HH:mm:ss');
-    }
-  }
+  methods: {}
 };
 </script>
 
@@ -82,7 +90,6 @@ export default {
 
     .left {
       flex: none;
-
       .img {
         width: 60rpx;
         height: 60rpx;
@@ -96,8 +103,10 @@ export default {
 
       .text {
         display: block;
-        font-size: 25rpx;
-        margin-bottom: 4rpx;
+        font-size: 28rpx;
+        margin-bottom: 10rpx;
+        font-weight: bold;
+        color: $main-color;
       }
 
       .time {
@@ -122,33 +131,26 @@ export default {
 
   > .c {
     margin-top: 20rpx;
-
+    padding-left: 84rpx;
     .title {
       font-size: 26rpx;
       line-height: 1.5;
       @include overHeiddenText(2);
     }
-
     .warpper {
-      background-color: #fafafa;
-      padding: 20rpx;
-      margin-top: 10rpx;
-      border-radius: 10rpx;
       .videoImg {
         position: relative;
-
+        display: inline-block;
         .img {
-          height: 300rpx;
-          width: 100%;
+          display: block;
+          width: 240rpx;
         }
       }
     }
   }
-
   > .b {
+    padding-left: 84rpx;
     .views {
-      font-size: 24rpx;
-      color: #bbb;
       margin-top: 20rpx;
     }
   }

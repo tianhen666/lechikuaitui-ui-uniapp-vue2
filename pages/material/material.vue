@@ -1,6 +1,7 @@
 <template>
   <view>
     <u-toast ref="uToast"></u-toast>
+    <view style="height: 10px;"></view>
     <!-- 分类列表 -->
     <view class="tabs"><me-tabs v-model="tabIndex" :tabs="tabs"></me-tabs></view>
     <!-- 数据列表 -->
@@ -60,7 +61,11 @@
     <xky-guideStep :step="step"></xky-guideStep>
 
     <!-- 我要投稿 -->
-    <view class="contribute" v-if="isMember" @tap.stop="goToPage('/pages/contribute/contribute')">
+    <view
+      class="contribute"
+      v-if="_$isMember"
+      @tap.stop="_$goToPage('/pages/contribute/contribute')"
+    >
       <text>投稿</text>
     </view>
   </view>
@@ -126,30 +131,23 @@ export default {
       }
     };
   },
-  computed: {
-    ...mapGetters(['isMember'])
-  },
   async onLoad() {
     // 需要固定swiper的高度 (需减去悬浮tabs的高度)
     this.swiperHeight = uni.getSystemInfoSync().windowHeight - 54 + 'px';
   },
   mounted() {
     // #ifdef H5
+    // 刷新浏览器,重置滚动条
     uni.pageScrollTo({
       scrollTop: 0,
       duration: 0
-    }); // 刷新浏览器,重置滚动条
+    });
     // #endif
   },
   methods: {
+    // 滑动屏
     swiperChange(e) {
-      // 滑动屏
       this.tabIndex = e.detail.current;
-    },
-    goToPage(url) {
-      uni.navigateTo({
-        url: url
-      });
     }
   }
 };
@@ -157,7 +155,6 @@ export default {
 
 <style lang="scss" scoped>
 .tabs {
-  margin-top: 10px;
   /deep/ .me-tabs {
     height: 44px !important;
     line-height: 44px !important;

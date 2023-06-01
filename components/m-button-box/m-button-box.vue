@@ -45,7 +45,7 @@ export default {
       font-size: 24rpx;
       line-height: 2.4;
       padding: 0 18rpx;
-      margin: 0 10rpx;
+      margin: 0 10rpx 15rpx;
       border-radius: 50rpx;
       &:after {
         border: none;

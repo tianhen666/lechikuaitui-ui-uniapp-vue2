@@ -19,18 +19,19 @@
           </view>
         </view>
         <view class="bottom">
-          <button class="btn btn3" @tap.stop="switching(item)" v-if="tenantInfo.id != item.id">
+          <button class="btn btn3" @tap.stop="_$mCutTenant(item)" v-if="tenantInfo.id != item.id">
             进入门诊
           </button>
           <button
             class="btn btn1"
-            @tap.stop="gotoPage(`/pages/tenantInfoInput/tenantInfoInput?id=${item.id}`)"
+            v-if="tenantInfo.id === item.id"
+            @tap.stop="_$goToPage(`/pages/tenantInfoInput/tenantInfoInput?id=${item.id}`)"
           >
             编辑
           </button>
-          <button class="btn btn2" v-if="tenantInfo.id != item.id" @tap.stop="deleteClinic(item)">
+          <!-- <button class="btn btn2" v-if="tenantInfo.id != item.id" @tap.stop="deleteClinic(item)">
             删除
-          </button>
+          </button> -->
         </view>
       </view>
     </view>
@@ -38,7 +39,7 @@
 </template>
 
 <script>
-import { getUserListTenant, updateTenant, cutTenant } from '@/api/materialLibrary.js';
+import { getUserListTenant, updateTenant } from '@/api/materialLibrary.js';
 import { mapState } from 'vuex';
 export default {
   data() {
@@ -58,40 +59,13 @@ export default {
     this.mGetUserListTenant();
   },
   methods: {
+    /** 获取当前用户下的所有门诊 */
     async mGetUserListTenant() {
-      // 获取当前用户下的所有门诊
+      //
       const res = await getUserListTenant();
       this.tenantlist = res.data;
     },
-    async switching(val) {
-      // 切换门诊
-      const res = await cutTenant({ id: val.id });
-
-      // 清理当前的缓存
-      uni.clearStorageSync();
-      // 设置切换的缓存
-      uni.setStorageSync('TENANTID', val.id);
-
-      // 重新打开当前网页
-      const protocol = window.location.protocol;
-      const host = window.location.host;
-
-      // 重定向到个人中心
-      const newHref = protocol + '//' + host + '/pages/center/center';
-
-      //重新获取授权链接
-      this.$store
-        .dispatch('getWXSocialAuthRedirect', { type: 31, redirectUri: newHref })
-        .then(res => {
-          window.location.href = res;
-        });
-    },
-    gotoPage(url) {
-      // 页面跳转
-      uni.navigateTo({
-        url: url
-      });
-    },
+    /** 删除门诊 */
     async deleteClinic(item) {
       uni.showModal({
         title: '提示',

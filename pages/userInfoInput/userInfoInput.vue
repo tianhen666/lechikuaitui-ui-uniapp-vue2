@@ -9,7 +9,7 @@
       :labelStyle="{ color: '#666', fontSize: '28rpx' }"
       ref="uForm11"
     >
-      <u-form-item label="头像上传" prop="userInfo.avatar" borderBottom>
+      <u-form-item label="头像上传" required prop="userInfo.avatar" borderBottom>
         <u-upload
           :fileList="userInfoAvatarFileList"
           @afterRead="afterRead"
@@ -18,7 +18,7 @@
         ></u-upload>
       </u-form-item>
 
-      <u-form-item label="姓名" prop="userInfo.nickname" borderBottom>
+      <u-form-item label="姓名" required prop="userInfo.nickname" borderBottom>
         <u--input
           v-model="modeData.userInfo.nickname"
           placeholder="请填写姓名"
@@ -51,6 +51,7 @@
         <u-textarea
           v-model="modeData.userInfo.slogan"
           count
+          maxlength="30"
           placeholder="请填写签名"
           border="none"
           fontSize="14px"
@@ -58,7 +59,7 @@
         ></u-textarea>
       </u-form-item>
 
-      <u-form-item label="微信号" prop="userInfo.wxCode" borderBottom>
+      <!-- <u-form-item label="微信号" prop="userInfo.wxCode" borderBottom>
         <u--input
           v-model="modeData.userInfo.wxCode"
           placeholder="请填写微信号"
@@ -66,7 +67,7 @@
           fontSize="14px"
           placeholderStyle="font-size:14px;color:#bbb;"
         ></u--input>
-      </u-form-item>
+      </u-form-item> -->
 
       <u-form-item required label="微信二维码上传" prop="userInfo.wechatCode" borderBottom>
         <u-upload
@@ -79,7 +80,7 @@
         ></u-upload>
       </u-form-item>
 
-      <u-form-item label="微信二维码备注" prop="userInfo.remark" borderBottom>
+      <!-- <u-form-item label="微信二维码备注" prop="userInfo.remark" borderBottom>
         <u--input
           v-model="modeData.userInfo.remark"
           placeholder="请输入微信二维码备注"
@@ -87,7 +88,7 @@
           fontSize="14px"
           placeholderStyle="font-size:14px;color:#bbb;"
         ></u--input>
-      </u-form-item>
+      </u-form-item> -->
     </u--form>
 
     <view class="mBottom">
@@ -105,7 +106,7 @@
     <uni-popup ref="smsCodePopup" type="center">
       <view class="smsCodeBox">
         <view class="close" @tap.stop="smsCodeClose">
-          <image class="img" src="/static/images/empty/close.png"></image>
+          <image class="img" src="@/static/images/myimg/close.png"></image>
         </view>
         <u--form
           labelWidth="55px"
@@ -153,6 +154,7 @@
         <view class="smsCodeBtn"><button @tap="verifyCodeSms" class="btn">确认</button></view>
       </view>
     </uni-popup>
+
     <u-toast ref="uToast"></u-toast>
   </view>
 </template>
@@ -185,10 +187,7 @@ export default {
       },
       rules: {
         'userInfo.contactMobile': [
-          {
-            required: true,
-            message: '请填写手机号'
-          },
+          { required: true, message: '请填写手机号' },
           {
             validator: (rule, value, callback) => {
               return uni.$u.test.mobile(value);
@@ -197,12 +196,12 @@ export default {
           }
         ],
         'userInfo.wechatCode': [
-          {
-            required: true,
-            message: '请上传微信二维码',
-            trigger: ['blur', 'change']
-          }
-        ]
+          { required: true, message: '请上传微信二维码', trigger: ['blur', 'change'] }
+        ],
+        'userInfo.nickname': [
+          { required: true, message: '请输入你的昵称', trigger: ['blur', 'change'] }
+        ],
+        'userInfo.avatar': [{ required: true, message: '请上传头像', trigger: ['blur', 'change'] }]
       },
       userInfoAvatarFileList: [],
       userInfoWechatCodeFileList: [],
@@ -214,16 +213,10 @@ export default {
       //验证手机
       smsCodeShow: false,
       smsCodeTips: '获取验证码',
-      modeDataSmsCode: {
-        contactMobile: '',
-        code: ''
-      },
+      modeDataSmsCode: { contactMobile: '', code: '' },
       rulesSmsCode: {
         contactMobile: [
-          {
-            required: true,
-            message: '请填写手机号'
-          },
+          { required: true, message: '请填写手机号' },
           {
             validator: (rule, value, callback) => {
               return uni.$u.test.mobile(value);
@@ -232,18 +225,9 @@ export default {
           }
         ],
         code: [
-          {
-            type: 'number',
-            message: '验证码不正确'
-          },
-          {
-            required: true,
-            message: '请输入验证码'
-          },
-          {
-            len: 4,
-            message: '验证码不正确'
-          }
+          { type: 'number', message: '验证码不正确' },
+          { required: true, message: '请输入验证码' },
+          { len: 4, message: '验证码不正确' }
         ]
       }
     };
@@ -293,8 +277,8 @@ export default {
       this.userInfoAvatarFileList.splice(event.index, 1);
       this.modeData.userInfo.avatar = '';
     },
+    // 上传头像
     async afterRead(event) {
-      // 上传头像
       this.userInfoAvatarFileList.push({ ...event.file, status: 'uploading', message: '上传中' });
       const result = await this.uploadFilePromise(this.userInfoAvatarFileList[0]);
       this.modeData.userInfo.avatar = result;
@@ -314,8 +298,8 @@ export default {
       this.userInfoWechatCodeFileList.splice(event.index, 1);
       this.modeData.userInfo.wechatCode = '';
     },
+    // 上传二维码
     async afterRead2(event) {
-      // 上传二维码
       this.userInfoWechatCodeFileList.push({
         ...event.file,
         status: 'uploading',
@@ -334,6 +318,7 @@ export default {
         })
       );
     },
+    // 上传内容接口
     uploadFilePromise(item) {
       return new Promise((resolve, reject) => {
         updateFileNamer(item.url).then(res => {
@@ -341,6 +326,7 @@ export default {
         });
       });
     },
+    // 表单提交
     mSubmit() {
       if (this.btnLoading) return;
 
@@ -456,7 +442,7 @@ page {
 .myInfo {
   background-color: $main-color;
   margin: 0 -30rpx;
-  padding: 30rpx 30rpx;
+  padding: 15rpx 30rpx;
   font-size: 26rpx;
   color: #fff;
 }
@@ -470,7 +456,8 @@ page {
     z-index: 5;
     background-color: #f5f6f9;
     margin: 0 -30rpx;
-    padding: 15rpx 30rpx 40rpx;
+    padding: 15rpx 30rpx 0;
+    padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
     box-sizing: border-box;
     .btn {
       background-color: $main-color;
@@ -488,18 +475,17 @@ page {
 .smsCodeBox {
   position: relative;
   width: 600rpx;
-  padding: 40rpx 30rpx;
+  padding: 50rpx 30rpx 50rpx;
   box-sizing: border-box;
   background-color: #fff;
   border-radius: 10rpx;
   .close {
     position: absolute;
-    top: -45rpx;
-    right: -45rpx;
-
+    top: 15rpx;
+    right: 15rpx;
     .img {
-      width: 45rpx;
-      height: 45rpx;
+      width: 35rpx;
+      height: 35rpx;
       display: block;
     }
   }

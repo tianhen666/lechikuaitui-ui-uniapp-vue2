@@ -32,8 +32,7 @@ export default {
     ...mapState({
       invitationTenantInfo: state => state.tenant.invitationInfo,
       invitationInfo: state => state.user.invitationInfo
-    }),
-    ...mapGetters(['isMember'])
+    })
   },
   async onLoad({ invitationID, invitationTenantID }) {
     console.log(`邀请人ID-${invitationID}`);

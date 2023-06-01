@@ -48,8 +48,8 @@ export const getClueRecordBehavior = params => http.post('/yxx/source-material/g
 //用户端上传图片
 export const updateFileNamer = filePath =>
   http.upload('/yxx/memberUser/fileName', {
-    name: 'avatarFile',
-    filePath: filePath
+    name: 'avatarFile', // 后端接收文件字段的名称
+    filePath: filePath // 前端上传的文件路径
   })
 
 // 创建一个门诊

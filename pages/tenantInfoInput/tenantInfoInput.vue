@@ -1,5 +1,6 @@
 <template>
   <view class="mBox">
+    {{ modeData }}
     <u--form
       labelPosition="top"
       labelWidth="auto"
@@ -10,14 +11,15 @@
     >
       <u-form-item label="门诊logo上传" required prop="tenantInfo.tenantLog" borderBottom>
         <u-upload
-          :fileList="tenantLogFileList"
-          @afterRead="afterRead3"
-          @delete="deletePic3"
+          :fileList="fileList.tenantLog"
+          @afterRead="afterRead"
+          @delete="deletePic"
           :maxCount="1"
+          name="tenantLog"
         ></u-upload>
       </u-form-item>
 
-      <u-form-item label="门诊名称" required prop="tenantInfo.name" borderBottom>
+      <u-form-item label="门诊联系方式" required prop="tenantInfo.name" borderBottom>
         <u--input
           v-model="modeData.tenantInfo.name"
           placeholderStyle="font-size:13px;color:#bbb;"
@@ -27,7 +29,7 @@
         ></u--input>
       </u-form-item>
 
-      <u-form-item label="门诊电话" required prop="tenantInfo.contactMobile" borderBottom>
+      <u-form-item label="门诊联系方式" prop="tenantInfo.contactMobile" borderBottom>
         <u--input
           v-model="modeData.tenantInfo.contactMobile"
           placeholderStyle="font-size:13px;color:#bbb;"
@@ -37,7 +39,13 @@
         ></u--input>
       </u-form-item>
 
-      <u-form-item label="地址" required prop="tenantInfo.address" borderBottom>
+      <u-form-item
+        label="地址"
+        @tap="selectAddress"
+        required
+        prop="tenantInfo.address"
+        borderBottom
+      >
         <u-textarea
           v-model="modeData.tenantInfo.address"
           placeholder="请填写门诊地址"
@@ -59,10 +67,11 @@
 
       <!-- <u-form-item label="请上传营业执照" prop="tenantInfo.license">
         <u-upload
-          :fileList="licenseFileList"
-          @afterRead="afterRead4"
-          @delete="deletePic4"
+          :fileList="fileList.license"
+          @afterRead="afterRead"
+          @delete="deletePic"
           :maxCount="1"
+          name="license"
           width="690rpx"
           height="480rpx"
         >
@@ -92,9 +101,10 @@
               style="flex: none;"
             ></u-checkbox>
           </u-checkbox-group>
-          <text class="s12">口腔推使用协议</text>
+          <text class="s12" @tap.stop="_$goToPage('/pages/agreement/agreement')">
+            口腔推使用协议
+          </text>
         </view>
-
         <button class="btn" :loading="btnLoading" @tap.stop="mSubmit">保存</button>
       </view>
     </view>
@@ -102,15 +112,11 @@
 </template>
 
 <script>
-import {
-  updateFileNamer,
-  saveTenant,
-  updateTenant,
-  getShareTenant,
-  cutTenant
-} from '@/api/materialLibrary.js';
+import { saveTenant, updateTenant, getShareTenant } from '@/api/materialLibrary.js';
+import wx from '@/wxJsSDK/index.js';
 import { mapState } from 'vuex';
-import color from '../../uni_modules/uview-ui/libs/config/color';
+import md5 from 'md5';
+import { jsonp } from 'vue-jsonp';
 export default {
   data() {
     return {
@@ -126,8 +132,7 @@ export default {
           lng: '', // 经度
           lat: '', // 维度
           license: '', // 营业执照
-          creditCode: '', // 社会信用代码
-          postIds: [1] // 超级管理员的职位列表
+          creditCode: '' // 社会信用代码
         }
       },
       rules: {
@@ -135,29 +140,27 @@ export default {
           type: 'string',
           required: true,
           message: '请填写门诊名称',
-          trigger: ['blur', 'change']
-        },
-        'tenantInfo.contactMobile': {
-          type: 'string',
-          required: true,
-          message: '请填写门诊电话',
-          trigger: ['blur', 'change']
+          trigger: ['change']
         },
         'tenantInfo.address': {
           type: 'string',
           required: true,
           message: '请填写地址',
-          trigger: ['blur', 'change']
+          trigger: ['change']
         },
         'tenantInfo.tenantLog': {
           type: 'string',
           required: true,
           message: '请上传门诊logo',
-          trigger: ['blur', 'change']
+          trigger: ['change']
         }
       },
-      tenantLogFileList: [],
-      licenseFileList: [],
+
+      // 上传的文件列表
+      fileList: {
+        tenantLog: [],
+        license: []
+      },
 
       tenantId: 0, // 门诊ID
       btnLoading: false
@@ -168,97 +171,70 @@ export default {
       tenantInfo: state => state.tenant.info
     })
   },
-  onLoad({ id }) {
+  async onLoad({ id }) {
+    // 等待onLaunch 加载完成
+    await this.$onLaunched;
+
     // 赋值门诊ID,并且获取门诊新
     if (id) {
       this.tenantId = Number(id) || 0;
-      this.mGetOneTenant();
+      this.mGetShareTenant();
     }
+
+    // 微信jsdk初始化
+    wx.initJssdk();
   },
   methods: {
     // 初始化门诊信息
     initInfo(tenantObj) {
       if (this.tenantId) {
         this.modeData.tenantInfo = tenantObj;
-
+        this.$set(this.modeData.tenantInfo, 'deleted', 0);
         // 设置门诊logo回显列表
         if (this.modeData.tenantInfo.tenantLog) {
-          this.tenantLogFileList = [{ url: this.modeData.tenantInfo.tenantLog }];
+          this.fileList.tenantLog = [{ url: this.modeData.tenantInfo.tenantLog }];
         }
 
         // 设置营业执照回显
         if (this.modeData.tenantInfo.license) {
-          this.licenseFileList = [{ url: this.modeData.tenantInfo.license }];
+          this.fileList.license = [{ url: this.modeData.tenantInfo.license }];
         }
       }
     },
 
-    // 删除门诊logo
-    deletePic3(event) {
-      this.tenantLogFileList.splice(event.index, 1);
-      this.modeData.tenantInfo.tenantLog = '';
+    // 删除上传的图片
+    deletePic(event) {
+      // console.log(event);
+      this.fileList[event.name].splice(event.index, 1);
+      this.modeData.tenantInfo[event.name] = '';
     },
-
-    // 上传店铺logo
-    async afterRead3(event) {
-      this.tenantLogFileList.push({
+    // 上传文件读取后执行
+    async afterRead(event) {
+      // console.log(event);
+      // 设置显示
+      this.fileList[event.name].push({
         ...event.file,
         status: 'uploading',
         message: '上传中'
       });
-      const result = await this.uploadFilePromise(this.tenantLogFileList[0]);
-      this.modeData.tenantInfo.tenantLog = result;
-      // 上传成功
-      this.tenantLogFileList.splice(
+
+      const result = await this._$uploadFilePromise(event.file.url);
+
+      // 上传完成设置回显
+      this.fileList[event.name].splice(
         0,
         1,
-        Object.assign(this.tenantLogFileList[0], {
+        Object.assign(event.file, {
           status: 'success',
-          message: '',
+          message: '上传成功',
           url: result
         })
       );
-    },
-
-    // 删除删除营业执照
-    deletePic4(event) {
-      this.licenseFileList.splice(event.index, 1);
-      this.modeData.tenantInfo.license = '';
-    },
-
-    // 上传店铺营业执照
-    async afterRead4(event) {
-      this.licenseFileList.push({
-        ...event.file,
-        status: 'uploading',
-        message: '上传中'
-      });
-      const result = await this.uploadFilePromise(this.licenseFileList[0]);
-      console.log(result);
-      this.modeData.tenantInfo.license = result;
-      // 上传成功
-      this.licenseFileList.splice(
-        0,
-        1,
-        Object.assign(this.licenseFileList[0], {
-          status: 'success',
-          message: '',
-          url: result
-        })
-      );
-    },
-
-    // 上传图片
-    uploadFilePromise(item) {
-      return new Promise((resolve, reject) => {
-        updateFileNamer(item.url).then(res => {
-          resolve(res);
-        });
-      });
+      this.modeData.tenantInfo[event.name] = result;
     },
 
     // 获取指定门诊信息
-    async mGetOneTenant() {
+    async mGetShareTenant() {
       const res = await getShareTenant({ tenantId: this.tenantId });
       this.initInfo(res.data);
     },
@@ -271,80 +247,79 @@ export default {
       this.$refs.uForm11
         .validate()
         .then(async res => {
-          // 验证通过
-
           // 验证协议
           if (this.checkboxValue1[0] === '同意') {
-            // 加载中
-            uni.showLoading({
-              title: '正在保存中...'
-            });
+            // 接口提交中
             this.btnLoading = true;
-
             let resObj = {};
-
             // 有门诊ID代表修改
             if (this.tenantId) {
-              this.$set(this.modeData.tenantInfo, 'deleted', 0);
               resObj = await updateTenant(this.modeData.tenantInfo);
             } else {
               // 没有门诊ID代码新建
               resObj = await saveTenant(this.modeData.tenantInfo);
             }
-
-            setTimeout(() => {
-              this.btnLoading = false;
-              // 关闭loading
-              uni.hideLoading();
-
-              // 有门诊ID完成跳转逻辑
-              if (this.tenantId) {
-                const pages = getCurrentPages();
-                if (pages.length > 1) {
-                  uni.navigateBack();
-                } else {
-                  uni.switchTab({
-                    url: '/pages/center/center'
-                  });
-                }
+            // 有门诊ID完成跳转逻辑
+            if (this.tenantId) {
+              const pages = getCurrentPages();
+              if (pages.length > 1) {
+                uni.navigateBack();
               } else {
-                // 没有门诊ID处理逻辑,完成切换逻辑
-                this.switching(resObj.data);
+                uni.switchTab({
+                  url: '/pages/center/center'
+                });
               }
-            }, 1000);
+            } else {
+              // 没有门诊ID处理逻辑,完成切换逻辑
+              this._$mCutTenant(resObj.data);
+            }
           } else {
             uni.$u.toast('请勾选协议');
           }
         })
         .catch(errors => {
+          console.log(errors);
+          // 表单验证失败
           this.btnLoading = false;
           if (errors[0]) {
             uni.$u.toast(errors[0].message);
           }
         });
     },
-    // 切换门诊
-    async switching(val) {
-      const res = await cutTenant({ id: val.id });
 
-      // 清理当前的缓存
-      uni.clearStorageSync();
-      // 设置切换的缓存
-      uni.setStorageSync('TENANTID', val.id);
-
-      // 重新打开当前网页
-      const protocol = window.location.protocol;
-      const host = window.location.host;
-
-      // 重定向到个人中心
-      const newHref = protocol + '//' + host + '/pages/center/center';
-
-      //重新获取授权链接
-      this.$store
-        .dispatch('getWXSocialAuthRedirect', { type: 31, redirectUri: newHref })
-        .then(res => {
-          window.location.href = res;
+    /** 选择地址 */
+    selectAddress() {
+      wx.getLocation(res => {
+        this.getGeoCoder({
+          key: 'V7JBZ-7TH3B-E5BUD-JK4VW-5ZMX3-5MFW7',
+          SK: 'ibgtzO6SulorVO6BSxPqUVPtNIrY2my7',
+          latitude: res.latitude,
+          longitude: res.longitude,
+          location: `${res.latitude},${res.longitude}`
+        }).then(res111 => {
+          console.log(res111);
         });
+      });
+    },
+
+    /** 腾讯地图jsonp*/
+    getGeoCoder(param) {
+      let sig = md5(
+        `/ws/geocoder/v1?callback=jsonpCallback&key=${param.key}&location=${param.latitude},${
+          param.longitude
+        }&output=jsonp${param.SK}`
+      );
+      // sig = encodeURI(sig); //url化一下
+      let getData = {
+        callbackQuery: 'callback',
+        callbackName: 'jsonpCallback',
+        key: param.key,
+        location: param.location,
+        output: 'jsonp',
+        sig
+      };
+      //签名失败的解决办法 https://lbs.qq.com/faq/serverFaq/webServiceKey
+      return jsonp('https://apis.map.qq.com/ws/geocoder/v1', getData);
     }
   },
 
@@ -372,7 +347,8 @@ page {
     z-index: 5;
     background-color: #f5f6f9;
     margin: 0 -30rpx;
-    padding: 15rpx 30rpx 40rpx;
+    padding: 15rpx 30rpx 0;
+    padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
     box-sizing: border-box;
     .agreement {
       font-size: 26rpx;

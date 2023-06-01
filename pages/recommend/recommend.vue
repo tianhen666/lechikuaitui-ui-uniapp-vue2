@@ -15,8 +15,6 @@
         <m-video-style :item-data="item" v-if="item.type === 2 && item.content"></m-video-style>
       </template>
     </view>
-    <!-- 海报预览 -->
-    <m-poster-preview></m-poster-preview>
   </mescroll-body>
 </template>
 
@@ -31,9 +29,8 @@ export default {
     };
   },
   methods: {
-    async mGetshareEveryDay() {},
+    //联网加载数据
     upCallback(page) {
-      //联网加载数据
       getshareEveryDay({
         pageNo: page.num,
         pageSize: page.size,
@@ -42,7 +39,7 @@ export default {
         .then(res => {
           setTimeout(() => {
             this.mescroll.endBySize(res.data.list.length, res.data.total);
-          }, 2000);
+          }, 800);
 
           //设置列表数据
           if (page.num == 1) this.dataList.length = 0; //如果是第一页需手动制空列表

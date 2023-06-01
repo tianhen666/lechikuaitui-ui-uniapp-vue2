@@ -1,25 +1,28 @@
 <template>
-  <view class="box" @tap.stop="itemClicK(itemData)">
+  <view class="box">
     <view class="t">
       <view class="left">
         <image mode="aspectFill" class="img" src="/static//images/empty/icon1.jpeg"></image>
       </view>
       <view class="center">
         <text class="text">{{ itemData.tag || '优选海报' }}</text>
-        <text class="time">{{ mDayJs(itemData.createTime) }}</text>
+        <text class="time">{{ _$mDayJs(itemData.createTime) }}</text>
       </view>
-      <view class="right">
+      <view class="right" @tap.stop="verifyPopupShareTap">
         <button class="botton">{{ itemData.shareText || '立即分享' }}</button>
       </view>
     </view>
 
-    <view class="c">
-      <view class="title">{{ itemData.name }}</view>
+    <view
+      class="c"
+      @tap.stop="_$verifyPopupGoToPage(`/pages/generatePoster/generatePoster?id=${itemData.id}`)"
+    >
+      <!-- <view class="title">{{ itemData.name }}</view> -->
       <view class="warpper">
         <view class="postImg">
           <image
             class="img"
-            mode="aspectFit"
+            mode="widthFix"
             :src="itemData.content + '?imageView2/0/w/300/h/360/q/75'"
           ></image>
         </view>
@@ -28,44 +31,112 @@
 
     <view class="b">
       <view class="views">
-        <u-icon
-          name="eye"
-          color="#bbb"
-          size="30rpx"
-          :label="'浏览 ' + itemData.heat"
-          labelSize="22rpx"
-          labelColor="#bbb"
-          space="10rpx"
-        ></u-icon>
+        <view style="margin-right: 30rpx;">
+          <u-icon
+            name="eye"
+            color="#aaa"
+            size="34rpx"
+            :label="'浏览 ' + itemData.heat"
+            labelSize="24rpx"
+            labelColor="#aaa"
+            space="10rpx"
+          ></u-icon>
+        </view>
+
+        <view
+          style="margin-right: 30rpx;"
+          @click.stop="verifyPopupCopy(itemData.name)"
+          :class="'copyText' + itemData.id"
+        >
+          <u-icon
+            name="file-text"
+            color="#aaa"
+            size="34rpx"
+            :label="'复制文案'"
+            labelSize="24rpx"
+            labelColor="#aaa"
+            space="10rpx"
+          ></u-icon>
+        </view>
+
+        <view
+          :class="'creatPoster' + itemData.id"
+          @tap.stop="
+            _$verifyPopupGoToPage(`/pages/generatePoster/generatePoster?id=${itemData.id}`)
+          "
+        >
+          <u-icon
+            name="photo"
+            color="#aaa"
+            size="34rpx"
+            :label="'生成海报'"
+            labelSize="24rpx"
+            labelColor="#aaa"
+            space="10rpx"
+          ></u-icon>
+        </view>
       </view>
     </view>
+
+    <!-- 提示弹窗 -->
+    <m-uni-popup
+      ref="tipsPopupRef"
+      :mPopupDesc="mPopupDesc"
+      :mPopupBtn1="mPopupBtn1"
+      @Btn1Fun="_$tipsPopupBtn1"
+    ></m-uni-popup>
+
+    <!-- 引导 -->
+    <m-xky-guideStep ref="guideStep" :step="step"></m-xky-guideStep>
   </view>
 </template>
 
 <script>
-import dayJs from 'dayjs';
 export default {
   name: 'm-article-style',
   props: {
     itemData: Object
   },
   data() {
-    return {};
+    const step = {
+      name: 'creatPosterTisp',
+      repeat: true,
+      guideList: [
+        {
+          el: '.copyText' + this.itemData.id,
+          tips: '步骤一,复制海报文案',
+          style: 'border-radius: 8rpx;margin: 0;',
+          next: '下一步'
+        },
+        {
+          el: '.creatPoster' + this.itemData.id,
+          tips: '步骤二,生成海报',
+          style: 'border-radius: 8rpx;margin: 0;',
+          next: '完成'
+        }
+      ]
+    };
+    return {
+      // 弹窗提示
+      mPopupDesc: '',
+      mPopupBtn1: '',
+
+      step: step //引导步骤
+    };
   },
   methods: {
-    mDayJs(val) {
-      return dayJs(val).format('YYYY-MM-DD HH:mm:ss');
+    /** 验证后分享提示  */
+    verifyPopupShareTap() {
+      if (this._$verifyPopup()) {
+        // 引导步骤
+        this.$refs.guideStep.getDomInfo();
+      }
     },
-    //点击单个项目
-    itemClicK(item) {
-      this.gotoPage(`/pages/generatePoster/generatePoster?id=${item.id}`);
-      // this.$store.commit('SET_PREVIEW', item);
-    },
-    //跳转页面
-    gotoPage(url) {
-      uni.navigateTo({
-        url: url
-      });
+    /** 验证后复制  */
+    verifyPopupCopy(val) {
+      if (this._$verifyPopup()) {
+        this._$copy(val);
+      }
     }
   }
 };
@@ -79,41 +150,35 @@ export default {
   padding: 20rpx 20rpx 30rpx;
   border-radius: 10rpx;
   overflow: hidden;
-
   > .t {
     display: flex;
     align-items: center;
-
     .left {
       flex: none;
-
       .img {
         width: 60rpx;
         height: 60rpx;
         display: block;
       }
     }
-
     .center {
       flex: auto;
       margin-left: 24rpx;
-
       .text {
         display: block;
-        font-size: 25rpx;
-        margin-bottom: 4rpx;
+        font-size: 28rpx;
+        margin-bottom: 10rpx;
+        font-weight: bold;
+        color: $main-color;
       }
-
       .time {
         display: block;
         font-size: 24rpx;
         color: #aaa;
       }
     }
-
     .right {
       flex: none;
-
       .botton {
         background-color: $main-color;
         color: #fff;
@@ -126,34 +191,28 @@ export default {
       }
     }
   }
-
   > .c {
-    margin-top: 10rpx;
-
+    margin-top: 30rpx;
+    padding-left: 84rpx;
     .title {
-      font-size: 26rpx;
-      line-height: 1.5;
+      font-size: 28rpx;
       @include overHeiddenText(2);
     }
-
     .warpper {
-      background-color: #fafafa;
-      padding: 10rpx;
-      margin-top: 10rpx;
       border-radius: 10rpx;
+      display: inline-block;
       .postImg {
         .img {
-          height: 300rpx;
-          width: 100%;
+          width: 240rpx;
+          display: block;
         }
       }
     }
   }
-
   > .b {
+    padding-left: 84rpx;
     .views {
-      font-size: 24rpx;
-      color: #bbb;
+      display: flex;
       margin-top: 20rpx;
     }
   }

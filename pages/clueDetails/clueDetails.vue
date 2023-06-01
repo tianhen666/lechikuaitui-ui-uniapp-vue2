@@ -15,7 +15,7 @@
           <view class="text1">{{ dataObj.nickname || dataObj.snickName }}</view>
           <view class="text2">
             <text>联系电话：{{ dataObj.mobile || '无' }}</text>
-            <text class="btn" @tap="tel(dataObj.mobile)" v-if="dataObj.mobile">联系</text>
+            <text class="btn" @tap="_$tel(dataObj.mobile)" v-if="dataObj.mobile">联系</text>
           </view>
         </view>
       </view>
@@ -38,7 +38,7 @@
 
       <view class="dataList">
         <view class="dataListItem" v-for="(item, index) in dataList" :key="item.id">
-          <text class="time">最新浏览时间：{{ mDayJs(item.createTime) }}</text>
+          <text class="time">最新浏览时间：{{ _$mDayJs(item.createTime) }}</text>
           <view class="type">
             <text>
               {{
@@ -134,9 +134,16 @@ export default {
     this.id = Number(id) || 0;
     // 等待onLaunch 加载完成
     await this.$onLaunched;
+
     this.mescroll.resetUpScroll(false);
   },
   methods: {
+    loadData() {
+      setTimeout(() => {
+        this.mescroll.resetUpScroll(false);
+      }, 500);
+    },
+    // 上拉回调
     async upCallback(page) {
       const res = await getMemberUserOneList({
         id: this.id,
@@ -147,18 +154,10 @@ export default {
       this.dataList.push(...res.data.list);
       this.dataObj = res.data;
 
-      // 当前页加载完成
-      this.mescroll.endBySize(res.data.list.length, res.data.userCount);
-    },
-    // 拨打电话
-    tel(val) {
-      uni.makePhoneCall({
-        phoneNumber: val
-      });
-    },
-    // 时间转换
-    mDayJs(val) {
-      return dayJs(val).format('YYYY-MM-DD HH:mm:ss');
+      setTimeout(() => {
+        // 当前页加载完成
+        this.mescroll.endBySize(res.data.list.length, res.data.userCount);
+      }, 500);
     }
   }
 };

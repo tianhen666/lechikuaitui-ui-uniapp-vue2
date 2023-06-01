@@ -37,9 +37,9 @@
           class="detailsItem"
           v-for="(item, index) in dataList"
           :key="item.id"
-          @tap.stop="gotoPage(`/pages/clueDetails/clueDetails?id=${item.id}`)"
+          @tap.stop="_$goToPage(`/pages/clueDetails/clueDetails?id=${item.id}`)"
         >
-          <view class="time">最新浏览时间：{{ mDayJs(item.createTime) }}</view>
+          <view class="time">最新浏览时间：{{ _$mDayJs(item.createTime) }}</view>
 
           <view class="info">
             <view class="left"><u-avatar :src="item.avatar || item.savatar"></u-avatar></view>
@@ -117,16 +117,18 @@ export default {
     // 等待onLaunch 加载完成
     await this.$onLaunched;
     // 获取分类
-    this.mescroll.resetUpScroll(false);
+    this.loadData();
   },
   methods: {
-    downCallback() {
+    loadData() {
       setTimeout(() => {
-        this.mescroll.resetUpScroll(false);
+        this.mescroll.resetUpScroll(true);
       }, 500);
     },
+    downCallback() {
+      this.loadData();
+    },
     upCallback(page) {
-      // let keyword = this.tabs[this.i].name;
       getMemberUserList({
         nickName: this.searchName,
         pageNo: page.num,
@@ -151,19 +153,9 @@ export default {
         title: '点击了按钮,具体逻辑自行实现'
       });
     },
-    // 时间转换
-    mDayJs(val) {
-      return dayJs(val).format('YYYY-MM-DD HH:mm:ss');
-    },
-    // 页面跳转
-    gotoPage(url) {
-      uni.navigateTo({
-        url: url
-      });
-    },
     // 搜索
     mySearch(value) {
-      this.mescroll.resetUpScroll(false);
+      this.loadData();
     }
   }
 };

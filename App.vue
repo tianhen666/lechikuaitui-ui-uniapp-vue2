@@ -7,7 +7,7 @@ export default {
     // 1.微信浏览器环境执行
     if (isWechat()) {
       // 2.1 未登录
-      if (!this.$store.getters.hasLogin || !this.$store.getters.hasLoginExpired) {
+      if (!this.$store.getters.hasLogin || this.$store.getters.hasLoginExpired) {
         const code = GetQueryString('code');
         const state = GetQueryString('state');
         // 3.1 获取url中参数, 并且判断url种是否有code

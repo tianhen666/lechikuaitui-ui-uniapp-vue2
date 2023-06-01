@@ -15,8 +15,8 @@
         ></u--textarea>
       </u-form-item>
 
-      <!-- 素材分类 -->
-      <u-form-item label="素材分类" required>
+      <!-- 素材类型 -->
+      <u-form-item label="素材类型" required>
         <u-radio-group v-model="formData.type" placement="row" @change="classGroupChange">
           <u-radio
             :customStyle="{ marginRight: '18px', marginTop: '10px' }"
@@ -192,7 +192,7 @@ export default {
     classChangeHandler(e) {
       const { columnIndex, value, values, index, picker = this.$refs.uPicker } = e;
       if (columnIndex === 0) {
-        picker.setColumnValues(1, this.classColumns[0][index].parentListId);
+        picker.setColumnValues(1, this.classColumns[0][index].childrenList);
       }
     },
     // 选择分类确认
@@ -212,11 +212,10 @@ export default {
         sourceMaterialType: type
       });
       this.classColumns.splice(0, 1, res.data);
-      this.classColumns.splice(1, 1, res.data[0].parentListId);
+      this.classColumns.splice(1, 1, res.data[0].childrenList);
       this.currentClass = [];
       this.$refs.uPicker.setIndexs([0, 0]);
     },
-
     // 删除列表
     deletePic1(event) {
       this.formData.content = '';

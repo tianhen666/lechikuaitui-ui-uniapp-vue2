@@ -150,10 +150,19 @@
       }
 
     }
-  ],
+      ,{
+            "path" : "pages/agreement/agreement",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "使用协议",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+    ],
   "tabBar": {
     "selectedColor": "#3898ff",
-    "borderStyle": "white",
+    "borderStyle": "black",
     "blurEffect": "light",
     "backgroundColor": "#fff",
     "color": "#bfbfbf",
