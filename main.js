@@ -10,6 +10,8 @@ import myMixin from '@/mixins/global.js';
 // vuex
 import store from './store'
 
+import { VueJsonp } from 'vue-jsonp'
+
 // 关闭调试
 Vue.config.productionTip = false
 // 微信开放性标签,跳转微信小程序
@@ -29,14 +31,15 @@ if (window.location.href.indexOf("ytest") != -1) new vconsole() // 使用vconsol
 
 App.mpType = 'app'
 Vue.use(uView)
-Vue.use(myMixin);
+Vue.use(myMixin)
+Vue.use(VueJsonp)
 
 const app = new Vue({
   store,
   ...App
 })
 
-// 引入请求封装, 需要等待app创建完成 
+// 引入请求封装, 需要等待app创建完成
 require('./utils/request/index')(app)
 
 app.$mount()

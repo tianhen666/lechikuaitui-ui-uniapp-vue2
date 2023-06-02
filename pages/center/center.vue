@@ -248,13 +248,13 @@ export default {
           desc: '未创建',
           imgUrl: '/static/images/empty/us3.png',
           url: '/pages/staffManagement/staffManagement'
+        },
+        {
+          name: '门诊环境',
+          desc: '未创建',
+          imgUrl: '/static/images/empty/us7.png',
+          url: '/pages/photo/photo'
         }
-        // {
-        //   name: '充值中心',
-        //   desc: '未创建',
-        //   imgUrl: '/static/images/empty/us7.png',
-        //   url: '/pages/voucherCenter/voucherCenter'
-        // },
         // {
         //   name: '订单管理',
         //   desc: '未创建',

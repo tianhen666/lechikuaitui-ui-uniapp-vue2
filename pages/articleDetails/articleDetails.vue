@@ -22,7 +22,9 @@
       <view class="boxArticleDetails">
         <!-- 顶部卡片 -->
         <!-- 有邀请人 -->
-        <m-business-card-invitation v-if="invitationID"></m-business-card-invitation>
+        <m-business-card-invitation
+          v-if="invitationID && invitationTenantID"
+        ></m-business-card-invitation>
         <!-- 没有邀请人 -->
         <m-business-card v-else></m-business-card>
 
@@ -30,7 +32,10 @@
           style="background-color: #fff;border-radius: 20rpx;width: 720rpx;margin: 20rpx auto;overflow: hidden;padding-bottom: 40rpx;"
         >
           <!-- 标题 -->
-          <view class="title">{{ `(${this.tenantInfo.name})` + articleObj.name }}</view>
+          <view class="title" v-if="invitationID && invitationTenantID">
+            {{ `(${invitationTenantInfo.name})` + articleObj.name }}
+          </view>
+          <view class="title" v-else>{{ `(${tenantInfo.name})` + articleObj.name }}</view>
 
           <!-- 发布时间和分类 -->
           <view class="classAndTime">
@@ -97,7 +102,7 @@ import MescrollMixin from '@/uni_modules/mescroll-uni/components/mescroll-uni/me
 import { getSourceMaterialId } from '@/api/materialLibrary.js';
 import wx from '@/wxJsSDK/index.js';
 import { mapState, mapGetters } from 'vuex';
-import { removeUrlParameters } from '@/utils/index.js';
+import { delay } from '@/utils/index.js';
 export default {
   mixins: [MescrollMixin], // 使用mixin
   data() {
@@ -131,7 +136,9 @@ export default {
   computed: {
     ...mapState({
       tenantInfo: state => state.tenant.info,
-      userInfo: state => state.user.userInfo
+      userInfo: state => state.user.userInfo,
+      invitationTenantInfo: state => state.tenant.invitationInfo,
+      invitationUserInfo: state => state.user.invitationInfo
     }),
     ...mapGetters(['isMember', 'isTenantExpired'])
   },
@@ -175,7 +182,10 @@ export default {
     },
 
     /** 获取资源 */
-    getData() {
+    async getData() {
+      // 稍微延时下,防止邀请人的信息没有加载
+      await delay(300);
+
       getSourceMaterialId({
         id: this.id,
         clueId: this.invitationID,
@@ -184,15 +194,21 @@ export default {
         this.articleObj = res.data;
 
         // 设置页面标题
+        let tenantName = '';
+        if (this.invitationID && this.invitationTenantID) {
+          tenantName = this.invitationTenantInfo.name;
+        } else {
+          tenantName = this.tenantInfo.name;
+        }
         uni.setNavigationBarTitle({
-          title: `(${this.tenantInfo.name})` + this.articleObj.name || '文章详情'
+          title: `(${tenantName})` + this.articleObj.name || '文章详情'
         });
 
         // 微信jsdk初始化
         wx.initJssdk(() => {
           // 朋友分享
           wx.updateAppMessageShareData({
-            title: `（${this.tenantInfo.name}）${this.articleObj.name}`,
+            title: `（${this.tenantInfo.name}）${this.articleObj.name}` || '',
             desc: this.articleObj.description || '',
             link: `${window.location.href.split('?')[0]}?id=${this.articleObj.id}&invitationID=${
               this.userInfo.id
@@ -202,7 +218,7 @@ export default {
 
           // 朋友圈分享
           wx.updateTimelineShareData({
-            title: `（${this.tenantInfo.name}）${this.articleObj.name}`,
+            title: `（${this.tenantInfo.name}）${this.articleObj.name}` || '',
             link: `${window.location.href.split('?')[0]}?id=${this.articleObj.id}&invitationID=${
               this.userInfo.id
             }&invitationTenantID=${this.tenantInfo.id}`,

@@ -1,6 +1,5 @@
 <template>
   <view class="mBox">
-    {{ modeData }}
     <u--form
       labelPosition="top"
       labelWidth="auto"
@@ -9,7 +8,7 @@
       :labelStyle="{ color: '#666', fontSize: '28rpx' }"
       ref="uForm11"
     >
-      <u-form-item label="门诊logo上传" required prop="tenantInfo.tenantLog" borderBottom>
+      <u-form-item label="门诊logo上传" required prop="tenantInfo.tenantLog">
         <u-upload
           :fileList="fileList.tenantLog"
           @afterRead="afterRead"
@@ -19,41 +18,37 @@
         ></u-upload>
       </u-form-item>
 
-      <u-form-item label="门诊联系方式" required prop="tenantInfo.name" borderBottom>
+      <u-form-item label="门诊名称" required prop="tenantInfo.name">
         <u--input
           v-model="modeData.tenantInfo.name"
           placeholderStyle="font-size:13px;color:#bbb;"
           fontSize="14px"
           placeholder="请填写门诊名称"
-          border="none"
         ></u--input>
       </u-form-item>
 
-      <u-form-item label="门诊联系方式" prop="tenantInfo.contactMobile" borderBottom>
+      <u-form-item label="门诊联系方式" prop="tenantInfo.contactMobile">
         <u--input
           v-model="modeData.tenantInfo.contactMobile"
           placeholderStyle="font-size:13px;color:#bbb;"
           fontSize="14px"
           placeholder="请填写门诊电话"
-          border="none"
         ></u--input>
       </u-form-item>
 
-      <u-form-item
-        label="地址"
-        @tap="selectAddress"
-        required
-        prop="tenantInfo.address"
-        borderBottom
-      >
+      <u-form-item label="地址" required prop="tenantInfo.address">
         <u-textarea
+          @focus="focusAddress"
+          @input="inputAddress"
           v-model="modeData.tenantInfo.address"
           placeholder="请填写门诊地址"
-          border="none"
           fontSize="14px"
           placeholderStyle="font-size:13px;color:#bbb;"
         ></u-textarea>
       </u-form-item>
+      <view class="tips" @tap="_$goToPage('/pages/chooseLocation/chooseLocation')">
+        <text>打开地图选择地址</text>
+      </view>
 
       <!-- <u-form-item label="社会信用代码" prop="tenantInfo.creditCode" borderBottom>
         <u--input
@@ -113,10 +108,7 @@
 
 <script>
 import { saveTenant, updateTenant, getShareTenant } from '@/api/materialLibrary.js';
-import wx from '@/wxJsSDK/index.js';
 import { mapState } from 'vuex';
-import md5 from 'md5';
-import { jsonp } from 'vue-jsonp';
 export default {
   data() {
     return {
@@ -180,9 +172,6 @@ export default {
       this.tenantId = Number(id) || 0;
       this.mGetShareTenant();
     }
-
-    // 微信jsdk初始化
-    wx.initJssdk();
   },
   methods: {
     // 初始化门诊信息
@@ -251,6 +240,7 @@ export default {
           if (this.checkboxValue1[0] === '同意') {
             // 接口提交中
             this.btnLoading = true;
+
             let resObj = {};
             // 有门诊ID代表修改
             if (this.tenantId) {
@@ -259,6 +249,9 @@ export default {
               // 没有门诊ID代码新建
               resObj = await saveTenant(this.modeData.tenantInfo);
             }
+
+            this.btnLoading = false;
+
             // 有门诊ID完成跳转逻辑
             if (this.tenantId) {
               const pages = getCurrentPages();
@@ -288,38 +281,22 @@ export default {
     },
 
     /** 选择地址 */
-    selectAddress() {
-      wx.getLocation(res => {
-        this.getGeoCoder({
-          key: 'V7JBZ-7TH3B-E5BUD-JK4VW-5ZMX3-5MFW7',
-          SK: 'ibgtzO6SulorVO6BSxPqUVPtNIrY2my7',
-          latitude: res.latitude,
-          longitude: res.longitude,
-          location: `${res.latitude},${res.longitude}`
-        }).then(res111 => {
-          console.log(res111);
-        });
-      });
+    focusAddress(e) {
+      if (!e.detail.value) {
+        this._$goToPage('/pages/chooseLocation/chooseLocation');
+      }
+    },
+    inputAddress(e) {
+      if (!e) {
+        this._$goToPage('/pages/chooseLocation/chooseLocation');
+      }
     },
 
-    /** 腾讯地图jsonp*/
-    getGeoCoder(param) {
-      let sig = md5(
-        `/ws/geocoder/v1?callback=jsonpCallback&key=${param.key}&location=${param.latitude},${
-          param.longitude
-        }&output=jsonp${param.SK}`
-      );
-      // sig = encodeURI(sig); //url化一下
-      let getData = {
-        callbackQuery: 'callback',
-        callbackName: 'jsonpCallback',
-        key: param.key,
-        location: param.location,
-        output: 'jsonp',
-        sig
-      };
-      //签名失败的解决办法 https://lbs.qq.com/faq/serverFaq/webServiceKey
-      return jsonp('https://apis.map.qq.com/ws/geocoder/v1', getData);
+    /**  设置地址 */
+    setAddress(res) {
+      this.modeData.tenantInfo.address = res.address;
+      this.modeData.tenantInfo.lat = res.latitude;
+      this.modeData.tenantInfo.lng = res.longitude;
     }
   },
 
@@ -355,7 +332,6 @@ page {
       margin-bottom: 20rpx;
       display: flex;
       align-items: center;
-
       .s12 {
         color: $main-color;
         padding-left: 10rpx;
@@ -380,11 +356,9 @@ page {
   padding: 9rpx 0;
 }
 
-.outpatientService {
-  background-color: #ddd;
-  margin: 0 -30rpx;
-  padding: 20rpx 30rpx;
-  font-size: 30rpx;
-  color: #888;
+.tips {
+  text-align: right;
+  font-size: 26rpx;
+  color: $main-color;
 }
 </style>

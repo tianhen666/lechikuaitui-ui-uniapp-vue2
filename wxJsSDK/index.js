@@ -69,7 +69,8 @@ export default {
         longitude: data.longitude,
         name: data.name, // 位置名
         address: data.address, // 地址详情说明
-        scale: data.scale // 地图缩放级别,整型值,范围从1~28。默认为最大
+        scale: data.scale, // 地图缩放级别,整型值,范围从1~28。默认为最大
+        infoUrl: data.infoUrl // 在查看位置界面底部显示的超链接,可点击跳
       });
     });
   },

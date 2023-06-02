@@ -63,7 +63,7 @@
     <!-- 我要投稿 -->
     <view
       class="contribute"
-      v-if="_$isMember"
+      v-if="_$isMember && _$tenantInfo.id === 1"
       @tap.stop="_$goToPage('/pages/contribute/contribute')"
     >
       <text>投稿</text>

@@ -89,3 +89,10 @@ export const sendSmsCode = params => http.post('/yxx/tenant/sendSmsCode', {}, { 
 
 // 验证验证码
 export const useSmsCode = params => http.post('/yxx/tenant/useSmsCode', {}, { params })
+
+// 上传门诊环境照
+export const amendPhotograph = data => http.post('/yxx/tenant/amendPhotograph', data, {
+  header: {
+    'Content-Type': 'application/x-www-form-urlencoded',
+  },
+})

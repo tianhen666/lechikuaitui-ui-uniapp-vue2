@@ -58,7 +58,7 @@
 						 -->
             <video
               v-if="isShow"
-              :id="list._id + '' + index"
+              :id="list._id + '_' + index"
               :loop="true"
               :muted="list.isplay"
               :controls="false"
@@ -148,8 +148,8 @@
 						 -->
             <video
               v-if="isShow"
-              :id="list._id + '' + index"
-              :loop="true"
+              :id="list._id + '_' + index"
+              :loop="false"
               :muted="list.isplay"
               :controls="false"
               :http-cache="true"
@@ -160,6 +160,8 @@
               :enable-progress-gesture="false"
               :src="list.src"
               @ended="ended"
+              @timeupdate="timeupdate"
+              @loadedmetadata="endLoading"
               @tap.stop="tapVideoHover(list.state, $event)"
               :style="
                 'width: ' +
@@ -187,6 +189,7 @@
               mode="aspectFit"
             ></image>
           </view>
+
           <!-- 播放状态：pause 的时候就会暂停 -->
           <view
             class="videoHover"
@@ -205,13 +208,32 @@
             <!-- 最底下的文字部分 -->
             <view class="content" :style="'width: ' + (boxStyle.width - 90) + 'px;'">
               <text class="userName">{{ list.title }}</text>
-              <!-- i={{i}} -->
-              <text class="words">{{ list.msg }}</text>
-              <!-- k={{k}} -->
+              <text class="words" v-if="list.msg"># {{ list.msg }}</text>
             </view>
 
-            <!-- 门诊信息 -->
-            <m-business-card-b></m-business-card-b>
+            <view style="margin:-10px -20px;">
+              <u-slider
+                v-model="dataList[k].playbackProgress"
+                blockSize="10"
+                min="0"
+                style="margin:10rpx 30rpx;"
+                backgroundColor="#d0d0d099"
+                block-color="#ffffff99"
+                activeColor="#007aff99"
+                @changing="sliderChange"
+                @change="sliderChange"
+                step="0.05"
+                :max="dataList[k].totalProgress"
+              ></u-slider>
+            </view>
+
+            <!-- 门诊信息 有邀请人 -->
+            <m-business-card-video-invitation
+              v-if="!!invitationID && invitationID != userInfo.id"
+            ></m-business-card-video-invitation>
+
+            <!-- 门诊信息 没有邀请人 -->
+            <m-business-card-video></m-business-card-video>
           </view>
         </view>
       </swiper-item>
@@ -223,9 +245,10 @@
 <script>
 import { getSourceMaterialId, getSourceMaterial } from '@/api/materialLibrary.js';
 import wx from '@/wxJsSDK/index.js';
-import { mapState } from 'vuex';
+import { mapState, mapGetters } from 'vuex';
+import { delay } from '@/utils/index.js';
 let audo = uni.createInnerAudioContext();
-audo.loop = true;
+audo.loop = false;
 export default {
   data() {
     return {
@@ -248,37 +271,37 @@ export default {
 
       classID: '', //分类ID
       total: 2, //视频总量
-      mVideoID: '', // 当前初始化时视频ID
+      mVideoID: '', // 视频ID
+      pageNo: 1, // 当前分页
+      pageSize: 10, // 一页多少个
 
-      videoID: '',
+      videoID: '', // 视频ID
       isShow: false,
 
       showPlay: false, //转轮显示控制
       rotates: 0, //转轮旋转角度
       rotateTime: '', //转轮递归事件控制
-      xrotats: '',
-
-      mpcleartime: '',
-
+      xrotats: '', // 定时器ID
+      mpcleartime: '', // 点击时间
       isClick: false,
-
       changeTimeout: '',
       mptime: 0,
       mpstartTime: 0,
-
       duration: 500
     };
   },
-  components: {},
   computed: {
     ...mapState({
       tenantInfo: state => state.tenant.info,
-      userInfo: state => state.user.userInfo
-    })
+      userInfo: state => state.user.userInfo,
+      invitationTenantInfo: state => state.tenant.invitationInfo,
+      invitationUserInfo: state => state.user.invitationInfo
+    }),
+    ...mapGetters(['isMember', 'isTenantExpired'])
   },
   watch: {
     async k(k, old_k) {
-      // console.log(k, old_k)
+      // console.log(k, old_k);
       // #ifndef MP
       this.clearToTime();
       // #endif
@@ -286,9 +309,9 @@ export default {
       this.dataList[old_k].playIng = false; //如果视频暂停，就加载封面
       this.dataList[old_k].isplay = true;
       this.dataList[old_k].state = 'pause';
-      console.log('预留第' + (old_k + 1) + '个视频：' + this.dataList[old_k]._id + '' + old_k);
+      console.log('预留第' + (old_k + 1) + '个视频：' + this.dataList[old_k]._id + '_' + old_k);
       // 2.0版本已经去掉了下面这一句，视频不用暂停，只需要把声音禁止就行
-      uni.createVideoContext(this.dataList[old_k]._id + '' + old_k, this).stop(); //如果视频暂停，那么旧视频停止，这里的this.dataList[old_k]._id + '' + old_k，后面加 old_k 是为了每一个视频的 id 值不同，这样就可以大程度的避免串音问题
+      uni.createVideoContext(this.dataList[old_k]._id + '_' + old_k, this).stop(); //如果视频暂停，那么旧视频停止，这里的this.dataList[old_k]._id + '_' + old_k，后面加 old_k 是为了每一个视频的 id 值不同，这样就可以大程度的避免串音问题
       console.log('已经暂停 --> 第' + (old_k + 1) + '个视频～'); //提示
       this.dataList[k].state = 'play';
       this.isShow = true;
@@ -307,10 +330,10 @@ export default {
       }, 250);
       if (this.mptime < 0.2) {
         this.changeTimeout = setTimeout(() => {
-          uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).play();
+          uni.createVideoContext(this.dataList[this.k]._id + '_' + this.k, this).play();
         }, 1400);
       } else {
-        uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).play();
+        uni.createVideoContext(this.dataList[this.k]._id + '_' + this.k, this).play();
       }
       // #endif
       // #ifdef H5
@@ -321,8 +344,8 @@ export default {
           if (typeof WeixinJSBridge == 'undefined') {
             setTimeout(() => {
               audo.play();
-              uni.createVideoContext(this.dataList[k]._id + '' + k, this).seek(0);
-              uni.createVideoContext(this.dataList[k]._id + '' + k, this).play();
+              uni.createVideoContext(this.dataList[k]._id + '_' + k, this).seek(0);
+              uni.createVideoContext(this.dataList[k]._id + '_' + k, this).play();
               setTimeout(() => {
                 this.dataList[k].playIng = true;
               }, 650);
@@ -331,8 +354,8 @@ export default {
             WeixinJSBridge.invoke('getNetworkType', {}, e => {
               setTimeout(() => {
                 audo.play();
-                uni.createVideoContext(this.dataList[k]._id + '' + k, this).seek(0);
-                uni.createVideoContext(this.dataList[k]._id + '' + k, this).play();
+                uni.createVideoContext(this.dataList[k]._id + '_' + k, this).seek(0);
+                uni.createVideoContext(this.dataList[k]._id + '_' + k, this).play();
                 setTimeout(() => {
                   this.dataList[k].playIng = true;
                 }, 850);
@@ -343,18 +366,38 @@ export default {
       } else {
         audo.pause();
         this.dataList[k].state = 'pause';
-        uni.createVideoContext(this.dataList[k]._id + '' + k, this).seek(0);
-        uni.createVideoContext(this.dataList[k]._id + '' + k, this).pause();
+        uni.createVideoContext(this.dataList[k]._id + '_' + k, this).seek(0);
+        uni.createVideoContext(this.dataList[k]._id + '_' + k, this).pause();
       }
       // #endif
       var p = k + 1;
-      console.log('预加载第' + (p + 1) + '个视频：' + this.dataList[p]?._id + '' + p);
+      console.log('预加载第' + (p + 1) + '个视频：' + this.dataList[p]?._id + '_' + p);
     }
   },
-  onLoad({ id, classId }) {
+  async onLoad({ id, classId, invitationID, invitationTenantID }) {
+    // 等待onLaunch执行完成
+    await this.$onLaunched;
+
     // 设置视频ID
-    this.mVideoID = id;
-    this.classID = classId;
+    this.mVideoID = Number(id) || 0;
+    // 分类ID
+    this.classID = Number(classId) || 0;
+    // 设置邀请人的ID
+    this.invitationID = Number(invitationID) || 0;
+    // 邀请的门诊ID
+    this.invitationTenantID = Number(invitationTenantID) || 0;
+
+    // 获取邀请人的, 个人信息, 门诊信息
+    if (invitationID && invitationTenantID) {
+      this.$store.dispatch('invitationInfoFun', {
+        clueId: invitationID,
+        tenantId: invitationTenantID
+      });
+
+      this.$store.dispatch('getShareTenantInfo', {
+        tenantId: invitationTenantID
+      });
+    }
 
     /* 判断手机型号 ---start--- */
     this.platform = uni.getSystemInfoSync().platform;
@@ -368,28 +411,36 @@ export default {
     }
     /* 判断手机型号 ---end---- */
 
+    /* 初始尺寸信息 start */
     this.windowWidth = uni.getSystemInfoSync().windowWidth;
     this.windowHeight = uni.getSystemInfoSync().windowHeight;
     this.boxStyle.width = this.windowWidth;
-    this.boxStyle.height = this.windowHeight - this.deleteHeight - 110; //有 tabbar的 修改这里可以改变视频高度
-    this.get(); //刚进入页面加载数据
+    this.boxStyle.height = this.windowHeight - this.deleteHeight - 90; //有 tabbar的 修改这里可以改变视频高度
+    /*  初始尺寸信息 end */
 
     /*  执行---旋转动画 */
     // #ifndef MP
     this.rotateX();
     // #endif
+
+    // 微信jsdk初始化
+    wx.initJssdk();
+
+    // 获取一组数据
+    this.get();
   },
   onShow() {
     console.log('回到前台');
     if (this.dataList.length !== 0) {
       // #ifdef MP
       this.dataList[this.k].state = 'play';
-      uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).play();
+      uni.createVideoContext(this.dataList[this.k]._id + '_' + this.k, this).play();
       // #endif
+
       // #ifdef H5
       if (this.isClick) {
         this.dataList[this.k].state = 'play';
-        uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).play();
+        uni.createVideoContext(this.dataList[this.k]._id + '_' + this.k, this).play();
         audo.play();
       }
       // #endif
@@ -398,12 +449,13 @@ export default {
   onHide() {
     // #ifdef MP
     this.dataList[this.k].state = 'pause';
-    uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).pause();
+    uni.createVideoContext(this.dataList[this.k]._id + '_' + this.k, this).pause();
     // #endif
+
     // #ifdef H5
     if (this.isClick) {
       this.dataList[this.k].state = 'pause';
-      uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).pause();
+      uni.createVideoContext(this.dataList[this.k]._id + '_' + this.k, this).pause();
       audo.pause();
     }
     // #endif
@@ -412,32 +464,39 @@ export default {
   onUnload() {
     // #ifdef MP
     this.dataList[this.k].state = 'pause';
-    uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).pause();
+    uni.createVideoContext(this.dataList[this.k]._id + '_' + this.k, this).pause();
     // #endif
+
     // #ifdef H5
     if (this.isClick) {
       this.dataList[this.k].state = 'pause';
-      uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).pause();
+      uni.createVideoContext(this.dataList[this.k]._id + '_' + this.k, this).pause();
       audo.pause();
     }
     // #endif
     console.log('页面销毁');
   },
   methods: {
+    // 小程序端触摸结束
     mpTouchend() {
       this.mptime = new Date() / 1000 - this.mpstartTime;
     },
+
+    // 小程序端触摸开始
     mpTouchstart() {
       this.mpstartTime = new Date() / 1000;
     },
+
+    // 点击显示声音按钮
     dealVoice() {
       uni.showToast({
         title: '处理声音',
         icon: 'none'
       });
     },
+
+    //清理定时器
     clearToTime() {
-      //清理定时器
       for (let i = 0; i < 20; i++) {
         clearTimeout(this.rotateTime);
         clearTimeout(this.xrotats);
@@ -445,13 +504,16 @@ export default {
         this.rotates = 0;
       }
     },
+
+    //清理定时器
     clearTime() {
-      //清理定时器
       for (let i = 0; i < 20; i++) {
         clearTimeout(this.rotateTime);
         clearTimeout(this.xrotats);
       }
     },
+
+    // 转圈函数
     rotateX() {
       // clearTimeout(this.rotateTime);
       this.rotateTime = setTimeout(() => {
@@ -460,14 +522,19 @@ export default {
         this.rotates += 1;
       }, 30);
     },
+
+    // 关闭评论
     closeScrollview() {
       // 点击评论里面的叉叉，就会关闭评论
       this.$refs.pinglun.close();
     },
+
+    // 自动触发下一个视频 loop值设置为false 触发
     ended() {
       // 1.播放当前视频结束时触发，自动切换下一个视频
       this.current = this.k + 1;
     },
+
     //点击播放&&暂停
     tapVideoHover(state, event) {
       console.log('state--', state);
@@ -479,7 +546,7 @@ export default {
       if (this.dataList[this.k].state == 'continue') {
         this.isClick = true;
         this.dataList[this.k].playIng = true;
-        uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).play(); //暂停以后继续播放
+        uni.createVideoContext(this.dataList[this.k]._id + '_' + this.k, this).play(); //暂停以后继续播放
         // #ifdef MP
         this.dataList[this.k].isplay = false;
         // #endif
@@ -488,7 +555,7 @@ export default {
         // #endif
       }
       if (this.dataList[this.k].state == 'pause') {
-        uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).pause(); //暂停以后继续播放
+        uni.createVideoContext(this.dataList[this.k]._id + '_' + this.k, this).pause(); //暂停以后继续播放
         // #ifdef MP
         this.dataList[this.k].isplay = true;
         // #endif
@@ -497,26 +564,40 @@ export default {
         // #endif
       }
     },
-    change(event) {
+
+    // swiper 切换执行
+    async change(event) {
       this.k = event.detail.current;
+      // 设置视频ID
+      this.videoID = this.dataList[this.k]._id;
+      const res = await getSourceMaterialId({
+        id: this.videoID,
+        clueId: this.invitationID,
+        clueTenantId: this.invitationTenantID
+      });
+      this.wxShare();
     },
+
+    // swiper 切换完成执行
     animationfinish(event) {
       // 1.这里进行判断，如果是最后一个视频就进入 get() 方法加载视频进入列表
       if (this.k == this.dataList.length - 1) {
         this.GET();
       }
     },
+
     //每一组结束时新的请求
     async GET() {
       if (this.dataList.length >= this.total) {
         return;
       }
       const res = await getSourceMaterial({
-        pageNo: 1,
-        pageSize: 10,
+        pageNo: this.pageNo,
+        pageSize: this.pageSize,
         classId: this.classID,
         type: 2 // 视频分类
       });
+      this.pageNo = this.pageNo + 1;
       // 1.这里引入后端请求数据
       const msg = [...res.data.list];
       // 2.这里把视频添加到视频列表
@@ -529,18 +610,28 @@ export default {
             _id: msg[i].id,
             title: msg[i].name,
             state: 'pause',
-            src: msg[i].content
+            src: msg[i].content,
+            playbackProgress: 0,
+            totalProgress: 0,
+            resourceLoading: false
           });
         }
       }
       this.total = res.data.total;
     },
+
+    // 初始化请求的,第一组视频
     async get() {
+      this.isShow = false;
+      // 稍微延时下,防止邀请人的信息没有加载
+      await delay(500);
+
       const res = await getSourceMaterialId({
-        id: this.mVideoID
+        id: this.mVideoID,
+        clueId: this.invitationID,
+        clueTenantId: this.invitationTenantID
       });
 
-      this.isShow = false;
       // 1.这里引入后端请求数据
       var msg = [res.data];
 
@@ -553,65 +644,75 @@ export default {
           title: msg[i].name,
           msg: msg[i].description,
           state: 'pause',
-          src: msg[i].content
+          src: msg[i].content,
+          playbackProgress: 0,
+          totalProgress: 0,
+          resourceLoading: false
         });
       }
-      // 3.播放当前视频
-      setTimeout(() => {
-        this.isShow = true;
-        // #ifdef H5
-        this.dataList[this.k].isplay = true;
-        // #endif
-        // #ifdef MP
-        // 如果是小程序端
-        this.dataList[this.k].isplay = false;
-        this.dataList[this.k].state = 'play';
-        // #endif
-        setTimeout(() => {
-          // #ifdef H5
-          this.dataList[this.k].playIng = false;
-          uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).seek(0);
-          uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).pause();
-          this.dataList[this.k].state = 'pause';
-          audo.src = this.dataList[this.k].src;
-          // #endif
-          // #ifdef MP
-          this.dataList[this.k].playIng = true;
-          uni.createVideoContext(this.dataList[this.k]._id + '' + this.k, this).play();
-          // #endif
 
-          // 加载列表
-          this.GET();
-        }, 500);
-      }, 200);
+      // 3.显示视频
+      this.isShow = true;
+
+      // 如果是小程序端  直接播放视频
+      // #ifdef MP
+      this.dataList[this.k].isplay = false;
+      this.dataList[this.k].state = 'play';
+      this.dataList[this.k].playIng = true;
+      uni.createVideoContext(this.dataList[this.k]._id + '_' + this.k, this).play();
+      // #endif
+
+      // h5端有限制,初始加载不能直接播放
+      // #ifdef H5
+      this.dataList[this.k].isplay = true;
+      this.dataList[this.k].playIng = false;
+      // uni.createVideoContext(this.dataList[this.k]._id + '_' + this.k, this).seek(0);
+      // uni.createVideoContext(this.dataList[this.k]._id + '_' + this.k, this).pause();
+      this.dataList[this.k].state = 'pause';
+      audo.src = this.dataList[this.k].src;
+      // #endif
+
+      // 赋值视频ID
       this.videoID = this.dataList[this.k]._id;
 
-      // 微信jsdk初始化
-      wx.initJssdk(() => {
-        // 朋友分享
-        wx.updateAppMessageShareData({
-          title: `《${this.tenantInfo.name}-${this.userInfo.nickname ||
-            this.userInfo.snickName}》推荐-${this.dataList[this.k].title}`,
-          desc: this.dataList[this.k].msg,
-          link: `${window.location.href}&ccc=123`,
-          imgUrl: this.dataList[this.k].src + '?vframe/jpg/offset/1/w/600'
-        });
+      // 设置分享
+      this.wxShare();
 
-        // 朋友圈分享
-        wx.updateTimelineShareData({
-          title: `《${this.tenantInfo.name}-${this.userInfo.nickname ||
-            this.userInfo.snickName}》推荐-${this.dataList[this.k].title}`,
-          link: `${window.location.href}&ccc=123`,
-          imgUrl: this.dataList[this.k].src + '?vframe/jpg/offset/1/w/600'
-        });
+      // 加载列表下一组
+      this.GET();
+    },
+
+    // 微信jssdk设置分享
+    wxShare() {
+      // 朋友分享
+      wx.updateAppMessageShareData({
+        title: `（${this.tenantInfo.name}）${this.dataList[this.k].title}` || '',
+        desc: this.dataList[this.k].msg || '',
+        link: `${window.location.href.split('?')[0]}?id=${this.dataList[this.k]._id}&classId=${
+          this.classID
+        }&invitationID=${this.userInfo.id}&invitationTenantID=${this.tenantInfo.id}`,
+        imgUrl: this.dataList[this.k].src + '?vframe/jpg/offset/1/w/600'
+      });
+
+      // 朋友圈分享
+      wx.updateTimelineShareData({
+        title: `（${this.tenantInfo.name}）${this.dataList[this.k].title}` || '',
+        link: `${window.location.href.split('?')[0]}?id=${this.dataList[this.k]._id}&classId=${
+          this.classID
+        }&invitationID=${this.userInfo.id}&invitationTenantID=${this.tenantInfo.id}`,
+        imgUrl: this.dataList[this.k].src + '?vframe/jpg/offset/1/w/600'
       });
     },
+
+    // 点击分享按钮
     share() {
       uni.showToast({
         title: '分享',
         icon: 'none'
       });
     },
+
+    // 点击评论之后执行
     toComment(index) {
       // 注意点击评论之后会执行这里
       /*
@@ -636,10 +737,33 @@ export default {
       this.videoID = this.dataList[index]._id;
       this.$refs.pinglun.open('bottom');
     },
+
+    // 点击喜欢时执行
     cLike(sss) {
       this.dataList[this.k].like = !this.dataList[this.k].like;
       const video = this.dataList[this.k];
       sss ? (video.like_n -= 1) : (video.like_n += 1);
+    },
+
+    // 播放进度变化时触发
+    timeupdate(e) {
+      const id = e.target.id.split('_')[1];
+      this.dataList[id].playbackProgress = e.detail.currentTime;
+    },
+
+    // 加载结束
+    endLoading(e) {
+      const id = e.target.id.split('_')[1];
+      // 资源加载完成
+      this.dataList[id].resourceLoading = true;
+      // 总进度
+      this.dataList[id].totalProgress = e.detail.duration;
+    },
+
+    // 进度条变化
+    sliderChange(value) {
+      audo.seek(value);
+      uni.createVideoContext(this.dataList[this.k]._id + '_' + this.k, this).seek(value);
     }
   }
 };
@@ -672,9 +796,12 @@ export default {
 }
 
 .playState {
-  width: 160rpx;
-  height: 160rpx;
-  opacity: 0.2;
+  padding: 20rpx;
+  width: 110rpx;
+  height: 110rpx;
+  opacity: 0.5;
+  background-color: #000000;
+  border-radius: 50%;
 }
 
 .userInfo {
@@ -719,7 +846,8 @@ export default {
 }
 
 .content {
-  padding: 15rpx 15rpx 30rpx;
+  padding-left: 20rpx;
+  padding-bottom: 20rpx;
   justify-content: flex-start;
   color: #ffffff;
 }
@@ -736,7 +864,7 @@ export default {
 
 .words {
   margin-top: 10rpx;
-  font-size: 30rpx;
+  font-size: 26rpx;
   color: #ffffff;
   overflow: hidden;
   text-overflow: ellipsis;

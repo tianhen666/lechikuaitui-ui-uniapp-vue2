@@ -81,8 +81,18 @@
         "template" : "./index.html",
         "optimization" : {
             "treeShaking" : {
-                "enable" : true
+                "enable" : false
             }
+        },
+        "sdkConfigs" : {
+            "maps" : {
+                "qqmap" : {
+                    "key" : "F5NBZ-HL6KZ-EFBXM-Z2B6X-DKW75-CXBFC"
+                }
+            }
+        },
+        "unipush" : {
+            "enable" : false
         }
     }
 }

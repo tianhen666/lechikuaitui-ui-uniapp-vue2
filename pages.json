@@ -149,12 +149,27 @@
         "enablePullDownRefresh": false
       }
 
+    }, {
+      "path": "pages/agreement/agreement",
+      "style": {
+        "navigationBarTitleText": "使用协议",
+        "enablePullDownRefresh": false
+      }
+
+    }, {
+      "path": "pages/chooseLocation/chooseLocation",
+      "style": {
+        "navigationBarTitleText": "选择位置",
+        "enablePullDownRefresh": false,
+        "disableScroll": true
+      }
+
     }
       ,{
-            "path" : "pages/agreement/agreement",
+            "path" : "pages/photo/photo",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "使用协议",
+                "navigationBarTitleText": "门诊环境照",
                 "enablePullDownRefresh": false
             }
             
