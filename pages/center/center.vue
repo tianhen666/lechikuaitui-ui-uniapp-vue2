@@ -3,17 +3,6 @@
     <!-- 提示 弹窗 -->
     <u-toast ref="uToast" />
 
-    <u-icon
-      name="xiaochengxu"
-      color="#fff"
-      size="60rpx"
-      labelPos="bottom"
-      customPrefix="custom-icon"
-      labelSize="24rpx"
-      label="门诊"
-      label-color="#fff"
-    ></u-icon>
-
     <!-- 切换门诊列表 弹窗 -->
     <u-action-sheet
       :actions="tenantlist"

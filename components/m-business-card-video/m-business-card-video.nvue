@@ -29,7 +29,21 @@
       </view>
 
       <view class="btn_box">
-        <view class="btn_item" @tap.stop="mNavigation">
+        <view class="btn_item">
+          <!-- 跳转微信小程序 -->
+          <wx-open-launch-weapp
+            id="launchBtn"
+            ref="launchBtn"
+            :appid="tenantInfo.appId"
+            :path="tenantInfo.path"
+            :extraData="tenantInfo.extraData"
+            style="position: absolute;inset: 0;z-index:9;opacity: 0;"
+          >
+            <script type="text/wxtag-template">
+              <div style="position: absolute;inset: 0;z-index:9;opacity: 0;">跳转小程序</div>
+            </script>
+          </wx-open-launch-weapp>
+
           <u-icon
             name="xiaochengxu"
             color="#fff"
@@ -86,9 +100,9 @@
           ></u-icon>
         </view>
 
-        <view class="btn_item" @tap.stop="mNavigation">
+        <view class="btn_item" @tap.stop="pointShareShow = true">
           <u-icon
-            name="map-fill"
+            name="share-fill"
             color="#fff"
             size="60rpx"
             labelPos="bottom"
@@ -118,11 +132,17 @@
       :remark="_$userInfo.remark"
       ref="wPopup"
     ></m-weChat-code-preview>
+
+    <!-- 分享提示 -->
+    <point-share
+      width="450rpx"
+      :show="pointShareShow"
+      @close="pointShareShow = false"
+    ></point-share>
   </view>
 </template>
 
 <script>
-import { mapState } from 'vuex';
 import wx from '@/wxJsSDK/index.js';
 export default {
   name: 'm-business-card-video',
@@ -130,14 +150,16 @@ export default {
     return {
       // 弹窗提示
       mPopupDesc: '',
-      mPopupBtn1: ''
+      mPopupBtn1: '',
+
+      // 分享提示
+      pointShareShow: false
     };
   },
-  computed: {
-    ...mapState({
-      tenantInfo: state => state.tenant.info,
-      userInfo: state => state.user.userInfo
-    })
+  props: {
+    tenantInfo: Object,
+    userInfo: Object,
+    invitation: Boolean
   },
   methods: {
     tel(val) {
@@ -225,6 +247,7 @@ export default {
 
       .btn_item {
         margin-top: 30rpx;
+        position: relative;
       }
     }
   }

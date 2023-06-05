@@ -12,7 +12,7 @@
 
       <view class="warpper_right">
         <text class="desc">{{ `（${tenantInfo.name}）${itemData.name}` }}</text>
-        <text class="tips">{{ itemData.tips || '一起来看看吧!' }}</text>
+        <text class="tips">{{ itemData.description || '' }}</text>
       </view>
     </view>
   </view>
@@ -87,6 +87,7 @@ export default {
         display: block;
         font-size: 24rpx;
         color: #aaa;
+        @include overHeiddenText(1);
       }
     }
   }

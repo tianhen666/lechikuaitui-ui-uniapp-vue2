@@ -228,12 +228,20 @@
             </view>
 
             <!-- 门诊信息 有邀请人 -->
-            <m-business-card-video-invitation
+            <m-business-card-video
               v-if="!!invitationID && invitationID != userInfo.id"
-            ></m-business-card-video-invitation>
+              :tenantInfo="tenantInfo"
+              :userInfo="userInfo"
+              :invitation="true"
+            ></m-business-card-video>
 
             <!-- 门诊信息 没有邀请人 -->
-            <m-business-card-video v-else></m-business-card-video>
+            <m-business-card-video
+              v-else
+              :tenantInfo="tenantInfo"
+              :userInfo="userInfo"
+              :invitation="false"
+            ></m-business-card-video>
           </view>
         </view>
       </swiper-item>
