@@ -22,15 +22,21 @@
       <view class="boxArticleDetails">
         <!-- 顶部卡片 -->
         <!-- 有邀请人 -->
-        <m-business-card-invitation
+        <m-business-card
           v-if="invitationID && invitationTenantID"
-        ></m-business-card-invitation>
+          :tenantInfo="invitationTenantInfo"
+          :userInfo="invitationUserInfo"
+          :invitation="true"
+        ></m-business-card>
         <!-- 没有邀请人 -->
-        <m-business-card v-else></m-business-card>
+        <m-business-card
+          v-else
+          :tenantInfo="tenantInfo"
+          :userInfo="userInfo"
+          :invitation="false"
+        ></m-business-card>
 
-        <view
-          style="background-color: #fff;border-radius: 20rpx;width: 720rpx;margin: 20rpx auto;overflow: hidden;padding-bottom: 40rpx;"
-        >
+        <view>
           <!-- 标题 -->
           <view class="title" v-if="invitationID && invitationTenantID">
             {{ `(${invitationTenantInfo.name})` + articleObj.name }}
@@ -46,12 +52,26 @@
 
             <view class="time">
               <text style="padding-right: 10rpx;">创建时间:</text>
-              <text>{{ _$mDayJs(articleObj.createTime) }}</text>
+              <text>{{ _$mDayJs(articleObj.createTime, 2) }}</text>
             </view>
           </view>
 
-          <view style="margin-top: 15rpx;padding: 10rpx 20rpx 0;">
-            <u-line color="#ddd"></u-line>
+          <!-- 小程序广告 -->
+          <!-- 有邀请人 -->
+          <view class="applet" v-if="invitationID && invitationTenantID">
+            <m-applet-ad
+              :tenantInfo="invitationTenantInfo"
+              :userInfo="invitationUserInfo"
+              :invitation="true"
+            ></m-applet-ad>
+          </view>
+          <!-- 没有邀请人 -->
+          <view class="applet" v-else>
+            <m-applet-ad
+              :tenantInfo="tenantInfo"
+              :userInfo="userInfo"
+              :invitation="false"
+            ></m-applet-ad>
           </view>
 
           <!-- 内容 -->
@@ -60,13 +80,55 @@
           </view>
         </view>
 
+        <!-- 小程序广告 -->
+        <!-- 有邀请人 -->
+        <view class="applet" v-if="invitationID && invitationTenantID">
+          <m-applet-ad
+            :tenantInfo="invitationTenantInfo"
+            :userInfo="invitationUserInfo"
+            :invitation="true"
+          ></m-applet-ad>
+        </view>
+        <!-- 没有邀请人 -->
+        <view class="applet" v-else>
+          <m-applet-ad
+            :tenantInfo="tenantInfo"
+            :userInfo="userInfo"
+            :invitation="false"
+          ></m-applet-ad>
+        </view>
+
         <!-- 底部卡片 -->
         <!-- 有邀请人 -->
-        <m-business-card-bottom-invitation v-if="invitationID"></m-business-card-bottom-invitation>
+        <m-business-card-bottom
+          v-if="invitationID && invitationTenantID"
+          :tenantInfo="invitationTenantInfo"
+          :userInfo="invitationUserInfo"
+          :invitation="true"
+        ></m-business-card-bottom>
         <!-- 没有邀请人 -->
-        <m-business-card-bottom v-else></m-business-card-bottom>
+        <m-business-card-bottom
+          v-else
+          :tenantInfo="tenantInfo"
+          :userInfo="userInfo"
+          :invitation="false"
+        ></m-business-card-bottom>
 
-        <view class="btnBox"><text class="text">口腔推提供技术支持</text></view>
+        <!-- 内部环境照 -->
+        <!-- 有邀请人 -->
+        <m-environmental-photos
+          v-if="invitationID && invitationTenantID"
+          :tenantInfo="invitationTenantInfo"
+          :invitation="true"
+        ></m-environmental-photos>
+        <!-- 没有邀请人 -->
+        <m-environmental-photos
+          v-else
+          :tenantInfo="tenantInfo"
+          :invitation="false"
+        ></m-environmental-photos>
+
+        <view class="jszc"><text>口腔推提供技术支持</text></view>
       </view>
     </mescroll-body>
 
@@ -76,13 +138,6 @@
         <button class="btn">免费修改成我的</button>
       </view>
     </view>
-
-    <!-- 分享提示 -->
-    <point-share
-      width="450rpx"
-      :show="pointShareShow"
-      @close="pointShareShow = false"
-    ></point-share>
 
     <!-- 立即分享 -->
     <view class="contribute" @tap.stop="pointShareShow = true"><text>分享</text></view>
@@ -94,6 +149,13 @@
       :mPopupBtn1="mPopupBtn1"
       @Btn1Fun="_$tipsPopupBtn1"
     ></m-uni-popup>
+
+    <!-- 分享提示 -->
+    <point-share
+      width="450rpx"
+      :show="pointShareShow"
+      @close="pointShareShow = false"
+    ></point-share>
   </view>
 </template>
 
@@ -110,7 +172,8 @@ export default {
       upOption: {
         use: false, // 主体框架只启用下拉刷新
         toTop: {
-          bottom: 460
+          bottom: 460,
+          zIndex: 100
         }
       },
       downOption: {
@@ -240,36 +303,45 @@ export default {
 </script>
 
 <style scoped lang="scss">
+page {
+  background-color: #fff;
+}
 .boxArticleDetails {
   .title {
-    line-height: 1.4;
+    margin-top: 30rpx;
+    line-height: 1.6;
     font-size: 38rpx;
-    padding: 20rpx 20rpx 0;
+    padding: 20rpx 15px 0;
   }
 
   .classAndTime {
-    padding: 10rpx 20rpx 0;
+    padding: 0 15px 0;
     font-size: 25rpx;
-    margin-top: 0;
+    margin-top: 20rpx;
+    display: flex;
     .class {
       color: #999;
     }
     .time {
       color: #999;
-      margin-top: 10rpx;
+      margin-left: 30rpx;
     }
   }
 
-  .btnBox {
-    overflow: hidden;
+  .applet {
+    padding: 5px 15px 0px;
+    margin: 15px 0px;
+  }
+
+  .jszc {
+    padding-top: 30rpx;
+    padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
     text-align: center;
-    padding-bottom: 20rpx;
-    .text {
-      color: #999;
-      font-size: 22rpx;
-    }
+    color: #999;
+    font-size: 22rpx;
   }
 }
+
 .fixdBottom {
   height: 70rpx;
   padding-top: 10rpx;
@@ -298,6 +370,7 @@ export default {
 
 .contribute {
   position: fixed;
+  z-index: 20;
   background-color: $main-color;
   color: #fff;
   right: 10px;
@@ -309,11 +382,5 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-page {
-  background-image: url('@/static/images/myimg/bg.png');
-  background-repeat: no-repeat;
-  background-size: 100% auto;
 }
 </style>

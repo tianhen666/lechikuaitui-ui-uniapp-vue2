@@ -148,9 +148,19 @@ export default {
           uni.navigateTo({ url });
         },
 
-        /** 关闭所有页面跳转 */
+        /** 关闭当前页面跳转 */
+        _$redirectToGoToPage(url) {
+          uni.redirectTo({ url });
+        },
+
+        /** 关闭所有页面跳转(tabbar和普通页面) */
         _$reLaunchGotoPage(url) {
           uni.reLaunch({ url });
+        },
+
+        /** 跳转到tabbar页面 ,关闭其他非tabber页面*/
+        _$switchTabGotoPage(url) {
+          uni.switchTab({ url });
         },
 
         /** 拨打电话 */
@@ -171,6 +181,8 @@ export default {
             icon: 'none'
           });
         }
+
+
       }
     })
   }

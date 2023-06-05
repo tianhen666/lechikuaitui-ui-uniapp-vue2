@@ -6,7 +6,7 @@
         <view class="closeIcon" @tap.stop="close()">
           <image class="img" src="@/static/images/myimg/close.png"></image>
         </view>
-        <view class="title">{{ title }}</view>
+        <!-- <view class="title">{{ title }}</view> -->
         <view class="desc">{{ desc }}</view>
         <image
           style="width: 240px;display: block;margin: auto;"

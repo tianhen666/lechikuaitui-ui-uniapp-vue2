@@ -29,12 +29,18 @@
       </view>
 
       <view class="btn_box">
-        <!-- <view class="btn_item">
-          <u-icon name="photo" size="60rpx" labelPos="bottom" labelSize="24rpx" label="进入门诊"></u-icon>
-        </view> -->
-        <!-- <view class="btn_item">
-          <u-icon name="photo" size="60rpx" labelPos="bottom" labelSize="24rpx" label="分享"></u-icon>
-        </view> -->
+        <view class="btn_item" @tap.stop="mNavigation">
+          <u-icon
+            name="xiaochengxu"
+            color="#fff"
+            size="60rpx"
+            labelPos="bottom"
+            customPrefix="custom-icon"
+            labelSize="24rpx"
+            label="门诊"
+            label-color="#fff"
+          ></u-icon>
+        </view>
         <view class="btn_item" @tap.stop="mNavigation">
           <u-icon
             name="map-fill"
@@ -46,7 +52,7 @@
             label-color="#fff"
           ></u-icon>
         </view>
-        <view class="btn_item" @tap.stop="_$tel(userInfo.mobile)">
+        <view class="btn_item" @tap.stop="tel(userInfo.mobile)">
           <u-icon
             name="phone-fill"
             color="#fff"
@@ -68,11 +74,50 @@
             label-color="#fff"
           ></u-icon>
         </view>
+        <view class="btn_item" @tap.stop="_$switchTabGotoPage('/pages/center/center')">
+          <u-icon
+            color="#fff"
+            name="account-fill"
+            size="60rpx"
+            labelPos="bottom"
+            labelSize="24rpx"
+            label="我的"
+            label-color="#fff"
+          ></u-icon>
+        </view>
+
+        <view class="btn_item" @tap.stop="mNavigation">
+          <u-icon
+            name="map-fill"
+            color="#fff"
+            size="60rpx"
+            labelPos="bottom"
+            labelSize="24rpx"
+            label="分享"
+            label-color="#fff"
+          ></u-icon>
+        </view>
         <!-- <view class="btn_item">
           <u-icon name="photo" size="60rpx" labelPos="bottom" labelSize="24rpx" label="在线咨询"></u-icon>
         </view> -->
       </view>
     </view>
+
+    <!-- 验证提示弹窗 -->
+    <m-uni-popup
+      ref="tipsPopupRef"
+      :mPopupDesc="mPopupDesc"
+      :mPopupBtn1="mPopupBtn1"
+      @clickBtn1Fun="_$goToPage(`/pages/userInfoInput/userInfoInput`)"
+    ></m-uni-popup>
+
+    <!-- 预览提示弹窗 -->
+    <m-weChat-code-preview
+      :title="_$tenantInfo.name"
+      :imgUrl="_$userInfo.wechatCode"
+      :remark="_$userInfo.remark"
+      ref="wPopup"
+    ></m-weChat-code-preview>
   </view>
 </template>
 
@@ -82,7 +127,11 @@ import wx from '@/wxJsSDK/index.js';
 export default {
   name: 'm-business-card-video',
   data() {
-    return {};
+    return {
+      // 弹窗提示
+      mPopupDesc: '',
+      mPopupBtn1: ''
+    };
   },
   computed: {
     ...mapState({
@@ -91,9 +140,17 @@ export default {
     })
   },
   methods: {
+    tel(val) {
+      if (val) {
+        this._$tel(val);
+      } else {
+        this.mPopupDesc = '没有联系方式, 请完善个人信息';
+        this.mPopupBtn1 = '去完善';
+        this.$refs.tipsPopupRef.open();
+      }
+    },
+    // 打开导航地图
     mNavigation() {
-      console.log(this.tenantInfo.lat);
-      console.log(this.tenantInfo.lng);
       wx.openLocation({
         latitude: this.tenantInfo.lat,
         longitude: this.tenantInfo.lng,
@@ -101,6 +158,16 @@ export default {
         address: this.tenantInfo.address,
         scale: 15
       });
+    },
+    // 微信二维码预览
+    showImg() {
+      if (this._$userInfo?.wechatCode) {
+        this.$refs.wPopup.open();
+      } else {
+        this.mPopupDesc = '没有微信二维码, 请完善个人信息';
+        this.mPopupBtn1 = '去完善';
+        this.$refs.tipsPopupRef.open();
+      }
     }
   }
 };

@@ -233,7 +233,7 @@
             ></m-business-card-video-invitation>
 
             <!-- 门诊信息 没有邀请人 -->
-            <m-business-card-video></m-business-card-video>
+            <m-business-card-video v-else></m-business-card-video>
           </view>
         </view>
       </swiper-item>
@@ -578,7 +578,7 @@ export default {
       this.wxShare();
     },
 
-    // swiper 切换完成执行
+    // swiper 动画执行完成
     animationfinish(event) {
       // 1.这里进行判断，如果是最后一个视频就进入 get() 方法加载视频进入列表
       if (this.k == this.dataList.length - 1) {

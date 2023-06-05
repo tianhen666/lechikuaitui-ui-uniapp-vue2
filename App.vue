@@ -68,6 +68,9 @@ export default {
 </script>
 
 <style lang="scss">
+/* 自定义icon */
+@import 'static/icon/iconfont.css';
+
 /** 引入全局基本样式 */
 @import 'styles/base.scss';
 

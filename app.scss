@@ -2,10 +2,13 @@
 page {
   background-color: #eee;
   color: #333;
+  font-family: PingFangSC-Regular, PingFang SC;
 }
+
 image {
   will-change: transform;
 }
+
 .button-hover {
   &:after {
     background-color: rgba(0, 0, 0, 0.2);

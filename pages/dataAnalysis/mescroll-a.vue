@@ -93,7 +93,7 @@
               <image
                 mode="heightFix"
                 class="img"
-                src="http://resources.lechiwl.cn/2.png?imageView2/0/w/300/h/360/q/75"
+                :src="`${item.content}?vframe/jpg/offset/1/w/300`"
               ></image>
             </view>
           </view>
@@ -267,7 +267,7 @@ export default {
     background-color: #fff;
     border-radius: 20rpx;
     margin-bottom: 30rpx;
-    border: 1px solid #f1f1f1;
+    border: 1px solid #fafafa;
 
     &:last-of-type {
       margin-bottom: 0;
@@ -342,7 +342,7 @@ export default {
 
     /*视频显示*/
     .warpper456456 {
-      background-color: #f1f1f1;
+      background-color: #fafafa;
       padding: 20rpx;
       margin-top: 20rpx;
       border-radius: 10rpx;

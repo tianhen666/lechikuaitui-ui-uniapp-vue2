@@ -1,23 +1,22 @@
 <template>
   <view class="box">
     <view class="bg">
+      <!-- 个人信息 -->
       <view class="wrapper">
         <!-- 头像 -->
         <view class="avatar">
-          <u-avatar size="90rpx" :src="userInfo.avatar || userInfo.savatar"></u-avatar>
+          <u-avatar size="100rpx" :src="userInfo.avatar || userInfo.savatar"></u-avatar>
         </view>
 
         <!-- 信息 -->
         <view class="nameBox">
-          <view class="nickname">
-            <text>{{ tenantInfo.name }}</text>
+          <view class="name">
+            <text>{{ userInfo.nickname || userInfo.snickName }}</text>
           </view>
 
-          <view class="postName">
-            <text>{{ userInfo.nickname || userInfo.snickName }}</text>
-            <text v-if="userInfo.postName" style="padding: 0 10rpx;">|</text>
-            <text>{{ userInfo.postName }}</text>
-            <text class="slogan" v-if="userInfo.slogan">{{ userInfo.slogan }}</text>
+          <!-- 标语 -->
+          <view class="slogan">
+            <text v-if="userInfo.slogan">{{ userInfo.slogan }}</text>
           </view>
         </view>
       </view>
@@ -25,8 +24,8 @@
       <!-- 按钮 -->
       <view class="bottonBox">
         <view class="bottonBoxItme bottonBoxItme1">
-          <view class="imgBox">
-            <image class="img" src="/static/images/myimg/wx1.png" @tap.stop="showImg()"></image>
+          <view class="imgBox" @tap.stop="showImg()">
+            <image class="img" src="/static/images/myimg/wx1.png"></image>
           </view>
           <text class="desc">添加微信</text>
         </view>
@@ -93,20 +92,18 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
 export default {
   name: 'm-business-card',
+  props: {
+    tenantInfo: Object,
+    userInfo: Object,
+    invitation: Boolean
+  },
   data() {
     return {
       mPopupDesc: '',
       mPopupBtn1: ''
     };
-  },
-  computed: {
-    ...mapState({
-      tenantInfo: state => state.tenant.info,
-      userInfo: state => state.user.userInfo
-    })
   },
   methods: {
     // 拨打电话
@@ -137,57 +134,55 @@ export default {
 
 <style lang="scss" scoped>
 .box {
-  margin: 20rpx auto 0;
-  width: 720rpx;
-  overflow: hidden;
-
+  background: url('/static/images/myimg/bg.jpg');
+  background-size: 100% auto;
+  padding-top: 50rpx;
+  padding-bottom: 30rpx;
   .bg {
-    background-color: #fff;
-    padding: 20rpx;
+    width: 680rpx;
+    margin: auto;
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(4px);
+    padding: 10rpx 30rpx 25rpx;
     border-radius: 24rpx;
+
     .wrapper {
       display: flex;
       align-items: center;
       .avatar {
-        border-radius: 50%;
-        overflow: hidden;
-        flex: none;
-        position: relative;
-        margin-right: 26rpx;
+        margin-top: -60rpx;
       }
       .nameBox {
         flex: auto;
-
-        .nickname {
+        margin-left: 30rpx;
+        .name {
           font-size: 30rpx;
-          display: block;
-          font-weight: bold;
-          color: #333;
-        }
-        .postName {
-          margin-top: 10rpx;
+          font-weight: 500;
           color: #666;
-          font-size: 26rpx;
           display: flex;
           align-items: center;
-          .slogan {
-            padding-left: 10rpx;
-            flex: auto;
-            color: #aaa;
-            @include overHeiddenText(1);
-          }
+        }
+        .slogan {
+          margin-top: 10rpx;
+          font-size: 28rpx;
+          flex: auto;
+          color: #aaa;
+          @include overHeiddenText(1);
         }
       }
     }
+
     .bottonBox {
       flex: none;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      margin-top: 25rpx;
       .bottonBoxItme {
         position: relative;
-        margin-top: 32rpx;
         text-align: center;
+        padding: 0 20rpx;
         .img {
           display: block;
           width: 70rpx;
@@ -195,10 +190,10 @@ export default {
           margin: auto;
         }
         .desc {
-          margin-top: 20rpx;
+          margin-top: 10rpx;
           display: block;
           font-size: 26rpx;
-          color: #999;
+          color: #666;
         }
       }
     }
