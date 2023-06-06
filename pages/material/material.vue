@@ -61,13 +61,13 @@
     <xky-guideStep :step="step"></xky-guideStep>
 
     <!-- 我要投稿 -->
-    <view
+    <!-- <view
       class="contribute"
       v-if="_$isMember && _$tenantInfo.id === 1"
       @tap.stop="_$goToPage('/pages/contribute/contribute')"
     >
       <text>投稿</text>
-    </view>
+    </view> -->
   </view>
 </template>
 

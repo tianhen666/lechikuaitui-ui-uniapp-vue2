@@ -41,12 +41,11 @@
 
       <view class="bottonBox">
         <u-button
-          hover-class=""
           icon="phone-fill"
           iconColor="#3898ff"
           size="small"
           :customStyle="btnCustomStyel"
-          @tap.stop="tel(userInfo.mobile)"
+          @click="tel(userInfo.mobile)"
         >
           <text style="margin-left: 10px;">电话咨询</text>
         </u-button>
@@ -77,7 +76,7 @@
           ></map>
         </view>
 
-        <view class="addressText">
+        <view class="addressText" @tap.stop="mNavigation">
           <u-icon name="map-fill" color="#3898ff" size="20px"></u-icon>
           <text class="text">{{ tenantInfo.address }}</text>
         </view>
@@ -103,6 +102,7 @@
 </template>
 
 <script>
+import wx from '@/wxJsSDK/index.js';
 export default {
   name: 'm-business-card-bottom',
   props: {
@@ -116,6 +116,7 @@ export default {
       mPopupDesc: '',
       mPopupBtn1: '',
 
+      // 按钮样式
       btnCustomStyel: {
         height: '35px',
         backgroundColor: '#fff',
@@ -128,6 +129,7 @@ export default {
     };
   },
   computed: {
+    // 地图标记
     markers() {
       return [
         {
@@ -135,11 +137,6 @@ export default {
           longitude: this.tenantInfo.lng,
           latitude: this.tenantInfo.lat,
           iconPath: '/static/images/myimg/Marker.png',
-          label: {
-            content: '门诊地址',
-            x: -30,
-            color: '#eb4f27'
-          },
           callout: {
             content: this.tenantInfo.address,
             display: 'ALWAYS',
@@ -153,24 +150,56 @@ export default {
   methods: {
     // 拨打电话
     tel(val) {
-      if (val) {
-        this._$tel(val);
-      } else {
+      // 有分享人
+      if (!val && this.invitation) {
+        this._$showToast('当前分享人没有手机~');
+        return;
+      }
+      // 没有分享人
+      if (!val && !this.invitation) {
         this.mPopupDesc = '没有联系方式, 请完善个人信息';
         this.mPopupBtn1 = '去完善';
         this.$refs.tipsPopupRef.open();
+        return;
       }
+      this._$tel(val);
     },
 
     // 显示微信二维码
     showImg() {
-      if (this.userInfo?.wechatCode) {
-        this.$refs.wPopup.open();
-      } else {
+      // 没有微信二维码,有分享人
+      if (!this.userInfo?.wechatCode && this.invitation) {
+        this._$showToast('当前分享人没有微信二维码~');
+        return;
+      }
+      // 没有微信二维码,没有分享人
+      if (!this.userInfo?.wechatCode && !this.invitation) {
         this.mPopupDesc = '没有微信二维码, 请完善个人信息';
         this.mPopupBtn1 = '去完善';
         this.$refs.tipsPopupRef.open();
+        return;
       }
+      this.$refs.wPopup.open();
+    },
+
+    // 打开导航地图
+    mNavigation() {
+      if (!this.tenantInfo.lat && this.invitation) {
+        this._$showToast('当前门诊没有设置地址信息~');
+        return;
+      }
+      if (!this.tenantInfo.lat && !this.invitation) {
+        this._$showToast('您当前登录的门诊没有设置地址~');
+        return;
+      }
+
+      wx.openLocation({
+        latitude: this.tenantInfo.lat,
+        longitude: this.tenantInfo.lng,
+        name: this.tenantInfo.name,
+        address: this.tenantInfo.address,
+        scale: 15
+      });
     },
 
     // 在线咨询

@@ -149,7 +149,7 @@
             <video
               v-if="isShow"
               :id="list._id + '_' + index"
-              :loop="false"
+              :loop="true"
               :muted="list.isplay"
               :controls="false"
               :http-cache="true"
@@ -230,8 +230,8 @@
             <!-- 门诊信息 有邀请人 -->
             <m-business-card-video
               v-if="!!invitationID && invitationID != userInfo.id"
-              :tenantInfo="tenantInfo"
-              :userInfo="userInfo"
+              :tenantInfo="invitationTenantInfo"
+              :userInfo="invitationUserInfo"
               :invitation="true"
             ></m-business-card-video>
 
@@ -256,7 +256,7 @@ import wx from '@/wxJsSDK/index.js';
 import { mapState, mapGetters } from 'vuex';
 import { delay } from '@/utils/index.js';
 let audo = uni.createInnerAudioContext();
-audo.loop = false;
+audo.loop = true;
 export default {
   data() {
     return {
@@ -347,6 +347,7 @@ export default {
       // #ifdef H5
       this.dataList[k].isplay = true;
       audo.src = this.dataList[k].src;
+      uni.createVideoContext(this.dataList[k]._id + '_' + k, this).seek(0);
       if (this.isClick) {
         setTimeout(() => {
           if (typeof WeixinJSBridge == 'undefined') {
@@ -537,7 +538,7 @@ export default {
       this.$refs.pinglun.close();
     },
 
-    // 自动触发下一个视频 loop值设置为false 触发
+    // 自动触发下一个视频 loop值设置为false 触发, h5不支持自动播放只能手动触发
     ended() {
       // 1.播放当前视频结束时触发，自动切换下一个视频
       this.current = this.k + 1;
@@ -575,14 +576,20 @@ export default {
 
     // swiper 切换执行
     async change(event) {
+      // 暂停视频
+
+      // 赋值当前ID
       this.k = event.detail.current;
       // 设置视频ID
       this.videoID = this.dataList[this.k]._id;
+
+      // 添加浏览记录
       const res = await getSourceMaterialId({
         id: this.videoID,
         clueId: this.invitationID,
         clueTenantId: this.invitationTenantID
       });
+      // 重新设置分享
       this.wxShare();
     },
 

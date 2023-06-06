@@ -75,6 +75,7 @@ export default {
   .btnBox {
     margin-top: 40rpx;
     display: flex;
+    flex-direction: row;
     justify-content: space-around;
 
     .btn {

@@ -3,9 +3,7 @@
     <view class="warpper">
       <view class="top">
         <!-- 头像 -->
-        <view class="left">
-          <u-avatar size="50" shape="square" :src="userInfo.avatar"></u-avatar>
-        </view>
+        <view class="left"><u-avatar size="50" :src="userInfo.avatar"></u-avatar></view>
         <view class="right">
           <view style="flex-direction: row;align-items: center;">
             <!-- 门诊名称 -->
@@ -22,14 +20,15 @@
           </view>
 
           <!-- 门诊地址 -->
-          <view class="address">
-            <text>{{ tenantInfo.address }}</text>
+          <view class="address" @tap.stop="mNavigation">
+            <u-icon name="map-fill" color="#999" size="35rpx"></u-icon>
+            <text class="text">{{ tenantInfo.address }}</text>
           </view>
         </view>
       </view>
 
       <view class="btn_box">
-        <view class="btn_item">
+        <view class="btn_item" @tap.stop>
           <!-- 跳转微信小程序 -->
           <wx-open-launch-weapp
             id="launchBtn"
@@ -47,7 +46,7 @@
           <u-icon
             name="xiaochengxu"
             color="#fff"
-            size="60rpx"
+            size="55rpx"
             labelPos="bottom"
             customPrefix="custom-icon"
             labelSize="24rpx"
@@ -163,16 +162,31 @@ export default {
   },
   methods: {
     tel(val) {
-      if (val) {
-        this._$tel(val);
-      } else {
+      // 有分享人
+      if (!val && this.invitation) {
+        this._$showToast('当前分享人没有手机~');
+        return;
+      }
+      // 没有分享人
+      if (!val && !this.invitation) {
         this.mPopupDesc = '没有联系方式, 请完善个人信息';
         this.mPopupBtn1 = '去完善';
         this.$refs.tipsPopupRef.open();
+        return;
       }
+      this._$tel(val);
     },
     // 打开导航地图
     mNavigation() {
+      if (!this.tenantInfo.lat && this.invitation) {
+        this._$showToast('当前门诊没有设置地址信息~');
+        return;
+      }
+      if (!this.tenantInfo.lat && !this.invitation) {
+        this._$showToast('您当前登录的门诊没有设置地址~');
+        return;
+      }
+
       wx.openLocation({
         latitude: this.tenantInfo.lat,
         longitude: this.tenantInfo.lng,
@@ -183,13 +197,19 @@ export default {
     },
     // 微信二维码预览
     showImg() {
-      if (this._$userInfo?.wechatCode) {
-        this.$refs.wPopup.open();
-      } else {
+      // 有分享人
+      if (!this._$userInfo?.wechatCode && this.invitation) {
+        this._$showToast('当前分享人没有微信二维码~');
+        return;
+      }
+      // 没有分享人
+      if (this._$userInfo?.wechatCode && !this.invitation) {
         this.mPopupDesc = '没有微信二维码, 请完善个人信息';
         this.mPopupBtn1 = '去完善';
         this.$refs.tipsPopupRef.open();
+        return;
       }
+      this.$refs.wPopup.open();
     }
   }
 };
@@ -231,9 +251,16 @@ export default {
           align-items: center;
         }
         .address {
+          display: flex;
+          flex-direction: row;
           font-size: 26rpx;
-          margin-top: 10rpx;
+          margin-top: 15rpx;
           color: #999;
+          .text {
+            flex: auto;
+            margin-left: 10rpx;
+            @include overHeiddenText(2);
+          }
         }
       }
     }

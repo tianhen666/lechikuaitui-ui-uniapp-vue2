@@ -108,23 +108,36 @@ export default {
   methods: {
     // 拨打电话
     tel(val) {
-      if (val) {
-        this._$tel(val);
-      } else {
+      // 没有手机号,有分享人
+      if (!val && this.invitation) {
+        this._$showToast('当前门诊没有设置地址信息~');
+        return;
+      }
+      // 没有手机号,没有分享人
+      if (!val && !this.invitation) {
         this.mPopupDesc = '没有联系方式, 请完善个人信息';
         this.mPopupBtn1 = '去完善';
         this.$refs.tipsPopupRef.open();
+        return;
       }
+      this._$tel(val);
     },
     // 弹窗二维码
     showImg() {
-      if (this.userInfo?.wechatCode) {
-        this.$refs.wPopup.open();
-      } else {
+      // 没有二维码,有分享人
+      if (!this.userInfo?.wechatCode && this.invitation) {
+        this._$showToast('当前分享人没有微信二维码~');
+        return;
+      }
+      // 没有二维码,没有分享人
+      if (!this.userInfo?.wechatCode && !this.invitation) {
         this.mPopupDesc = '没有微信二维码, 请完善个人信息';
         this.mPopupBtn1 = '去完善';
         this.$refs.tipsPopupRef.open();
+        return;
       }
+
+      this.$refs.wPopup.open();
     },
     // 在线联系
     onlineConsultation() {}

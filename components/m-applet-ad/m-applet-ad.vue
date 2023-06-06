@@ -17,13 +17,13 @@
       </script>
     </wx-open-launch-weapp>
 
-    <u-image
-      width="100%"
-      height="100px"
-      radius="10"
-      mode="aspectFill"
-      src="http://wximg.lechiwl.cn/sz_mmbiz_png/mvn0DLLJJe39W23ibELmJ8YtgHmpgeOxUticiaLYKx1icEvjUPfkrCNm4Oyksqhib30xzPSvics8ibyFRcr6yRiaZh7FNA/640?wx_fmt=png"
-    ></u-image>
+    <view class="imgBox">
+      <image
+        class="img"
+        mode="aspectFill"
+        src="http://wximg.lechiwl.cn/sz_mmbiz_png/mvn0DLLJJe39W23ibELmJ8YtgHmpgeOxUticiaLYKx1icEvjUPfkrCNm4Oyksqhib30xzPSvics8ibyFRcr6yRiaZh7FNA/640?wx_fmt=png"
+      ></image>
+    </view>
   </view>
 </template>
 
@@ -43,6 +43,17 @@ export default {
 <style scoped lang="scss">
 .adBox {
   position: relative;
+  padding-top: 80%;
+  .imgBox {
+    position: absolute;
+    inset: 0;
+    border-radius: 10rpx;
+    overflow: hidden;
+    .img {
+      width: 100%;
+      height: 100%;
+    }
+  }
   .icon {
     display: flex;
     align-items: center;
