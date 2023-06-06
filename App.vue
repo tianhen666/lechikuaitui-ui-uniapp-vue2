@@ -1,5 +1,5 @@
 <script>
-import { isWechat, GetQueryString, removeUrlParameters } from '@/utils/index.js';
+import { GetQueryString, removeUrlParameters } from '@/utils/index.js';
 import dayjs from 'dayjs';
 export default {
   onLaunch: function(options) {
@@ -62,6 +62,11 @@ export default {
 
       // 放行
       this.$resolve();
+    }
+
+    // 兼容 ios 通过 uni.navigateTo 路径不变的问题
+    if (uni.getSystemInfoSync().platform === 'ios') {
+      uni.setStorageSync('IOSPATH', window.location.href);
     }
   }
 };

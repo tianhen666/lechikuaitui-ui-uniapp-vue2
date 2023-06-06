@@ -1,22 +1,20 @@
 import jWeixin from 'weixin-js-sdk'
-import {
-  isWechat
-} from '@/utils/index.js'
+
 export default {
 
   /* 获取sdk初始化配置 */
   initJssdk(callback) {
+    let mUrl = window.location.href
 
-    if (!isWechat()) {
-      console.log("请用在微信内打开")
-      return false
+    // ios端口特殊处理
+    if (uni.getSystemInfoSync().platform === 'ios') {
+      mUrl = uni.getStorageSync('IOSPATH')
     }
-
     uni.$u.http.request({
       url: `/member/wx-mp/create-jsapi-signature`,
       method: "post",
       params: {
-        url: window.location.href
+        url: mUrl
       },
     }).then((res) => {
       jWeixin.config({
@@ -28,7 +26,7 @@ export default {
         jsApiList: ['openLocation', 'getLocation', 'updateAppMessageShareData',
           'updateTimelineShareData', 'onMenuShareAppMessage', 'onMenuShareTimeline'
         ],
-        openTagList: ['wx-open-launch-weapp', 'wx-open-launch-app', 'wx-open-subscribe', 'wx-open-audio']
+        openTagList: ['wx-open-launch-weapp', 'wx-open-launch-app', 'wx-open-subscribe', 'wx-open-audio'],
       });
 
       /* **  api检测 ** */
