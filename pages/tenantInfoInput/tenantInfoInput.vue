@@ -254,17 +254,14 @@ export default {
 
             // 有门诊ID完成跳转逻辑
             if (this.tenantId) {
-              const pages = getCurrentPages();
-              if (pages.length > 1) {
-                uni.navigateBack();
-              } else {
-                uni.switchTab({
-                  url: '/pages/center/center'
-                });
-              }
+              uni.switchTab({
+                url: '/pages/center/center'
+              });
             } else {
+              const url =
+                window.location.protocol + '//' + window.location.hostname + '/pages/center/center';
               // 没有门诊ID处理逻辑,完成切换逻辑
-              this._$mCutTenant(resObj.data);
+              this._$mCutTenant(resObj.data, url);
             }
           } else {
             uni.$u.toast('请勾选协议');

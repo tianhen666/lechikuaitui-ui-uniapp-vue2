@@ -15,12 +15,12 @@
           @delete="deletePic"
           @oversize="oversize"
           :maxCount="8"
-          maxSize="1048576"
+          :maxSize="1024 * 1024 * 5"
           name="photograph"
         ></u-upload>
       </u-form-item>
       <view class="tips">最多可以上传 8 张照片</view>
-      <view class="tips">支持jpg,png格式, 每张照片最大1M</view>
+      <view class="tips">支持jpg,png格式, 每张照片最大5M</view>
     </u--form>
     <!-- 底部按钮 -->
     <view class="mBottom">
@@ -80,15 +80,19 @@ export default {
     // 初始化门诊信息
     initInfo(tenantObj) {
       this.modeData.tenantInfo.id = tenantObj.id;
+
+      // 如果没有值返回
+      if (!tenantObj.photograph) {
+        return;
+      }
+
       // 设置门诊环境照,回显
       const photographList = tenantObj.photograph.split(',');
-      if (photographList.length > 0) {
-        photographList.forEach(item => {
-          if (item) {
-            this.fileList.photograph.push({ url: item });
-          }
-        });
-      }
+      photographList.forEach(item => {
+        if (item) {
+          this.fileList.photograph.push({ url: item });
+        }
+      });
     },
 
     // 删除上传的图片
@@ -104,8 +108,9 @@ export default {
         status: 'uploading',
         message: '上传中'
       });
+
+      // 上传完成设置上传完成
       const result = await this._$uploadFilePromise(event.file.url);
-      // 上传完成设置回显
       this.fileList[event.name].splice(
         event.index,
         1,
@@ -115,6 +120,11 @@ export default {
           url: result
         })
       );
+
+      // 数据赋值
+      this.modeData.tenantInfo.photograph = this.fileList[event.name]
+        .map(item => item.url)
+        .join(',');
     },
 
     // 获取指定门诊信息

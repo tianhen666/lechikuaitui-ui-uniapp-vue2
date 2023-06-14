@@ -21,7 +21,13 @@
       <image
         class="img"
         mode="aspectFill"
-        src="http://wximg.lechiwl.cn/sz_mmbiz_png/mvn0DLLJJe39W23ibELmJ8YtgHmpgeOxUticiaLYKx1icEvjUPfkrCNm4Oyksqhib30xzPSvics8ibyFRcr6yRiaZh7FNA/640?wx_fmt=png"
+        :src="
+          position === 'top'
+            ? 'http://resources.lechiwl.cn//WechatIMG7732.jpeg'
+            : position === 'bottom'
+            ? 'http://resources.lechiwl.cn//11.jpeg'
+            : ''
+        "
       ></image>
     </view>
   </view>
@@ -32,7 +38,11 @@ export default {
   name: 'm-applet-ad',
   props: {
     tenantInfo: Object,
-    userInfo: Object
+    userInfo: Object,
+    position: {
+      default: 'top',
+      type: String
+    }
   },
   data() {
     return {};

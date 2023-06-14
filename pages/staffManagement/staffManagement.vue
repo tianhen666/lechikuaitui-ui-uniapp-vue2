@@ -5,7 +5,9 @@
     <view class="itemBox">
       <view class="item" v-for="(item, index) in userList" :key="item.id">
         <view class="center">
-          <view class="imgBox"><u-avatar :src="item.avatar || item.savatar"></u-avatar></view>
+          <view class="imgBox">
+            <u-avatar size="100rpx" :src="item.avatar || item.savatar"></u-avatar>
+          </view>
 
           <view class="info">
             <view class="name">
@@ -124,6 +126,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+/** tab表 样式自定义*/
 .tabs {
   /deep/ .me-tabs {
     height: 44px !important;
@@ -168,33 +171,36 @@ export default {
 
 .itemBox {
   overflow: hidden;
+  margin: 0 32rpx;
+  padding-top: 10rpx;
   .item {
+    margin: 20rpx 0;
     background-color: #fff;
-    margin: 20rpx 20rpx;
     border-radius: 10rpx;
-    padding: 0 20rpx;
+    padding: 30rpx 20rpx;
     position: relative;
 
     .me {
       color: #fff;
       background-color: $main-color;
       position: absolute;
-      top: 30rpx;
-      right: 40rpx;
+      top: 10rpx;
+      right: 10rpx;
       font-size: 20rpx;
       padding: 3rpx 20rpx;
       border-radius: 50px;
     }
+
     .center {
       display: flex;
       align-items: center;
-      padding: 30rpx 0;
       .imgBox {
         margin-right: 30rpx;
         flex: none;
       }
       .info {
         flex: 1;
+
         .name {
           display: flex;
           align-items: center;
@@ -203,6 +209,8 @@ export default {
             font-size: 28rpx;
             color: #333;
             margin-right: 20rpx;
+            width: 260rpx;
+            @include overHeiddenText(1);
           }
           .role {
             color: #c94950;

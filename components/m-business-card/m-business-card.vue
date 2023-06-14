@@ -157,14 +157,14 @@ export default {
     box-sizing: border-box;
     background-color: rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(4px);
-    padding: 10rpx 30rpx 25rpx;
+    padding: 20rpx 30rpx 25rpx;
     border-radius: 24rpx;
 
     .wrapper {
       display: flex;
       align-items: center;
       .avatar {
-        margin-top: -60rpx;
+        margin-top: -90rpx;
       }
       .nameBox {
         flex: auto;
@@ -175,9 +175,10 @@ export default {
           color: #666;
           display: flex;
           align-items: center;
+          @include overHeiddenText(1);
         }
         .slogan {
-          margin-top: 10rpx;
+          margin-top: 18rpx;
           font-size: 28rpx;
           flex: auto;
           color: #aaa;

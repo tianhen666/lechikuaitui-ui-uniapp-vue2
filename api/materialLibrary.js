@@ -10,11 +10,14 @@ export const getClassIfyList = params => http.post('/yxx/source-material/getClas
 // 获取素材详情
 export const getSourceMaterialId = params => http.get('/yxx/source-material/get', { params })
 
-// 获取门诊租户详情
-export const getTenant = params => http.get('/yxx/tenant/get', { params })
+// 获取当前登录门诊详情
+export const getTenant = params => http.get('/yxx/tenant/getTenant', { params })
+
+// 删除指定门诊
+export const deleteTenant = params => http.post('/yxx/tenant/deleteTenant', {}, { params })
 
 // 获取个人信息接口
-export const getTenantUser = params => http.get('/yxx/tenant/getTenantUser', { params })
+export const getTenantUser = params => http.get('/yxx/memberUser/getMember', { params })
 
 
 //获取每日分享
@@ -66,7 +69,7 @@ export const cutTenant = params => http.get('/yxx/tenant/cutTenant', { params })
 export const getShareUser = params => http.post('/yxx/memberUser/getShareUser', {}, { params })
 
 // 获取指定门诊信息
-export const getShareTenant = params => http.post('/yxx/memberUser/getShareTenant', {}, { params })
+export const getShareTenant = params => http.post('/yxx/tenant/getShareTenant', {}, { params })
 
 // 更新指定门诊信息
 export const updateTenant = data => http.post('/yxx/tenant/updateTenant', data)

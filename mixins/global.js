@@ -73,23 +73,33 @@ export default {
         },
 
         /** 切换门诊 */
-        async _$mCutTenant(val) {
+        async _$mCutTenant(val, url) {
           // 发送切换请求
           const res = await cutTenant({ id: val.id });
-          // 清理当前的缓存
-          uni.clearStorageSync();
-          // 设置切换的缓存
+
+          // 清理vuex中的登录信息
+          this.$store.commit("CLEAR_LOGIN_INFO");
+
+          // 缓存要切换门诊的ID
           uni.setStorageSync('TENANTID', val.id);
+          // 设置ajax的请求头
+          uni.$u.http.setConfig(defaultConfig => {
+            defaultConfig.header['tenant-id'] = val.id;
+            return defaultConfig;
+          });
 
           // 重新授权
-          const href = window.location.href;
+          const href = url || window.location.href;
           //删除url中code和state
           const newHref = removeUrlParameters(href, ['code', 'state']);
-          this.$store
-            .dispatch('getWXSocialAuthRedirect', { type: 31, redirectUri: newHref })
-            .then(res => {
-              window.location.href = res;
-            });
+          const getWXSocialAuthRedirectRes = await this.$store.dispatch('getWXSocialAuthRedirect', {
+            type: 31,
+            redirectUri: newHref
+          })
+          // console.log(val) 传递过来的值
+          // console.log(getWXSocialAuthRedirectRes) 微信授权链接
+
+          window.location.href = getWXSocialAuthRedirectRes;
         },
 
         /** 上传 */

@@ -3,7 +3,7 @@
     {
       "path": "pages/material/material",
       "style": {
-        "navigationBarTitleText": "口腔推"
+        "navigationBarTitleText": "首页"
       }
     },
     {
@@ -26,7 +26,7 @@
     }, {
       "path": "pages/articleDetails/articleDetails",
       "style": {
-        "navigationBarTitleText": ""
+        "navigationBarTitleText": "文章内容"
       }
     }, {
       "path": "pages/dataDetails/dataDetails",
@@ -164,17 +164,15 @@
         "disableScroll": true
       }
 
+    }, {
+      "path": "pages/photo/photo",
+      "style": {
+        "navigationBarTitleText": "门诊环境照",
+        "enablePullDownRefresh": false
+      }
+
     }
-      ,{
-            "path" : "pages/photo/photo",
-            "style" :                                                                                    
-            {
-                "navigationBarTitleText": "门诊环境照",
-                "enablePullDownRefresh": false
-            }
-            
-        }
-    ],
+  ],
   "tabBar": {
     "selectedColor": "#3898ff",
     "borderStyle": "black",

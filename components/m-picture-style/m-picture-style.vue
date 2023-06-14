@@ -17,7 +17,7 @@
       class="c"
       @tap.stop="_$verifyPopupGoToPage(`/pages/generatePoster/generatePoster?id=${itemData.id}`)"
     >
-      <!-- <view class="title">{{ itemData.name }}</view> -->
+      <view class="title">{{ itemData.description }}</view>
       <view class="warpper">
         <view class="postImg">
           <image
@@ -45,7 +45,7 @@
 
         <view
           style="margin-right: 30rpx;"
-          @click.stop="verifyPopupCopy(itemData.name)"
+          @click.stop="verifyPopupCopy(itemData.description)"
           :class="'copyText' + itemData.id"
         >
           <u-icon

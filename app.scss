@@ -8,3 +8,9 @@ page {
 image {
   will-change: transform;
 }
+
+.u-button--active {
+  &:before {
+    opacity: 0 !important;
+  }
+}

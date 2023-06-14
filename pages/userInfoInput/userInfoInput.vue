@@ -6,7 +6,7 @@
       labelWidth="auto"
       :model="modeData"
       :rules="rules"
-      :labelStyle="{ color: '#666', fontSize: '28rpx' }"
+      :labelStyle="{ color: '#666', fontSize: '30rpx' }"
       ref="uForm11"
     >
       <u-form-item label="头像上传" required prop="userInfo.avatar" borderBottom>
@@ -28,6 +28,7 @@
           placeholderStyle="font-size:14px;color:#bbb;"
         ></u--input>
       </u-form-item>
+      <view class="tips">字符长度,限制2-30字之间</view>
 
       <u-form-item
         label="手机号码"
@@ -327,51 +328,45 @@ export default {
       });
     },
     // 表单提交
-    mSubmit() {
+    async mSubmit() {
       if (this.btnLoading) return;
 
-      // 表单验证
-      this.$refs.uForm11
-        .validate()
-        .then(res => {
-          // 加载中
-          uni.showLoading({
-            title: '正在保存中...'
-          });
-          this.btnLoading = true;
+      // 前端表单验证
+      try {
+        await this.$refs.uForm11.validate();
+      } catch (errors) {
+        uni.$u.toast(errors[0].message);
 
-          // 数据提交
-          updateMember(this.modeData.userInfo).then(res => {
-            setTimeout(res => {
-              this.btnLoading = false;
-              // 关闭loading
-              uni.hideLoading();
+        return;
+      }
 
-              // 重新获取用户信息
-              this.$store.dispatch('ObtainUserInfo');
-
-              // 完成后跳转
-              if (this.newClinic) {
-                uni.redirectTo({
-                  url: '/pages/tenantInfoInput/tenantInfoInput'
-                });
-              } else {
-                const pages = getCurrentPages();
-                if (pages.length > 1) {
-                  uni.navigateBack();
-                } else {
-                  uni.switchTab({
-                    url: '/pages/center/center'
-                  });
-                }
-              }
-            }, 1000);
-          });
-        })
-        .catch(errors => {
-          this.btnLoading = false;
-          uni.$u.toast(errors[0].message);
+      // 提交接口
+      try {
+        // 加载中
+        uni.showLoading({
+          title: '正在保存中...'
         });
+        this.btnLoading = true;
+
+        // 发送修改用户信息请求
+        const resData = await updateMember(this.modeData.userInfo);
+
+        // 重新获取用户信息
+        this.$store.dispatch('ObtainUserInfo');
+
+        // 完成后跳转
+        if (this.newClinic) {
+          uni.redirectTo({ url: '/pages/tenantInfoInput/tenantInfoInput' });
+        } else {
+          uni.switchTab({ url: '/pages/center/center' });
+        }
+      } finally {
+        setTimeout(res => {
+          // 关闭loading
+          this.btnLoading = false;
+          uni.hideLoading();
+        }, 500);
+      }
     },
     // 获取验证码
     getCodeSms() {
@@ -437,7 +432,7 @@ page {
 }
 
 .mBox {
-  padding: 0 20rpx 0;
+  padding: 0 32rpx 0;
 }
 .myInfo {
   background-color: $main-color;
@@ -470,6 +465,14 @@ page {
 }
 /deep/ .u-textarea {
   padding: 9rpx 0;
+}
+
+/* 提示信息 */
+.tips {
+  margin-top: 20rpx;
+  margin-bottom: 20rpx;
+  font-size: 26rpx;
+  color: $main-color;
 }
 
 .smsCodeBox {

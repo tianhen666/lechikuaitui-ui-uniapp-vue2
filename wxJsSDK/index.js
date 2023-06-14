@@ -6,10 +6,14 @@ export default {
   initJssdk(callback) {
     let mUrl = window.location.href
 
-    // ios端口特殊处理
-    if (uni.getSystemInfoSync().platform === 'ios') {
+    // console.log(uni.getSystemInfoSync())
+    const systemInfo = uni.getSystemInfoSync()
+    // ios端  做特殊处理
+    if (systemInfo.platform == 'ios' && systemInfo.browserVersion == -1) {
       mUrl = uni.getStorageSync('IOSPATH')
     }
+
+    // 获取签名
     uni.$u.http.request({
       url: `/member/wx-mp/create-jsapi-signature`,
       method: "post",

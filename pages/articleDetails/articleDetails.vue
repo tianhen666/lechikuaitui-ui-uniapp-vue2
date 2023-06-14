@@ -84,6 +84,7 @@
         <!-- 有邀请人 -->
         <view class="applet" v-if="invitationID && invitationTenantID">
           <m-applet-ad
+            position="bottom"
             :tenantInfo="invitationTenantInfo"
             :userInfo="invitationUserInfo"
             :invitation="true"
@@ -92,6 +93,7 @@
         <!-- 没有邀请人 -->
         <view class="applet" v-else>
           <m-applet-ad
+            position="bottom"
             :tenantInfo="tenantInfo"
             :userInfo="userInfo"
             :invitation="false"

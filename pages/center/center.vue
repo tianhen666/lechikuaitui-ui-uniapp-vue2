@@ -38,20 +38,19 @@
 
       <!-- 名称信息 -->
       <view class="nameBox">
-        <view class="nameBoxWarpper">
-          <view class="name">
-            <text>{{ _$userInfo.nickname || _$userInfo.snickName }}</text>
-          </view>
-          <view class="role" v-if="_$isMember">
-            <text>{{ _$userInfo.roleName }}</text>
-          </view>
-          <view class="role" v-else><text>普通用户</text></view>
+        <view class="name">
+          <text>{{ _$userInfo.nickname || _$userInfo.snickName }}</text>
         </view>
 
-        <!-- 到期时间 -->
-        <view class="expirationTime">
-          <text>到期时间：{{ _$mDayJs(_$tenantInfo.expireTime, 2) }}</text>
+        <view class="role" v-if="_$isMember">
+          <text>{{ _$userInfo.roleName }}</text>
         </view>
+        <view class="role" v-else><text>普通用户</text></view>
+
+        <!-- 到期时间 -->
+        <!-- <view class="expirationTime">
+          <text>到期时间：{{ _$mDayJs(_$tenantInfo.expireTime, 2) }}</text>
+        </view> -->
       </view>
 
       <!-- 编辑 -->
@@ -392,42 +391,37 @@ page {
     }
   }
 
+  /*
+  头像名片
+  */
   .businessCardInformation {
+    overflow: hidden;
     display: flex;
     align-items: center;
-    padding: 30rpx 0;
+    padding: 40rpx 0;
     .headPortrait {
       flex: none;
     }
     .nameBox {
-      flex: auto;
       margin-left: 20rpx;
-      .nameBoxWarpper {
-        display: flex;
-        align-items: center;
-        .name {
-          font-size: 28rpx;
-          font-weight: bold;
-          margin-right: 20rpx;
-        }
-        .role {
-          color: #c94950;
-          border-radius: 50px;
-          border: 1px solid #c94950;
-          font-size: 21rpx;
-          line-height: 1.6;
-          text-align: center;
-          display: inline-block;
-          padding: 0 10rpx;
-        }
+      margin-right: 20rpx;
+      width: 400rpx;
+
+      .name {
+        font-size: 30rpx;
+        font-weight: 400;
+        @include overHeiddenText(1);
       }
-      .expirationTime {
-        height: 25rpx;
-        font-size: 25rpx;
-        font-family: PingFangSC-Regular, PingFang SC;
-        color: #7b7b7b;
-        line-height: 25rpx;
-        margin-top: 24rpx;
+      .role {
+        color: #c94950;
+        border-radius: 50px;
+        border: 1px solid #c94950;
+        font-size: 21rpx;
+        line-height: 1.6;
+        text-align: center;
+        display: inline-block;
+        padding: 0 10rpx;
+        margin-top: 20rpx;
       }
     }
 
@@ -440,6 +434,17 @@ page {
         color: #999;
       }
     }
+  }
+
+  /*
+  会员续费
+  */
+  .expirationTime {
+    height: 25rpx;
+    font-size: 25rpx;
+    color: #7b7b7b;
+    line-height: 25rpx;
+    margin-top: 24rpx;
   }
 
   .theTeamReport {
@@ -498,6 +503,7 @@ page {
         .name {
           display: block;
           font-size: 24rpx;
+          @include overHeiddenText(1);
         }
         .desc {
           display: block;

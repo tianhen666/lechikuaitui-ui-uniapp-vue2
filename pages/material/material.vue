@@ -77,9 +77,8 @@ import mescrollPoster from './mescroll-poster.vue';
 import mescrollActivity from './mescroll-activity.vue';
 import mescrollArticle from './mescroll-article.vue';
 import mescrollVideo from './mescroll-video.vue';
-
+import { mapState } from 'vuex';
 import { createSourceMaterial } from '@/api/materialLibrary.js';
-import { mapGetters } from 'vuex';
 export default {
   components: {
     mescrollPoster,
@@ -131,9 +130,34 @@ export default {
       }
     };
   },
+  computed: {
+    ...mapState({
+      tenantInfo: state => state.tenant.info,
+      userInfo: state => state.user.userInfo
+    })
+  },
+  watch: {
+    // 监听店铺信息获取
+    tenantInfo: {
+      handler(newVal, oldVal) {
+        // 设置标题名称,有时候太快不生效
+        this.$nextTick(() => {
+          setTimeout(() => {
+            uni.setNavigationBarTitle({
+              title: newVal.name || ''
+            });
+          }, 200);
+        });
+      },
+      immediate: true
+    }
+  },
   async onLoad() {
     // 需要固定swiper的高度 (需减去悬浮tabs的高度)
     this.swiperHeight = uni.getSystemInfoSync().windowHeight - 54 + 'px';
+
+    // 等待onLaunch 加载完成
+    await this.$onLaunched;
   },
   mounted() {
     // #ifdef H5

@@ -24,7 +24,7 @@
               </view>
             </view>
           </view>
-          <view class="tel" @tap.stop="tel(userInfo.mobile)">{{ userInfo.mobile }}</view>
+          <view class="tel" @tap.stop="tel(userInfo.mobile)">咨询电话: {{ userInfo.mobile }}</view>
         </view>
 
         <!-- 右侧 -->
@@ -43,7 +43,7 @@
         <u-button
           icon="phone-fill"
           iconColor="#3898ff"
-          size="small"
+          size="large"
           :customStyle="btnCustomStyel"
           @click="tel(userInfo.mobile)"
         >
@@ -69,9 +69,10 @@
           <map
             style="width: 100%;"
             :longitude="tenantInfo.lng"
+            :latitude="tenantInfo.lat"
+            show-location
             :markers="markers"
             scale="17"
-            :latitude="tenantInfo.lat"
             width="100%"
           ></map>
         </view>
@@ -236,10 +237,13 @@ export default {
     align-items: center;
     .left {
       flex: none;
+      width: 400rpx;
       .infoBox11 {
         display: flex;
         .nickname {
+          flex: auto;
           color: #333;
+          @include overHeiddenText(1);
         }
         .postName {
           margin-top: 10rpx;
@@ -248,13 +252,14 @@ export default {
         }
       }
       .tel {
-        font-size: 40rpx;
+        font-size: 30rpx;
         color: $main-color;
-        margin-top: 20rpx;
-        letter-spacing: 1px;
+        margin-top: 30rpx;
       }
     }
     .right {
+      border: 1px solid #eee;
+      width: 200rpx;
     }
   }
 

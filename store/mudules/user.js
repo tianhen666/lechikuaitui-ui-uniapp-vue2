@@ -54,8 +54,6 @@ const user = {
       uni.setStorageSync(RefreshTokenKey, refreshToken)
       uni.setStorageSync(ExpiresTimeKey, expiresTime)
 
-      // 加载用户信息 其他地方已处理这里不需要
-      // this.dispatch('ObtainUserInfo')
     },
     // 更新用户信息
     SET_USER_INFO(state, data) {
@@ -65,8 +63,10 @@ const user = {
     CLEAR_LOGIN_INFO(state) {
       uni.removeStorageSync(AccessTokenKey)
       uni.removeStorageSync(RefreshTokenKey)
+      uni.removeStorageSync(ExpiresTimeKey)
       state.accessToken = ''
       state.refreshToken = ''
+      state.expiresTime = 0
       state.userInfo = {}
       state.invitationInfo = {}
     }
