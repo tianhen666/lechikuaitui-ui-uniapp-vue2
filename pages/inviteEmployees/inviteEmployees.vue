@@ -20,7 +20,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex';
-import { handleTenantInfo } from '@/api/materialLibrary.js';
+import { checkUsersJoinClinic } from '@/api/materialLibrary.js';
 export default {
   data() {
     return {
@@ -62,17 +62,17 @@ export default {
   methods: {
     async jionStore() {
       // 判断是否已经加入过门诊,门诊是否还有剩余位置
-      const res = await handleTenantInfo({ tenantId: this.invitationTenantID });
+      const res = await checkUsersJoinClinic({ tenantId: this.invitationTenantID });
 
       if (res.data) {
         uni.redirectTo({
-          url: `/pages/createinviteUserInput/createinviteUserInput?invitationTenantID=${
+          url: `/pages/userInfoInput/userInfoInput?invitationTenantID=${
             this.invitationTenantID
           }&invitationID=${this.invitationID}`
         });
       } else {
         uni.showToast({
-          title: '已加入门诊,或剩余员工数量不足',
+          title: '无法加入,请联系客服',
           icon: 'none'
         });
       }

@@ -148,6 +148,9 @@ export default {
             case 2:
               return dayJs(val).format('YYYY-MM-DD');
               break;
+            case 3:
+              return dayJs(val).format('YYYY年MM月DD日');
+              break;
             default:
               return dayJs(val).format('YYYY-MM-DD HH:mm:ss');
           }

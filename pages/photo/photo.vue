@@ -19,9 +19,10 @@
           name="photograph"
         ></u-upload>
       </u-form-item>
-      <view class="tips">最多可以上传 8 张照片</view>
+      <view class="tips" style="margin-top: 20rpx;">最多可以上传 8 张照片</view>
       <view class="tips">支持jpg,png格式, 每张照片最大5M</view>
     </u--form>
+
     <!-- 底部按钮 -->
     <view class="mBottom">
       <view class="warpper">
@@ -80,14 +81,13 @@ export default {
     // 初始化门诊信息
     initInfo(tenantObj) {
       this.modeData.tenantInfo.id = tenantObj.id;
-
       // 如果没有值返回
       if (!tenantObj.photograph) {
         return;
       }
-
       // 设置门诊环境照,回显
-      const photographList = tenantObj.photograph.split(',');
+      this.modeData.tenantInfo.photograph = tenantObj.photograph;
+      const photographList = this.modeData.tenantInfo.photograph.split(',');
       photographList.forEach(item => {
         if (item) {
           this.fileList.photograph.push({ url: item });
@@ -129,9 +129,13 @@ export default {
 
     // 获取指定门诊信息
     async mGetShareTenant() {
-      await delay(200);
-      const res = await getShareTenant({ tenantId: this.tenantInfo.id });
-      this.initInfo(res.data);
+      try {
+        await delay(200);
+        const res = await getShareTenant({ tenantId: this.tenantInfo.id });
+        this.initInfo(res.data);
+      } catch (e) {
+        console.log(e);
+      }
     },
 
     /** 超出限制 */
@@ -140,43 +144,38 @@ export default {
     },
 
     // 表单提交
-    mSubmit() {
+    async mSubmit() {
       // 是否在加载中,防止多次提交
       if (this.btnLoading) return;
 
-      this.$refs.uForm11
-        .validate()
-        .then(async res => {
-          // 接口提交中
-          this.btnLoading = true;
+      // 前端表单验证
+      try {
+        await this.$refs.uForm11.validate();
+      } catch (e) {
+        if (e[0]) {
+          uni.$u.toast(e[0].message);
+        }
+        return;
+      }
 
-          // 合并图片列表
-          const urls = this.fileList.photograph.map(obj => obj.url);
-          const mPhotograph = urls.join(',');
-          this.modeData.tenantInfo.photograph = mPhotograph;
+      // 提交后端接口
+      try {
+        this.btnLoading = true;
+        // 合并图片列表
+        const urls = this.fileList.photograph.map(obj => obj.url);
+        const mPhotograph = urls.join(',');
+        this.modeData.tenantInfo.photograph = mPhotograph;
 
-          // 发送提交请求
-          const resObj = await amendPhotograph(this.modeData.tenantInfo);
+        // 发送提交请求
+        await amendPhotograph(this.modeData.tenantInfo);
 
-          this.btnLoading = false;
-
-          const pages = getCurrentPages();
-          if (pages.length > 1) {
-            uni.navigateBack();
-          } else {
-            uni.switchTab({
-              url: '/pages/center/center'
-            });
-          }
-        })
-        .catch(errors => {
-          console.log(errors);
-          // 表单验证失败
-          this.btnLoading = false;
-          if (errors[0]) {
-            uni.$u.toast(errors[0].message);
-          }
+        // 返回个人中心页面
+        uni.switchTab({
+          url: '/pages/center/center'
         });
+      } finally {
+        this.btnLoading = false;
+      }
     }
   },
 
@@ -204,7 +203,7 @@ page {
     z-index: 5;
     background-color: #f5f6f9;
     margin: 0 -30rpx;
-    padding: 15rpx 30rpx 0;
+    padding: 20rpx 30rpx 0;
     padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
     box-sizing: border-box;
     .btn {

@@ -1,5 +1,7 @@
 <template>
   <view class="mBox">
+    <u-toast ref="uToast"></u-toast>
+
     <view class="myInfo">请完善个人信息,用于分享文章,等</view>
     <u--form
       labelPosition="top"
@@ -9,20 +11,20 @@
       :labelStyle="{ color: '#666', fontSize: '30rpx' }"
       ref="uForm11"
     >
-      <u-form-item label="头像上传" required prop="userInfo.avatar" borderBottom>
+      <u-form-item label="头像上传" required prop="userInfo.avatar">
         <u-upload
-          :fileList="userInfoAvatarFileList"
+          :fileList="fileList.avatar"
           @afterRead="afterRead"
           :maxCount="1"
           @delete="deletePic"
+          name="avatar"
         ></u-upload>
       </u-form-item>
 
-      <u-form-item label="姓名" required prop="userInfo.nickname" borderBottom>
+      <u-form-item label="姓名" required prop="userInfo.nickname">
         <u--input
           v-model="modeData.userInfo.nickname"
           placeholder="请填写姓名"
-          border="none"
           clearable
           fontSize="14px"
           placeholderStyle="font-size:14px;color:#bbb;"
@@ -30,56 +32,52 @@
       </u-form-item>
       <view class="tips">字符长度,限制2-30字之间</view>
 
-      <u-form-item
-        label="手机号码"
-        @tap="smsCodeOpen"
-        required
-        prop="userInfo.contactMobile"
-        borderBottom
-      >
+      <u-form-item label="手机号码" @tap="smsCodeOpen" required prop="userInfo.contactMobile">
         <u--input
           type="number"
           v-model="modeData.userInfo.contactMobile"
           placeholder="请填写手机号"
-          border="none"
           fontSize="14px"
           placeholderStyle="font-size:14px;color:#bbb;"
         ></u--input>
-        <u-icon slot="right" name="arrow-right"></u-icon>
+        <!-- 箭头插槽 -->
+        <view slot="right" style="margin-left: 30rpx;"><u-icon name="arrow-right"></u-icon></view>
       </u-form-item>
 
-      <u-form-item label="签名 (广告语)" prop="userInfo.slogan" borderBottom>
+      <u-form-item label="个性签名" prop="userInfo.slogan">
         <u-textarea
           v-model="modeData.userInfo.slogan"
           count
           maxlength="30"
           placeholder="请填写签名"
-          border="none"
           fontSize="14px"
           placeholderStyle="font-size:14px;color:#bbb;"
         ></u-textarea>
       </u-form-item>
+      <view class="tips">显示您的个性签名, 可不填写</view>
 
-      <!-- <u-form-item label="微信号" prop="userInfo.wxCode" borderBottom>
+      <u-form-item label="微信号" prop="userInfo.wxCode">
         <u--input
           v-model="modeData.userInfo.wxCode"
           placeholder="请填写微信号"
-          border="none"
           fontSize="14px"
           placeholderStyle="font-size:14px;color:#bbb;"
         ></u--input>
-      </u-form-item> -->
+      </u-form-item>
+      <view class="tips">方便用户添加您的微信, 可不填写</view>
 
-      <u-form-item required label="微信二维码上传" prop="userInfo.wechatCode" borderBottom>
+      <u-form-item required label="微信二维码上传" prop="userInfo.wechatCode">
         <u-upload
-          :fileList="userInfoWechatCodeFileList"
-          @afterRead="afterRead2"
-          @delete="deletePic2"
+          :fileList="fileList.wechatCode"
+          @afterRead="afterRead"
+          @delete="deletePic"
           :maxCount="1"
+          name="wechatCode"
           fontSize="14px"
           placeholderStyle="font-size:14px;color:#bbb;"
         ></u-upload>
       </u-form-item>
+      <view class="tips">方便用户添加您的微信</view>
 
       <!-- <u-form-item label="微信二维码备注" prop="userInfo.remark" borderBottom>
         <u--input
@@ -94,11 +92,8 @@
 
     <view class="mBottom">
       <view class="warpper">
-        <button :loading="btnLoading" v-if="!newClinic" class="btn" @tap.stop="mSubmit">
-          保存
-        </button>
-        <button :loading="btnLoading" v-else class="btn" @tap.stop="mSubmit">
-          下一步,创建门诊
+        <button :loading="btnLoading" class="btn" @tap.stop="mSubmit">
+          {{ newClinic ? '下一步, 创建门诊' : invitationTenantID ? '下一步,加入门诊' : '保存提交' }}
         </button>
       </view>
     </view>
@@ -151,21 +146,25 @@
             ></u--input>
           </u-form-item>
         </u--form>
-
         <view class="smsCodeBtn"><button @tap="verifyCodeSms" class="btn">确认</button></view>
       </view>
     </uni-popup>
-
-    <u-toast ref="uToast"></u-toast>
   </view>
 </template>
 
 <script>
-import { updateFileNamer, updateMember, sendSmsCode, useSmsCode } from '@/api/materialLibrary.js';
+import {
+  updateFileNamer,
+  updateMember,
+  sendSmsCode,
+  useSmsCode,
+  createinviteUser
+} from '@/api/materialLibrary.js';
 import { mapState } from 'vuex';
 export default {
   data() {
     return {
+      // 表达数据
       modeData: {
         userInfo: {
           id: 0,
@@ -186,6 +185,7 @@ export default {
           tenantLog: ''
         }
       },
+      // 验证规则
       rules: {
         'userInfo.contactMobile': [
           { required: true, message: '请填写手机号' },
@@ -204,14 +204,24 @@ export default {
         ],
         'userInfo.avatar': [{ required: true, message: '请上传头像', trigger: ['blur', 'change'] }]
       },
-      userInfoAvatarFileList: [],
-      userInfoWechatCodeFileList: [],
+
+      // 上传文件显示列表
+      fileList: {
+        avatar: [],
+        wechatCode: []
+      },
+
+      // 表单提交中
       btnLoading: false,
 
       // 新建门诊
       newClinic: false,
 
-      //验证手机
+      // 创建员工
+      invitationID: 0, // 邀请人的ID
+      invitationTenantID: 0, // 邀请门诊的ID
+
+      //手机号验证码
       smsCodeShow: false,
       smsCodeTips: '获取验证码',
       modeDataSmsCode: { contactMobile: '', code: '' },
@@ -252,81 +262,64 @@ export default {
             wechatCode: newValue.wechatCode,
             remark: newValue.remark || '长按识别添加微信'
           };
-
           // 设置回显头像
           if (this.modeData.userInfo.avatar) {
-            this.userInfoAvatarFileList = [{ url: this.modeData.userInfo.avatar }];
+            this.fileList.avatar = [{ url: this.modeData.userInfo.avatar }];
           }
           // 设置回显二维码
           if (this.modeData.userInfo.wechatCode) {
-            this.userInfoWechatCodeFileList = [{ url: this.modeData.userInfo.wechatCode }];
+            this.fileList.wechatCode = [{ url: this.modeData.userInfo.wechatCode }];
           }
         }
       },
       immediate: true
     }
   },
-  onLoad({ newClinic }) {
+  onLoad({ newClinic, invitationID, invitationTenantID }) {
+    console.log(`是否新增门诊-${newClinic}`);
+    console.log(`邀请人ID-${invitationID}`);
+    console.log(`需要加入的门诊ID-${invitationTenantID}`);
+
     // 新建门诊,需要补全用户个人信息
-    if (Number(newClinic) === 1) {
+    if (Number(newClinic) == 1) {
       this.newClinic = true;
     }
+
+    // 设置邀请人的ID
+    this.invitationID = Number(invitationID) || 0;
+    // 邀请的门诊ID
+    this.invitationTenantID = Number(invitationTenantID) || 0;
   },
   methods: {
-    // 删除头像
+    // 移除图片
     deletePic(event) {
-      this.userInfoAvatarFileList.splice(event.index, 1);
-      this.modeData.userInfo.avatar = '';
+      this.fileList[event.name].splice(event.index, 1);
+      this.modeData.userInfo[event.name] = '';
     },
-    // 上传头像
+    // 上传图片
     async afterRead(event) {
-      this.userInfoAvatarFileList.push({ ...event.file, status: 'uploading', message: '上传中' });
-      const result = await this.uploadFilePromise(this.userInfoAvatarFileList[0]);
-      this.modeData.userInfo.avatar = result;
-      // 上传成功
-      this.userInfoAvatarFileList.splice(
-        0,
-        1,
-        Object.assign(this.userInfoAvatarFileList[0], {
-          status: 'success',
-          message: '',
-          url: result
-        })
-      );
-    },
-    // 删除二维码
-    deletePic2(event) {
-      this.userInfoWechatCodeFileList.splice(event.index, 1);
-      this.modeData.userInfo.wechatCode = '';
-    },
-    // 上传二维码
-    async afterRead2(event) {
-      this.userInfoWechatCodeFileList.push({
+      // console.log(event);
+      // 设置显示
+      this.fileList[event.name].push({
         ...event.file,
         status: 'uploading',
         message: '上传中'
       });
-      const result = await this.uploadFilePromise(this.userInfoWechatCodeFileList[0]);
-      this.modeData.userInfo.wechatCode = result;
-      // 上传成功
-      this.userInfoWechatCodeFileList.splice(
+      const result = await this._$uploadFilePromise(event.file.url);
+      // 上传完成设置回显
+      this.fileList[event.name].splice(
         0,
         1,
-        Object.assign(this.userInfoWechatCodeFileList[0], {
+        Object.assign(event.file, {
           status: 'success',
-          message: '',
+          message: '上传成功',
           url: result
         })
       );
+      // 显示数据赋值
+      this.modeData.userInfo[event.name] = result;
     },
-    // 上传内容接口
-    uploadFilePromise(item) {
-      return new Promise((resolve, reject) => {
-        updateFileNamer(item.url).then(res => {
-          resolve(res);
-        });
-      });
-    },
+
     // 表单提交
     async mSubmit() {
       if (this.btnLoading) return;
@@ -340,7 +333,6 @@ export default {
         return;
       }
 
-      // 提交接口
       try {
         // 加载中
         uni.showLoading({
@@ -348,17 +340,27 @@ export default {
         });
         this.btnLoading = true;
 
-        // 发送修改用户信息请求
-        const resData = await updateMember(this.modeData.userInfo);
-
-        // 重新获取用户信息
-        this.$store.dispatch('ObtainUserInfo');
-
-        // 完成后跳转
-        if (this.newClinic) {
-          uni.redirectTo({ url: '/pages/tenantInfoInput/tenantInfoInput' });
+        // 创建新员工
+        if (this.invitationID && this.invitationTenantID) {
+          // 发送创建员工请求
+          await createinviteUser(this.modeData.userInfo, {
+            tenantId: this.invitationTenantID
+          });
+          // 员工创建完成后, 切换门诊
+          const url =
+            window.location.protocol + '//' + window.location.hostname + '/pages/center/center';
+          this._$mCutTenant({ id: this.invitationTenantID }, url);
         } else {
-          uni.switchTab({ url: '/pages/center/center' });
+          // 发送修改用户信息请求
+          await updateMember(this.modeData.userInfo);
+          // 重新获取用户信息
+          this.$store.dispatch('ObtainUserInfo');
+          // 完成后跳转
+          if (this.newClinic) {
+            uni.redirectTo({ url: '/pages/tenantInfoInput/tenantInfoInput' });
+          } else {
+            uni.switchTab({ url: '/pages/center/center' });
+          }
         }
       } finally {
         setTimeout(res => {
@@ -368,6 +370,7 @@ export default {
         }, 500);
       }
     },
+
     // 获取验证码
     getCodeSms() {
       this.$refs.uFormSmsCode.validateField('contactMobile', async errorsRes => {
@@ -381,6 +384,7 @@ export default {
         this.$refs.uCode.start();
       });
     },
+
     //验证验证码
     verifyCodeSms() {
       // 表单验证
@@ -437,39 +441,36 @@ page {
 .myInfo {
   background-color: $main-color;
   margin: 0 -30rpx;
-  padding: 15rpx 30rpx;
+  padding: 20rpx 30rpx;
   font-size: 26rpx;
   color: #fff;
 }
 
 .mBottom {
-  height: 200rpx;
+  height: 240rpx;
+
   .warpper {
     width: 100%;
     position: fixed;
+    left: 0;
     bottom: 0;
     z-index: 5;
     background-color: #f5f6f9;
-    margin: 0 -30rpx;
-    padding: 15rpx 30rpx 0;
+    padding: 20rpx 30rpx 0;
     padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
     box-sizing: border-box;
     .btn {
       background-color: $main-color;
       color: #fff;
       line-height: 2.8;
-      font-size: 28rpx;
+      font-size: 30rpx;
       border-radius: 20rpx;
     }
   }
 }
-/deep/ .u-textarea {
-  padding: 9rpx 0;
-}
 
 /* 提示信息 */
 .tips {
-  margin-top: 20rpx;
   margin-bottom: 20rpx;
   font-size: 26rpx;
   color: $main-color;

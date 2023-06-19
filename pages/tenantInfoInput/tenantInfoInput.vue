@@ -5,7 +5,7 @@
       labelWidth="auto"
       :model="modeData"
       :rules="rules"
-      :labelStyle="{ color: '#666', fontSize: '28rpx' }"
+      :labelStyle="{ color: '#666', fontSize: '30rpx' }"
       ref="uForm11"
     >
       <u-form-item label="门诊logo上传" required prop="tenantInfo.tenantLog">
@@ -26,8 +26,9 @@
           placeholder="请填写门诊名称"
         ></u--input>
       </u-form-item>
+      <view class="tips"><text class="text1">字符长度, 限制2-30字之间</text></view>
 
-      <u-form-item label="门诊联系方式" prop="tenantInfo.contactMobile">
+      <u-form-item label="门诊联系方式" prop="tenantInfo.contactMobile" required>
         <u--input
           v-model="modeData.tenantInfo.contactMobile"
           placeholderStyle="font-size:13px;color:#bbb;"
@@ -35,6 +36,7 @@
           placeholder="请填写门诊电话"
         ></u--input>
       </u-form-item>
+      <view class="tips"><text class="text1">方便用户通过此电话联系你的门店</text></view>
 
       <u-form-item label="地址" required prop="tenantInfo.address">
         <u-textarea
@@ -46,8 +48,13 @@
           placeholderStyle="font-size:13px;color:#bbb;"
         ></u-textarea>
       </u-form-item>
-      <view class="tips" @tap="_$goToPage('/pages/chooseLocation/chooseLocation')">
-        <text>打开地图选择地址</text>
+      <view class="tips">
+        <text>
+          {{ `经度:${modeData.tenantInfo.lng || 0}, 维度:${modeData.tenantInfo.lat || 0}` }}
+        </text>
+        <text class="text1" @tap="_$goToPage('/pages/chooseLocation/chooseLocation')">
+          打开地图选择地址
+        </text>
       </view>
 
       <!-- <u-form-item label="社会信用代码" prop="tenantInfo.creditCode" borderBottom>
@@ -100,7 +107,7 @@
             口腔推使用协议
           </text>
         </view>
-        <button class="btn" :loading="btnLoading" @tap.stop="mSubmit">保存</button>
+        <button class="btn" :loading="btnLoading" @tap.stop="mSubmit">保存提交</button>
       </view>
     </view>
   </view>
@@ -115,6 +122,7 @@ export default {
       checkboxList1: [{ name: '同意' }],
       checkboxValue1: [],
 
+      // 表单数据
       modeData: {
         tenantInfo: {
           name: '', // 门诊名称
@@ -127,11 +135,19 @@ export default {
           creditCode: '' // 社会信用代码
         }
       },
+
+      // 表单验证规则
       rules: {
         'tenantInfo.name': {
           type: 'string',
           required: true,
           message: '请填写门诊名称',
+          trigger: ['change']
+        },
+        'tenantInfo.contactMobile': {
+          type: 'string',
+          required: true,
+          message: '门诊电话不能为空',
           trigger: ['change']
         },
         'tenantInfo.address': {
@@ -197,6 +213,7 @@ export default {
       this.fileList[event.name].splice(event.index, 1);
       this.modeData.tenantInfo[event.name] = '';
     },
+
     // 上传文件读取后执行
     async afterRead(event) {
       // console.log(event);
@@ -229,52 +246,59 @@ export default {
     },
 
     // 表单提交
-    mSubmit() {
+    async mSubmit() {
       // 是否在加载中,防止多次提交
       if (this.btnLoading) return;
 
-      this.$refs.uForm11
-        .validate()
-        .then(async res => {
-          // 验证协议
-          if (this.checkboxValue1[0] === '同意') {
-            // 接口提交中
-            this.btnLoading = true;
+      // 前端表单验证
+      try {
+        await this.$refs.uForm11.validate();
+      } catch (errors) {
+        uni.$u.toast(errors[0].message);
 
-            let resObj = {};
-            // 有门诊ID代表修改
-            if (this.tenantId) {
-              resObj = await updateTenant(this.modeData.tenantInfo);
-            } else {
-              // 没有门诊ID代码新建
-              resObj = await saveTenant(this.modeData.tenantInfo);
-            }
+        return;
+      }
 
-            this.btnLoading = false;
+      // 没有勾选协议
+      if (this.checkboxValue1[0] != '同意') {
+        uni.$u.toast('请勾选协议');
+        return;
+      }
 
-            // 有门诊ID完成跳转逻辑
-            if (this.tenantId) {
-              uni.switchTab({
-                url: '/pages/center/center'
-              });
-            } else {
-              const url =
-                window.location.protocol + '//' + window.location.hostname + '/pages/center/center';
-              // 没有门诊ID处理逻辑,完成切换逻辑
-              this._$mCutTenant(resObj.data, url);
-            }
-          } else {
-            uni.$u.toast('请勾选协议');
-          }
-        })
-        .catch(errors => {
-          console.log(errors);
-          // 表单验证失败
-          this.btnLoading = false;
-          if (errors[0]) {
-            uni.$u.toast(errors[0].message);
-          }
+      try {
+        // 加载中
+        uni.showLoading({
+          title: '正在保存中...'
         });
+        this.btnLoading = true;
+
+        // 有门诊ID代表修改
+        if (this.tenantId) {
+          // 更新门诊接口
+          await updateTenant(this.modeData.tenantInfo);
+          // 跳转到个人中心
+          uni.switchTab({ url: '/pages/center/center' });
+          // 重新获取门诊信息
+          this.$store.dispatch('getTenantInfo');
+          return;
+        } else {
+          // 没有门诊ID代码新建
+
+          // 调用新建门诊接口
+          const resObj = await saveTenant(this.modeData.tenantInfo);
+
+          // 新建完成后切换门诊逻辑
+          const url =
+            window.location.protocol + '//' + window.location.hostname + '/pages/center/center';
+          this._$mCutTenant(resObj.data, url);
+        }
+      } finally {
+        setTimeout(res => {
+          // 关闭loading
+          this.btnLoading = false;
+          uni.hideLoading();
+        }, 500);
+      }
     },
 
     /** 选择地址 */
@@ -308,20 +332,19 @@ export default {
 page {
   background-color: #fff;
 }
-
 .mBox {
   padding: 20rpx 30rpx;
 }
 .mBottom {
-  height: 200rpx;
+  height: 240rpx;
   .warpper {
     width: 100%;
     position: fixed;
     bottom: 0;
+    left: 0;
     z-index: 5;
     background-color: #f5f6f9;
-    margin: 0 -30rpx;
-    padding: 15rpx 30rpx 0;
+    padding: 20rpx 30rpx 0;
     padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
     box-sizing: border-box;
     .agreement {
@@ -349,13 +372,14 @@ page {
     }
   }
 }
-.u-textarea {
-  padding: 9rpx 0;
-}
 
 .tips {
-  text-align: right;
   font-size: 26rpx;
-  color: $main-color;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+  .text1 {
+    color: $main-color;
+  }
 }
 </style>

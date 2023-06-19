@@ -136,13 +136,6 @@
       }
 
     }, {
-      "path": "pages/createinviteUserInput/createinviteUserInput",
-      "style": {
-        "navigationBarTitleText": "信息填写",
-        "enablePullDownRefresh": false
-      }
-
-    }, {
       "path": "pages/editor/editor",
       "style": {
         "navigationBarTitleText": "富文本编辑器",

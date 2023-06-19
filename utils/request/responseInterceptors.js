@@ -73,8 +73,9 @@ module.exports = vm => {
         } else if (code === 901) {
           uni.$u.toast('演示模式，无法进行写操作')
           return Promise.reject(res)
-        } else if (code === 2001000008) {
+        } else if (code === 2001000008 || code == 1002015000) {
           //  code === 2001000008 用户已经切换门诊,需要重新授权登录
+          //  code === 1002015000 租户不存在
 
           // 清除登录信息
           vm.$store.commit('CLEAR_LOGIN_INFO')

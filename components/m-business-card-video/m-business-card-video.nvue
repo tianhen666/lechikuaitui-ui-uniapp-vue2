@@ -110,6 +110,32 @@
             label-color="#fff"
           ></u-icon>
         </view>
+
+        <view class="btn_item" @tap.stop>
+          <!-- 跳转微信小程序 -->
+          <wx-open-launch-weapp
+            id="launchBtn"
+            ref="launchBtn"
+            appid="wxc4b2eb2e4a97ff84"
+            :path="videoUrl"
+            env-version="release"
+            style="position: absolute;inset: 0;z-index:9;opacity: 0;"
+          >
+            <script type="text/wxtag-template">
+              <div style="position: absolute;inset: 0;z-index:9;opacity: 0;">跳转小程序</div>
+            </script>
+          </wx-open-launch-weapp>
+          <u-icon
+            name="download"
+            color="#fff"
+            size="60rpx"
+            labelPos="bottom"
+            labelSize="24rpx"
+            label="下载"
+            label-color="#fff"
+          ></u-icon>
+        </view>
+
         <!-- <view class="btn_item">
           <u-icon name="photo" size="60rpx" labelPos="bottom" labelSize="24rpx" label="在线咨询"></u-icon>
         </view> -->
@@ -158,9 +184,17 @@ export default {
   props: {
     tenantInfo: Object,
     userInfo: Object,
-    invitation: Boolean
+    invitation: Boolean,
+    videoObj: Object
+  },
+  computed: {
+    videoUrl() {
+      const url = this.videoObj.src ? this.videoObj.src.replace('http://', 'https://') : '';
+      return `/pages/sub4/downH5Video/downH5Video?videoUrl=${url}`;
+    }
   },
   methods: {
+    // 拨打电话
     tel(val) {
       // 有分享人
       if (!val && this.invitation) {

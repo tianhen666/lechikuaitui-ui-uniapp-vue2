@@ -19,15 +19,14 @@
               <text>{{ item.postName }}</text>
             </view>
             <view class="position">
-              <text class="positionc">注册时间：</text>
-              <text>{{ mDayjs(item.createTime) }}</text>
+              <text class="positionc">加入门诊时间：</text>
+              <text>{{ _$mDayJs(item.adminCreateTime, 3) }}</text>
             </view>
           </view>
         </view>
         <view class="me" v-if="userInfo.id === item.id">我</view>
       </view>
     </view>
-
     <view class="bottom-fixed">
       <button class="btn" @tap.stop="generateQRCode">邀请员工</button>
     </view>
@@ -36,6 +35,12 @@
       <view class="popupBox">
         <view class="title">{{ tenantInfo.name }}</view>
         <view class="desc">邀请同事一起使用口腔推</view>
+        <view class="desc">
+          <text>共有</text>
+          <text class="text">{{ tenantInfo.accountCount }}个</text>
+          <text>名额, 剩余</text>
+          <text class="text">{{ tenantInfo.accountCount - userList.length }}个</text>
+        </view>
         <uqrcode
           ref="uqrcode"
           canvas-id="qrcode"
@@ -66,8 +71,8 @@ import { mapState } from 'vuex';
 export default {
   data() {
     return {
-      tabs: [{ name: '员工管理' }, { name: '席位管理' }],
-      tabIndex: 0, // 当前菜单下标
+      // tabs: [{ name: '员工管理' }, { name: '席位管理' }],
+      // tabIndex: 0, // 当前菜单下标
 
       userList: [],
 
@@ -90,31 +95,37 @@ export default {
     this.mGetUserList();
   },
   methods: {
+    /**
+     * 获取当前门诊下的员工列表
+     * */
     async mGetUserList() {
-      // 获取员工列表
       const res = await getUserList();
+      // 如果找到了匹配的项，则将其移到列表的第一项
+      let index = res.data.findIndex(item => item.roleName === '超级管理员');
+      if (index !== -1) {
+        let item = res.data.splice(index, 1)[0];
+        res.data.unshift(item);
+      }
       this.userList = res.data;
     },
-    mDayjs(val) {
-      // 时间处理
-      return dayjs(val).format('YYYY-MM-DD HH:ss:mm');
-    },
+    /**
+     * 生成邀请二维码按钮
+     * */
     generateQRCode() {
-      // 生成邀请二维码
       const protocol = window.location.protocol;
       const host = window.location.host;
       const newHref = `${protocol}//${host}/pages/inviteEmployees/inviteEmployees?invitationTenantID=${
         this.tenantInfo.id
       }&invitationID=${this.userInfo.id}`;
       this.urlValue = newHref;
-
-      console.log(newHref);
-
+      console.log(`邀请员工二维码地址:${newHref}`);
       // 生成二维码
       this.mShow = true;
     },
+    /**
+     * 生成邀请二维码完成回调
+     * */
     qrComplete() {
-      // 二维码生成完成
       this.$refs.uqrcode.toTempFilePath({
         success: res => {
           this.codePath = res.tempFilePath;
@@ -208,8 +219,8 @@ export default {
             font-weight: bold;
             font-size: 28rpx;
             color: #333;
-            margin-right: 20rpx;
-            width: 260rpx;
+            margin-right: 30rpx;
+            max-width: 260rpx;
             @include overHeiddenText(1);
           }
           .role {
@@ -251,13 +262,21 @@ export default {
   text-align: center;
   .title {
     font-size: 34rpx;
-    line-height: 1;
     padding: 30rpx 0;
+    line-height: 1;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
   }
   .desc {
     margin: 20rpx 0;
     text-align: center;
     font-size: 28rpx;
+    color: #999;
+    .text {
+      color: $sub-color;
+      font-weight: 500;
+    }
   }
   .tips {
     color: #aaa;

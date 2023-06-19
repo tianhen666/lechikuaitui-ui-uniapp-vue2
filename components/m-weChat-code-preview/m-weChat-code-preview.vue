@@ -6,8 +6,8 @@
         <view class="closeIcon" @tap.stop="close()">
           <image class="img" src="@/static/images/myimg/close.png"></image>
         </view>
-        <!-- <view class="title">{{ title }}</view> -->
-        <view class="desc">{{ desc }}</view>
+        <view class="title1231">{{ title }}</view>
+        <view class="desc" v-if="desc">{{ desc }}</view>
         <image
           style="width: 240px;display: block;margin: auto;"
           :src="imgUrl"
@@ -26,7 +26,7 @@ export default {
   props: {
     desc: {
       type: String,
-      default: '添加我的微信'
+      default: ''
     },
     title: {
       type: String,
@@ -75,19 +75,19 @@ export default {
       height: 35rpx;
     }
   }
-  .title {
-    font-size: 34rpx;
+  text-align: center;
+  .title1231 {
     line-height: 1;
-    text-align: center;
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
   }
   .desc {
     margin: 20rpx 0;
-    text-align: center;
-    font-size: 28rpx;
-    color: #666;
+    font-size: 26rpx;
+    color: #999;
   }
   .tips {
-    text-align: center;
     color: #aaa;
     margin: 20rpx 0 0;
     font-size: 28rpx;

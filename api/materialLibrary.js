@@ -13,9 +13,6 @@ export const getSourceMaterialId = params => http.get('/yxx/source-material/get'
 // 获取当前登录门诊详情
 export const getTenant = params => http.get('/yxx/tenant/getTenant', { params })
 
-// 删除指定门诊
-export const deleteTenant = params => http.post('/yxx/tenant/deleteTenant', {}, { params })
-
 // 获取个人信息接口
 export const getTenantUser = params => http.get('/yxx/memberUser/getMember', { params })
 
@@ -64,7 +61,6 @@ export const getUserListTenant = params => http.get('/yxx/tenant/getUserListTena
 // 切换门诊
 export const cutTenant = params => http.get('/yxx/tenant/cutTenant', { params })
 
-
 // 获取邀请人的用户信息
 export const getShareUser = params => http.post('/yxx/memberUser/getShareUser', {}, { params })
 
@@ -74,18 +70,20 @@ export const getShareTenant = params => http.post('/yxx/tenant/getShareTenant', 
 // 更新指定门诊信息
 export const updateTenant = data => http.post('/yxx/tenant/updateTenant', data)
 
+// 删除指定门诊信息
+export const deleteTenant = params => http.post('/yxx/tenant/deleteTenant', {}, { params })
+
 // 获取当前门诊下所有用户
 export const getUserList = params => http.get('/yxx/tenant/getUserList', { params })
-
 
 // 新建一个素材
 export const createSourceMaterial = data => http.post('/yxx/source-material/create', data)
 
 // 创建一个员工
-export const createinviteUser = data => http.post('/yxx/memberUser/createinviteUser', data)
+export const createinviteUser = (data, params) => http.post('/yxx/tenant/createinviteUser', data, { params })
 
 // 判断是否还有剩余员工
-export const handleTenantInfo = params => http.post('/yxx/memberUser/handleTenantInfo', {}, { params })
+export const checkUsersJoinClinic = params => http.post('/yxx/tenant/checkUsersJoinClinic', {}, { params })
 
 // 发送验证码
 export const sendSmsCode = params => http.post('/yxx/tenant/sendSmsCode', {}, { params })
