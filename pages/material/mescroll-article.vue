@@ -13,7 +13,7 @@
         ></u-search>
       </view>
       <m-button-box
-        :m-index="btnIndex"
+        :mIndexId="btnIndexId"
         :bData="classificationList"
         @switchClassification="switchClassification"
       ></m-button-box>
@@ -62,7 +62,7 @@ export default {
         textNoMore: '没有更多了'
       },
       classificationList: [], //分类列表
-      btnIndex: 0, // 分类索引
+      btnIndexId: -1, // 分类Id
 
       searchName: '', //搜索名称
       dataList: [] //列表数据
@@ -110,7 +110,7 @@ export default {
         pageNo: page.num,
         pageSize: page.size,
         name: this.searchName,
-        classId: this.classificationList[this.btnIndex].id,
+        classId: this.btnIndexId,
         type: 1 // 文章分类
       })
         .then(res => {
@@ -142,16 +142,16 @@ export default {
     async mGetClassIfyList() {
       this.classificationList = [{ id: -1, name: '最多分享' }];
       const res = await getClassIfyList({
-        sourceMaterialType: 1 // 文章素材
+        sourceMaterialType: 1 // 文章素材分类
       });
       this.classificationList.splice(1, 0, ...res.data);
       this.mescroll.resetUpScroll(false);
     },
 
     // 切换分类索引
-    switchClassification(index) {
-      if (this.btnIndex === index) return;
-      this.btnIndex = index;
+    switchClassification(id) {
+      if (this.btnIndexId === id) return;
+      this.btnIndexId = id;
       this.mescroll.scrollTo(0, 0);
       this.mescroll.resetUpScroll(false);
     },

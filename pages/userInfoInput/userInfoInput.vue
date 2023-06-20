@@ -308,7 +308,7 @@ export default {
       const result = await this._$uploadFilePromise(event.file.url);
       // 上传完成设置回显
       this.fileList[event.name].splice(
-        0,
+        event.index,
         1,
         Object.assign(event.file, {
           status: 'success',

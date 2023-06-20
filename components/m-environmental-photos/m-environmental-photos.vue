@@ -71,6 +71,7 @@ export default {
     .imgItem {
       width: 300rpx;
       flex: none;
+      margin-bottom: 30rpx;
     }
   }
 }

@@ -28,7 +28,6 @@
           :disable-scroll="disableScroll"
         ></mescroll-poster>
       </swiper-item>
-
       <!-- 视频 -->
       <swiper-item>
         <mescroll-video
@@ -40,7 +39,6 @@
           :disable-scroll="disableScroll"
         ></mescroll-video>
       </swiper-item>
-
       <!-- 活动 -->
       <!-- <swiper-item>
           <mescroll-activity

@@ -75,8 +75,7 @@ export default {
         /** 切换门诊 */
         async _$mCutTenant(val, url) {
           // 发送切换请求
-          const res = await cutTenant({ id: val.id });
-
+          await cutTenant({ id: val.id });
           // 清理vuex中的登录信息
           this.$store.commit("CLEAR_LOGIN_INFO");
 
@@ -96,6 +95,7 @@ export default {
             type: 31,
             redirectUri: newHref
           })
+
           // console.log(val) 传递过来的值
           // console.log(getWXSocialAuthRedirectRes) 微信授权链接
 

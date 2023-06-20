@@ -1,93 +1,133 @@
 <template>
   <view class="mBox">
-    <u-picker :show="show" :columns="columns"></u-picker>
-
+    <u-picker
+      :show="show"
+      @cancel="show = false"
+      @confirm="pickerConfirm"
+      :columns="columns"
+      keyName="name"
+      title="问题类型"
+    ></u-picker>
     <u--form
-      labelPosition="left"
       labelWidth="auto"
       :model="modeData"
       :rules="rules"
-      :labelStyle="{ color: '#666', fontSize: '28rpx' }"
+      labelPosition="top"
+      :errorType="'toast'"
+      :labelStyle="{ color: '#333', fontSize: '30rpx' }"
       ref="uForm11"
     >
-      <u-form-item label="客户类型" required prop="type" borderBottom>
-        <text>{{ modeData.type }}</text>
+      <!-- 问题类型 -->
+      <u-form-item label="问题类型" required prop="type" @tap="open">
+        <u--input
+          v-model="modeData.typeName"
+          placeholderStyle="font-size:13px;color:#bbb;"
+          fontSize="14px"
+          placeholder="请选择问题类型"
+        ></u--input>
         <u-icon slot="right" name="arrow-right"></u-icon>
       </u-form-item>
 
-      <u-form-item label="手机号码" required prop="mobile" borderBottom>
+      <!-- 手机号码 -->
+      <u-form-item label="手机号码" required prop="mobile">
         <u--input
+          type="number"
           v-model="modeData.mobile"
           placeholderStyle="font-size:13px;color:#bbb;"
           fontSize="14px"
           placeholder="请填写手机号码"
-          border="none"
         ></u--input>
       </u-form-item>
 
-      <u-form-item label="建议描述" prop="describe" borderBottom>
+      <!-- 建议描述 -->
+      <u-form-item label="建议描述" required prop="suggest">
         <u-textarea
-          v-model="modeData.describe"
-          placeholder="对我们产品和服务, 请输入你的建议"
-          border="none"
+          count
+          maxlength="120"
+          v-model="modeData.suggest"
+          placeholder="对我们产品和服务, 请输入您的建议"
           fontSize="14px"
           placeholderStyle="font-size:13px;color:#bbb;"
         ></u-textarea>
       </u-form-item>
+      <view class="tips" style="margin-bottom: 20rpx;">
+        您对此产品的问题描述, 最多输入120个字符
+      </view>
 
-      <u-form-item labelPosition="top" label="图片上传" prop="uploadPictures" borderBottom>
+      <!-- 图片上传 -->
+      <u-form-item label="图片上传" prop="uploadPictures">
         <u-upload
-          :fileList="uploadPicturesFileList"
-          @afterRead="afterRead1"
-          @delete="deletePic1"
-          :maxCount="1"
+          :fileList="fileList.uploadPictures"
+          @afterRead="afterRead"
+          @delete="deletePic"
+          :maxCount="4"
+          @oversize="oversize"
+          name="uploadPictures"
+          :maxSize="1024 * 1024 * 5"
         ></u-upload>
       </u-form-item>
+      <view class="tips">最多可以上传 4 张照片</view>
+      <view class="tips" style="margin-bottom: 20rpx;">支持jpg,png格式, 每张照片最大5M</view>
     </u--form>
+
     <!-- 底部按钮 -->
     <view class="mBottom">
       <view class="warpper">
-        <button class="btn" :loading="btnLoading" @tap.stop="mSubmit">提交</button>
+        <button class="btn" :loading="btnLoading" @tap.stop="mSubmit">提交反馈</button>
       </view>
     </view>
   </view>
 </template>
 
 <script>
-import { updateFileNamer, saveTenant, updateTenant, getOne } from '@/api/materialLibrary.js';
+import { getClassIfyList, saveOpinion } from '@/api/materialLibrary.js';
+import { delay } from '@/utils/index.js';
 import { mapState } from 'vuex';
-import color from '../../uni_modules/uview-ui/libs/config/color';
 export default {
   data() {
     return {
       modeData: {
         type: '', // 问题类型
+        typeName: '', // 描述名称
         mobile: '', // 手机号码
-        describe: '', // 描述
-        uploadPictures: '' // 问题图片
+        suggest: '', // 描述
+        uploadPictures: '' // 问题图片,
       },
       rules: {
-        'modeData.type': {
-          type: 'string',
+        type: {
+          type: 'number',
           required: true,
-          message: '请输入问题类型',
-          trigger: ['blur', 'change']
+          message: '请选择问题类型',
+          trigger: ['change']
         },
-        'modeData.mobile': [
+        mobile: [
           {
             type: 'string',
             required: true,
             message: '请输入门诊电话',
-            trigger: ['blur', 'change']
+            trigger: ['change']
+          }
+        ],
+        suggest: [
+          {
+            type: 'string',
+            required: true,
+            message: '请输入问题描述',
+            trigger: ['change']
           }
         ]
       },
-      uploadPicturesFileList: [],
+      // 回显列表
+      fileList: {
+        uploadPictures: []
+      },
 
+      // 提交加载
       btnLoading: false,
 
+      // 选择反馈列表
       show: false,
-      columns: [['中国', '美国', '日本']]
+      columns: []
     };
   },
   computed: {
@@ -95,85 +135,117 @@ export default {
       tenantInfo: state => state.tenant.info
     })
   },
+  async onLoad() {
+    // 等待onLaunch 加载完成
+    await this.$onLaunched;
 
+    this.mGetClassIfyList();
+  },
   methods: {
-    // 删除图片
-    deletePic1(event) {
-      this.uploadPicturesFileList.splice(event.index, 1);
-      this.modeData.uploadPictures = '';
+    /**
+     * 打开类型选择器
+     * */
+    open() {
+      this.show = true;
+      this.hideKeyboard();
     },
-    async afterRead1(event) {
-      // 上传图片
-      this.uploadPicturesFileList.push({
+
+    /** 超出限制 */
+    oversize(e) {
+      this._$showToast('文件大小超出1M限制');
+    },
+
+    /**
+     * 获取反馈分类
+     * */
+    async mGetClassIfyList() {
+      const res = await getClassIfyList({
+        sourceMaterialType: 4 // 反馈分类
+      });
+      this.columns = [res.data];
+    },
+
+    /**
+     * 移除图片
+     * */
+    deletePic(event) {
+      this.fileList[event.name].splice(event.index, 1);
+      this.modeData[event.name] = '';
+    },
+
+    /**
+     * 上传图片
+     * */
+    async afterRead(event) {
+      // 设置显示
+      this.fileList[event.name].push({
         ...event.file,
         status: 'uploading',
         message: '上传中'
       });
-      const result = await this.uploadFilePromise(this.uploadPicturesFileList[0]);
-      this.modeData.uploadPictures = result;
-      // 上传成功
-      this.uploadPicturesFileList.splice(
-        0,
+      const result = await this._$uploadFilePromise(event.file.url);
+      // 上传完成设置回显
+      this.fileList[event.name].splice(
+        event.index,
         1,
-        Object.assign(this.uploadPicturesFileList[0], {
+        Object.assign(event.file, {
           status: 'success',
-          message: '',
+          message: '上传成功',
           url: result
         })
       );
-    },
-    uploadFilePromise(item) {
-      // 上传图片
-      return new Promise((resolve, reject) => {
-        updateFileNamer(item.url).then(res => {
-          resolve(res);
-        });
-      });
+      // 显示数据赋值
+      this.modeData[event.name] = this.fileList[event.name].map(item => item.url).join(',');
     },
 
-    mSubmit() {
+    /**
+     * 选择问题分类
+     *
+     * */
+    pickerConfirm(e) {
+      this.show = false;
+      this.modeData.type = e.value[0].id;
+      this.modeData.typeName = e.value[0].name;
+    },
+
+    /**
+     * 表单提交
+     * */
+    async mSubmit() {
       if (this.btnLoading) return;
-      // 表单提交
-      this.$refs.uForm11
-        .validate()
-        .then(async res => {
-          // 加载中
-          uni.showLoading({
-            title: '正在保存中...'
-          });
-          this.btnLoading = true;
 
-          let resObj = {};
-          // 判断是修改,还是新建
-          if (this.tenantId) {
-            this.$set(this.modeData.tenantInfo, 'deleted', 0);
-            resObj = await updateTenant(this.modeData.tenantInfo);
-          } else {
-            resObj = await saveTenant(this.modeData.tenantInfo);
-          }
+      // 前端表单验证
+      try {
+        await this.$refs.uForm11.validate();
+      } catch (errors) {
+        return;
+      }
 
-          setTimeout(resObj => {
-            this.btnLoading = false;
-            // 关闭loading
-            uni.hideLoading();
-
-            // 修改完成跳转
-            const pages = getCurrentPages();
-            if (pages.length > 1) {
-              uni.navigateBack();
-            } else {
-              uni.switchTab({
-                url: '/pages/center/center'
-              });
-            }
-          }, 1000);
-        })
-        .catch(errors => {
-          this.btnLoading = false;
-          if (errors[0]) {
-            uni.$u.toast(errors[0].message);
-          }
+      try {
+        // 加载中
+        uni.showLoading({
+          title: '正在保存中...'
         });
+        this.btnLoading = true;
+
+        // 发送修改用户信息请求
+        await saveOpinion(this.modeData);
+        this._$showToast('反馈提交成功~');
+
+        await delay(2000);
+        // 完成后跳转
+        uni.switchTab({ url: '/pages/center/center' });
+      } finally {
+        setTimeout(res => {
+          // 关闭loading
+          this.btnLoading = false;
+          uni.hideLoading();
+        }, 500);
+      }
+    },
+    // 不弹出输入法
+    hideKeyboard() {
+      uni.hideKeyboard();
     }
   },
   onReady() {
@@ -190,52 +262,34 @@ page {
 .mBox {
   padding: 20rpx 30rpx;
 }
+
 .mBottom {
   height: 200rpx;
   .warpper {
     width: 100%;
+    box-sizing: border-box;
     position: fixed;
     bottom: 0;
     z-index: 5;
+    left: 0;
     background-color: #f5f6f9;
-    margin: 0 -30rpx;
-    padding: 15rpx 30rpx 40rpx;
-    box-sizing: border-box;
-    .agreement {
-      font-size: 26rpx;
-      margin-bottom: 20rpx;
-      display: flex;
-      align-items: center;
+    padding: 20rpx 30rpx 0;
+    padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
 
-      .s12 {
-        color: $main-color;
-        padding-left: 10rpx;
-      }
-      .u-checkbox-group {
-        flex: none;
-        .u-checkbox {
-          margin-bottom: 0 !important;
-        }
-      }
-    }
     .btn {
       background-color: $main-color;
       color: #fff;
-      line-height: 2.8;
+      height: 70rpx;
+      line-height: 70rpx;
       font-size: 28rpx;
-      border-radius: 20rpx;
+      border-radius: 10rpx;
     }
   }
 }
-.u-textarea {
-  padding: 9rpx 0;
-}
 
-.outpatientService {
-  background-color: #ddd;
-  margin: 0 -30rpx;
-  padding: 20rpx 30rpx;
-  font-size: 30rpx;
-  color: #888;
+.tips {
+  font-size: 22rpx;
+  color: $main-color;
+  line-height: 30rpx;
 }
 </style>

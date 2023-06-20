@@ -175,7 +175,7 @@ export default {
         use: false, // 主体框架只启用下拉刷新
         toTop: {
           bottom: 460,
-          zIndex: 100
+          zIndex: 20
         }
       },
       downOption: {
@@ -345,7 +345,7 @@ page {
 }
 
 .fixdBottom {
-  height: 70rpx;
+  height: 80rpx;
   padding-top: 10rpx;
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
   .btnBox111 {
@@ -356,7 +356,7 @@ page {
     background-color: #eee;
     height: 70rpx;
     z-index: 999;
-    padding-top: 10rpx;
+    padding-top: 20rpx;
     padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
     .btn {
       width: 680rpx;

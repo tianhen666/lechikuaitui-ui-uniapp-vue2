@@ -97,3 +97,7 @@ export const amendPhotograph = data => http.post('/yxx/tenant/amendPhotograph', 
     'Content-Type': 'application/x-www-form-urlencoded',
   },
 })
+
+
+// 问题反馈
+export const saveOpinion = data => http.post('/yxx/tenant/saveOpinion', data)

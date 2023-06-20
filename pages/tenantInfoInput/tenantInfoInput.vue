@@ -228,7 +228,7 @@ export default {
 
       // 上传完成设置回显
       this.fileList[event.name].splice(
-        0,
+        event.index,
         1,
         Object.assign(event.file, {
           status: 'success',
@@ -300,19 +300,22 @@ export default {
         }, 500);
       }
     },
-
+    // 不弹出输入法
+    hideKeyboard() {
+      uni.hideKeyboard();
+    },
     /** 选择地址 */
     focusAddress(e) {
       if (!e.detail.value) {
         this._$goToPage('/pages/chooseLocation/chooseLocation');
       }
     },
+    /** 选择地址 */
     inputAddress(e) {
       if (!e) {
         this._$goToPage('/pages/chooseLocation/chooseLocation');
       }
     },
-
     /**  设置地址 */
     setAddress(res) {
       this.modeData.tenantInfo.address = res.address;

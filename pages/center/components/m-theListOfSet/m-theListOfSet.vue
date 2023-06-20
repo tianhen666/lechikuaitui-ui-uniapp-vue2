@@ -6,6 +6,7 @@
 
     <u-cell-group :border="false">
       <u-cell
+        v-if="this._$isMember"
         title="通用设置"
         name="setUp"
         isLink
@@ -63,7 +64,7 @@ export default {
     ListOfSet({ name }) {
       // 设置按钮
       if (name === 'setUp') {
-        this.verifyIsMemberGoToPage('/pages/setUp/setUp');
+        this._$goToPage('/pages/setUp/setUp');
       }
 
       // 在线咨询

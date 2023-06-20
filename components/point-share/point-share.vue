@@ -1,6 +1,11 @@
 <template>
   <view>
-    <view class="tui-alert-mask" @click="close" :class="[show ? 'tui-alert-mask-show' : '']">
+    <view
+      @touchmove.stop.prevent
+      class="tui-alert-mask"
+      @click="close"
+      :class="[show ? 'tui-alert-mask-show' : '']"
+    >
       <view :style="{ width: width ? width : '100%' }" style="position: absolute;top: 0;right: 0;">
         <view><image src="./static/point_bg.png" style="width: 100%;" mode="widthFix" /></view>
         <view @click="close" style="text-align: center;">

@@ -13,7 +13,7 @@
         ></u-search>
       </view>
       <m-button-box
-        :m-index="btnIndex"
+        :mIndexId="btnIndexId"
         :bData="classificationList"
         @switchClassification="switchClassification"
       ></m-button-box>
@@ -68,7 +68,7 @@ export default {
         textNoMore: '没有更多了'
       },
       classificationList: [], //分类列表
-      btnIndex: 0, // 分类索引
+      btnIndexId: 0, // 分类索引
 
       searchName: '', //搜索名称
       dataList: [] //列表数据
@@ -115,7 +115,7 @@ export default {
         pageNo: page.num,
         pageSize: page.size,
         name: this.searchName,
-        classId: this.classificationList[this.btnIndex].id,
+        classId: this.btnIndexId,
         type: 2 // 视频分类
       })
         .then(res => {
@@ -154,17 +154,15 @@ export default {
     },
     // 切换分类索引
     switchClassification(index) {
-      if (this.btnIndex === index) return;
-      this.btnIndex = index;
+      if (this.btnIndexId === index) return;
+      this.btnIndexId = index;
       this.mescroll.scrollTo(0, 0);
       this.mescroll.resetUpScroll(false);
     },
     //点击单个项目
     itemClicK(index) {
       this.gotoPage(
-        `/pages/videoDetails/videoDetails?id=${this.dataList[index].id}&classId=${
-          this.classificationList[this.btnIndex].id
-        }`
+        `/pages/videoDetails/videoDetails?id=${this.dataList[index].id}&classId=${this.btnIndexId}`
       );
     },
     //页面跳转

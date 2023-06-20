@@ -14,7 +14,7 @@
       </view>
       <m-button-box
         v-if="classificationList.length > 0"
-        :m-index="btnIndex"
+        :mIndexId="btnIndexId"
         :bData="classificationList"
         @switchClassification="switchClassification"
       ></m-button-box>
@@ -74,7 +74,7 @@ export default {
       },
 
       classificationList: [], //分类列表
-      btnIndex: 0, // 分类索引
+      btnIndexId: -1, // 分类索引
 
       searchName: '', //搜索名称
       dataList: [] //列表数据
@@ -126,7 +126,7 @@ export default {
         pageNo: page.num,
         pageSize: page.size,
         name: this.searchName,
-        classId: this.classificationList[this.btnIndex].id,
+        classId: this.btnIndexId,
         type: 3 // 海报数据
       })
         .then(res => {
@@ -158,8 +158,8 @@ export default {
 
     // 切换分类索引
     switchClassification(index) {
-      if (this.btnIndex === index) return;
-      this.btnIndex = index;
+      if (this.btnIndexId === index) return;
+      this.btnIndexId = index;
       this.mescroll.scrollTo(0, 0);
       this.mescroll.resetUpScroll(false);
     },

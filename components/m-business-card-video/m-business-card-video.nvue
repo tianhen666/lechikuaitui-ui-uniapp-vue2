@@ -230,14 +230,15 @@ export default {
       });
     },
     // 微信二维码预览
-    showImg() {
+    showImg(val) {
       // 有分享人
-      if (!this._$userInfo?.wechatCode && this.invitation) {
+      if (!val && this.invitation) {
         this._$showToast('当前分享人没有微信二维码~');
         return;
       }
+
       // 没有分享人
-      if (this._$userInfo?.wechatCode && !this.invitation) {
+      if (!val && !this.invitation) {
         this.mPopupDesc = '没有微信二维码, 请完善个人信息';
         this.mPopupBtn1 = '去完善';
         this.$refs.tipsPopupRef.open();

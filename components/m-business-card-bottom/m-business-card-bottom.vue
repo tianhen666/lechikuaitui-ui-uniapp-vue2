@@ -67,13 +67,12 @@
       <view class="address">
         <view class="map">
           <map
-            style="width: 100%;"
+            style="width: 100%;height: 200px;"
             :longitude="tenantInfo.lng"
             :latitude="tenantInfo.lat"
             show-location
             :markers="markers"
             scale="17"
-            width="100%"
           ></map>
         </view>
 
