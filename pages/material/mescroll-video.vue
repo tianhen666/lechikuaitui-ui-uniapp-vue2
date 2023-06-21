@@ -68,7 +68,7 @@ export default {
         textNoMore: '没有更多了'
       },
       classificationList: [], //分类列表
-      btnIndexId: 0, // 分类索引
+      btnIndexId: -1, // 分类索引ID
 
       searchName: '', //搜索名称
       dataList: [] //列表数据
