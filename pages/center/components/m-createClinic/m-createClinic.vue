@@ -1,7 +1,7 @@
 <template>
   <view class="createClinic">
     <view class="wrapper">
-      <button class="btn" @tap.stop="_$createClinic">免费创建门诊</button>
+      <button class="btn" @tap.stop="_$createClinic">认证我的门诊</button>
       <text class="desc">您当前还没有门诊, 请创建一个门诊</text>
     </view>
   </view>

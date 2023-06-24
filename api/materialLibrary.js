@@ -101,3 +101,10 @@ export const amendPhotograph = data => http.post('/yxx/tenant/amendPhotograph', 
 
 // 问题反馈
 export const saveOpinion = data => http.post('/yxx/tenant/saveOpinion', data)
+
+
+// 创建购买店铺会员订单
+export const createOrder = data => http.post('/yxx/wxPay/createOrder', data)
+
+// 发起支付请求
+export const payOrder = params => http.post('/yxx/wxPay/payOrder', {}, { params })

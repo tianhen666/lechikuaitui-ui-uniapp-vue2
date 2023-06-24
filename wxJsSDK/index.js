@@ -28,7 +28,7 @@ export default {
         nonceStr: res.data.nonceStr, // 必填，生成签名的随机串
         signature: res.data.signature, // 必填，签名
         jsApiList: ['openLocation', 'getLocation', 'updateAppMessageShareData',
-          'updateTimelineShareData', 'onMenuShareAppMessage', 'onMenuShareTimeline'
+          'updateTimelineShareData', 'onMenuShareAppMessage', 'onMenuShareTimeline', 'chooseWXPay'
         ],
         openTagList: ['wx-open-launch-weapp', 'wx-open-launch-app', 'wx-open-subscribe', 'wx-open-audio'],
       });
@@ -36,7 +36,7 @@ export default {
       /* **  api检测 ** */
       jWeixin.checkJsApi({
         jsApiList: ['openLocation', 'getLocation', 'updateAppMessageShareData',
-          'updateTimelineShareData', 'onMenuShareAppMessage', 'onMenuShareTimeline'
+          'updateTimelineShareData', 'onMenuShareAppMessage', 'onMenuShareTimeline', 'chooseWXPay'
         ],
         success: function(res) {
           console.log('检测完成', res)
@@ -122,6 +122,26 @@ export default {
           // 设置成功
           console.log('朋友分享测试', res)
         }
+      })
+    });
+  },
+
+  chooseWXPay(data) {
+    jWeixin.ready(() => {
+      jWeixin.chooseWXPay({
+        appId: data.appId,
+        timestamp: data.timeStamp,
+        nonceStr: data.nonceStr,
+        package: data.package,
+        signType: data.signType,
+        paySign: data.paySign,
+        success: function(res) {
+          // 支付成功后的回调函数
+          console.log('支付结果:' + JSON.stringify(res));
+          if (res.errMsg === 'chooseWXPay:ok') {
+            console.log('支付成功')
+          }
+        },
       })
     });
   }
